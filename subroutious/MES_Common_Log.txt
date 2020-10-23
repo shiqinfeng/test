@@ -1,0 +1,322 @@
+/**
+ * Description: provide common functions to log in file or log in database
+ * 
+ * Author: Lin Hui
+ * Date: 2013/08/08
+ * Revision: 1.0
+ * 
+ **/
+
+import ("com.ftpc.mes.commons.base.ifc.services.ServiceFactory")
+import ("com.ftpc.common.log.ifc.ILogService")
+
+LOG_SERVICE_MAP_PROPERTY = "LogServiceMap"
+
+// MODULE_PP = "PP"
+MODULE_OM = "OM"
+MODULE_QM = "QM"
+MODULE_WM = "WM"
+MODULE_EM = "EM"
+//MODULE_WS = "WS"
+MODULE_UM = "UM"
+//MODULE_IF = "IF"
+MODULE_SM = "SM"
+MODULE_PR = "PR"
+MODULE_COMMON = "MODULE_COMMON"
+MODULE_AD = "AD"
+MODULE_IM = "IM"
+
+LOG_LEVEL_TRACE = class com.ftpc.common.log.ILogLevel::TRACE
+LOG_LEVEL_DEBUG = class com.ftpc.common.log.ILogLevel::DEBUG
+LOG_LEVEL_INFO = class com.ftpc.common.log.ILogLevel::INFO
+LOG_LEVEL_WARN = class com.ftpc.common.log.ILogLevel::WARN
+LOG_LEVEL_ERROR = class com.ftpc.common.log.ILogLevel::ERROR
+LOG_LEVEL_FATAL = class com.ftpc.common.log.ILogLevel::FATAL
+
+import("com.ftpc.common.log.impl.LogService")
+import("com.ftpc.common.utilities.LogUtility")
+
+/**
+ * 增加日志组件的方法
+ * 参数一：文件日志，与List的Log4jProperties中配置的要保持一致
+ *      例如： log4j.appender.umfile=org.apache.log4j.RollingFileAppender
+ * 参数二：数据库日志，与List的Log4jProperties中配置的要保持一致
+ *      例如： log4j.logger.ifdb=WARN, ifdb
+ *            log4j.appender.ifdb=com.ftpc.common.log.DoNothingAppender
+ * 参数三：保存日志的AT表，配置后如果没有该表，则自动创建。
+ */
+// LogUtility::addLogService(MODULE_PP, LogService("ppfile", "ppdb", "PP_Log"))
+LogUtility::addLogService(MODULE_QM, LogService("qmfile", "qmdb", "QM_Log"))
+LogUtility::addLogService(MODULE_OM, LogService("omfile", "omdb", "OM_Log"))
+LogUtility::addLogService(MODULE_WM, LogService("wmfile", "wmdb", "WM_Log"))
+LogUtility::addLogService(MODULE_EM, LogService("emfile", "emdb", "EM_Log"))
+// LogUtility::addLogService(MODULE_WS, LogService("wsfile", "wsdb", "WS_Log"))
+LogUtility::addLogService(MODULE_UM, LogService("umfile", "umdb", "UM_Log"))
+// LogUtility::addLogService(MODULE_IF, LogService("iffile", "ifdb", "IF_Log"))
+LogUtility::addLogService(MODULE_IM, LogService("imfile", "imdb", "IM_Log"))
+LogUtility::addLogService(MODULE_SM, LogService("smfile", "smdb", "SM_Log"))
+LogUtility::addLogService(MODULE_AD, LogService("adfile", "addb", "AD_Log"))
+LogUtility::addLogService(MODULE_PR, LogService("prfile", "prdb", "PR_Log"))
+LogUtility::addLogService(MODULE_COMMON, LogService("commonfile", "commondb", "COMMON_Log"))
+/**
+ * Description: write trace log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content 
+ */
+function logTrace(module, message)
+{
+    log(module, message, LOG_LEVEL_TRACE)
+}
+
+/**
+ * Description: write trace log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logTrace(module, message, entryTime, source, trxName)
+{
+    logFile(module, message, entryTime, source, trxName, LOG_LEVEL_TRACE)
+}
+
+/**
+ * Description: write trace log to database
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logTraceToDB(module, message, entryTime, source, trxName)
+{
+    logToDB(module, message, entryTime, source, trxName, LOG_LEVEL_TRACE)
+}
+
+/**
+ * Description: write debug log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content 
+ */
+function logDebug(module, message)
+{
+    log(module, message, LOG_LEVEL_DEBUG)
+}
+
+/**
+ * Description: write debug log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logDebug(module, message, entryTime, source, trxName)
+{
+    logFile(module, message, entryTime, source, trxName, LOG_LEVEL_DEBUG)
+}
+
+/**
+ * Description: write debug log to database
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logDebugToDB(module, message, entryTime, source, trxName)
+{
+    logToDB(module, message, entryTime, source, trxName, LOG_LEVEL_DEBUG)
+}
+
+/**
+ * Description: write info log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content 
+ */
+function logInfo(module, message)
+{
+    log(module, message, LOG_LEVEL_INFO)
+}
+
+/**
+ * Description: write info log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logInfo(module, message, entryTime, source, trxName)
+{
+    logFile(module, message, entryTime, source, trxName, LOG_LEVEL_INFO)
+}
+
+/**
+ * Description: write info log to file and database
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logInfoToDB(module, message, entryTime, source, trxName)
+{
+    logToDB(module, message, entryTime, source, trxName, LOG_LEVEL_INFO)
+}
+
+/**
+ * Description: write warn log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content 
+ */
+function logWarn(module, message)
+{
+    log(module, message, LOG_LEVEL_WARN)
+}
+
+/**
+ * Description: write warn log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logWarn(module, message, entryTime, source, trxName)
+{
+    logFile(module, message, entryTime, source, trxName, LOG_LEVEL_WARN)
+}
+
+/**
+ * Description: write warn log to database
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logWarnToDB(module, message, entryTime, source, trxName)
+{
+    logToDB(module, message, entryTime, source, trxName, LOG_LEVEL_WARN)
+}
+
+/**
+ * Description: write error log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content 
+ */
+function logError(module, message)
+{
+    log(module, message, LOG_LEVEL_ERROR)
+}
+
+/**
+ * Description: write error log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param throwable: exception object
+ */
+function logException(module, throwable)
+{
+    LogUtility::logException(module, throwable)
+}
+
+/**
+ * Description: write error log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logError(module, message, entryTime, source, trxName)
+{
+    logFile(module, message, entryTime, source, trxName, LOG_LEVEL_ERROR)
+}
+
+/**
+ * Description: write error log to database
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logErrorToDB(module, message, entryTime, source, trxName)
+{
+    logToDB(module, message, entryTime, source, trxName, LOG_LEVEL_ERROR)
+}
+
+/**
+ * Description: write fatal log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content 
+ */
+function logFatal(module, message)
+{
+    log(module, message, LOG_LEVEL_FATAL)
+}
+
+/**
+ * Description: write fatal log to file
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logFatal(module, message, entryTime, source, trxName)
+{
+    logFile(module, message, entryTime, source, trxName, LOG_LEVEL_FATAL)
+}
+
+/**
+ * Description: write fatal log to database
+ * @param module: module(SM, QM, OM, LM, PR etc.) 
+ * @param message: log content
+ * @param entryTime: entry time
+ * @param source: source
+ * @param trxName: transaction name
+ */
+function logFatalToDB(module, message, entryTime, source, trxName)
+{
+    logToDB(module, message, entryTime, source, trxName, LOG_LEVEL_FATAL)
+}
+
+function log(module, message, level)
+{
+    LogUtility::log(module, message, level)
+}
+
+/**
+ * 
+ */
+function logFileOnly(module, message, entryTime, source, trxName, level)
+{
+    LogUtility::logFileOnly(module, message, entryTime, source, trxName, level)
+}
+
+/**
+ * 
+ */
+function logDBOnly(module, message, entryTime, source, trxName, level)
+{
+    LogUtility::logDBOnly(module, message, entryTime, source, trxName, level)
+}
+
+/**
+ * 
+ */
+function logFile(module, message, entryTime, source, trxName, level)
+{
+    LogUtility::log(module, message, entryTime, source, trxName, level)
+}
+
+/**
+ * 
+ */
+function logToDB(module, message, entryTime, source, trxName, level)
+{
+    LogUtility::log2DB(module, message, entryTime, source, trxName, level)
+}

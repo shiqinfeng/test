@@ -1,0 +1,682 @@
+importSubroutine("MES_Common_DsList")
+
+/**
+ * 描述: 从DsList对象中获取XML配置文件，并构造一个UseCaseConfig对象.
+ * 
+ * @parameter: useCaseConfigDsListName - Class:(String)
+ *      保存UseCaseConfig配置的DsList.
+ * @return: com.ftpc.common.usecaseconfig.UseCaseConfig - UseCaseConfig对象.
+ * @author: Lin Hui 03/23/2016
+ */
+function getUseCaseConfig(useCaseConfigDsListName)
+{
+    useCaseConfigXml = dsListToString(useCaseConfigDsListName)
+    reader = class java.io.StringReader(useCaseConfigXml)
+    useCaseConfig = class com.ftpc.common.usecaseconfig.UseCaseConfig::unmarshal(reader)
+    return useCaseConfig
+}
+
+/**
+ * Description: render tree view with use case config.
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      treeview control
+ * @parameter: useCaseConfigDsListName - Class:(String)
+ *      DsList name of use case config.
+ * @author: Lin Hui 03/21/2016
+ */
+function applyTreeMenu(treeview, useCaseConfigDsListName)
+{
+    useCaseConfig = getUseCaseConfig(useCaseConfigDsListName)
+    applyTreeMenuFromUCObject(treeview, useCaseConfig)
+}
+
+function applyTreeMenuFromUCObject(treeview, useCaseConfigObject)
+{
+    vectorDT = useCaseConfigObject.getDataTemplates()
+    treeview.removeAll()
+    
+    for(i = 0; i < vectorDT.size(); i++)
+    {
+        dt = vectorDT.get(i) // return class com.ftpc.common.usecaseconfig.DataTemplate
+        
+        treenode = renderMenuAsChild(treeview, dt, true, vector())
+        addChildrenTreeNode(treenode, dt)
+    }
+    
+    treeview.expandAll()
+}
+
+
+/**
+ * 描述: transfer data template object to menu data object.
+ * 
+ * @parameter: dtObject - Class:(com.ftpc.common.usecaseconfig.DataTemplate 或者 com.ftpc.common.usecaseconfig.Action)
+ *      data template object
+ * @return: menuData - menu data object
+ * @author: Lin Hui 03/21/2016
+ */
+function transferToMenuData(dtOrActionObj)
+{
+    menuData = class com.ftpc.common.ui.menu.MenuData() // class com.ftpc.common.ui.menu.MenuData   - member help: menu
+    menuData.setId(dtOrActionObj.getId())
+    
+    if(dtOrActionObj instanceof class com.ftpc.common.usecaseconfig.DataTemplate)
+    {
+        menuData.setAccessPrivilege(dtOrActionObj.getAccessPrivilege())
+        navPane = class com.ftpc.common.usecaseconfig.utilities.UseCaseUtility::getNavigationPane(dtOrActionObj)
+        menuData.setIcon(navPane.getIcon())
+        formView = class com.ftpc.common.usecaseconfig.utilities.UseCaseUtility::getEmbeddedFormView(dtOrActionObj)
+        if(formView != null)
+        {
+            menuData.setFormName(formView.getFormClass())
+            menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::FORM)
+        }
+        else
+        {
+            menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::FOLDER)
+        }
+    }
+    else if(dtOrActionObj instanceof class com.ftpc.common.usecaseconfig.Action)
+    {
+        menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::ACTION)
+        menuData.setAccessPrivilege(dtOrActionObj.getPrivilege())
+        menuData.setActionName(dtOrActionObj.getActionClass())
+        menuData.setIcon(dtOrActionObj.getIcon())
+    }
+    
+    return menuData
+}
+
+
+/**
+ * (内部方法)描述：添加当前节点的子节点.
+ * 
+ * @parameter: treenode - Class:(com.datasweep.compatibility.ui.TreeNode)
+ *      当前节点
+ * @parameter: dtObject - Class:(com.ftpc.common.usecaseconfig.DataTemplate)
+ *      当前节点对应的数据对象
+ * @return: void
+ * @author: Lin Hui 03/21/2016
+ */
+function addChildrenTreeNode(treenode, dtObject) 
+{
+    vectorDT = dtObject.getDataTemplates()
+    for(i = 0; i < vectorDT.size(); i++)
+    {
+        dtChild = vectorDT.get(i)
+        
+        treenodeChild = renderMenuAsChild(treenode, dtChild, true, vector())
+        addChildrenTreeNode(treenodeChild, dtChild)
+    }
+}
+
+
+/**
+ * 描述: 使用节点数据对象渲染节点UI.
+ * 
+ * @parameter: parent - Class:(com.datasweep.compatibility.ui.TreeView 或者 com.datasweep.compatibility.ui.TreeNode)
+ *      父节点对象，可以是TreeView对象或者TreeNode对象。
+ * @parameter: dtObject - Class:(com.ftpc.common.usecaseconfig.DataTemplate)
+ *      要添加的子节点对应的数据对象
+ * @return: com.datasweep.compatibility.ui.TreeNode - 子节点对象
+ * @author: Lin Hui 03/21/2016
+ */
+function renderMenuAsChild(parent, dtObject, isAll, vectorPrivilegeID)
+{
+    navPane = class com.ftpc.common.usecaseconfig.utilities.UseCaseUtility::getNavigationPane(dtObject)
+    msgPack = navPane.getMessagePack()
+    msgID = navPane.getMessageId()
+    toolTipID = navPane.getTooltipId()
+    icon = navPane.getIcon()
+    menuDesc = class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage(msgPack, msgID)
+    toolTipDesc = ""
+    if(toolTipID != null && !toolTipID.trim().equals(""))
+    {
+        toolTipDesc = class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage(msgPack, toolTipID)
+    }
+    imageIcon = getImage(icon)
+    treenode = parent.addNode(menuDesc, imageIcon)
+    treenode.setNodeObject(transferToMenuData(dtObject))
+    renderActions(treenode, dtObject, isAll, vectorPrivilegeID)
+    return treenode
+}
+
+/**
+ * 描述: 渲染Form菜单节点下的按钮节点.
+ * 
+ * @parameter: treenode - Class:(com.datasweep.compatibility.ui.TreeNode)
+ *      Form菜单节点UI对象。
+ * @parameter: dtObject - Class:(com.ftpc.common.usecaseconfig.DataTemplate)
+ *      Form菜单节点数据对象
+ * @return: void
+ * @author: Lin Hui 03/21/2016
+ */
+function renderActions(treenode, dtObject, isAll, vectorPrivilegeID)
+{
+    vectorAction = dtObject.getActionList()
+    foreach action(vectorAction)
+    {
+        id = action.getId()
+        if(!isAll)
+        {
+            if(!vectorPrivilegeID.contains(id))
+            {
+                continue
+            }
+        }
+        
+        if(id == null || id.trim().equals(""))
+        {
+            idref = action.getIdref()
+            if(idref != null && !idref.trim().equals(""))
+            {
+    //             action = class com.ftpc.common.usecaseconfig.utilities.UseCaseUtility::getAction(null, idref)
+            }
+        }
+        msgPack = action.getMessagePack()
+        msgID = action.getMessageId()
+        toolTipID = action.getTooltipId()
+        icon = action.getIcon()
+        flag = class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage(msgPack, "flag_action")
+        menuDesc = class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage(msgPack, msgID)
+        toolTipDesc = ""
+        if(toolTipID != null && !toolTipID.trim().equals(""))
+        {
+            toolTipDesc = class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage(msgPack, toolTipID)
+        }
+        imageIcon = getImage(icon)
+        treenodeChild = treenode.addNode(flag + " " + menuDesc, imageIcon)
+        treenodeChild.setNodeObject(transferToMenuData(action))
+    }
+}
+
+/**
+ * 描述: 渲染部门拥有的所有的菜单节点.
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象。
+ * @parameter: vectorDepartmentName - Class:(Vector<String>)
+ *      部门编号列表
+ * @parameter: useCaseConfig - 菜单树数据结构对象
+ * @return: void
+ * @author: Lin Hui 04/04/2016
+ */
+function renderDepartmentAssignableMenuTree(treeview, vectorDepartmentName, useCaseConfig)
+{
+    fltrATRow = createATRowFilter("UM_Department_Privilege")
+    colAttr = class com.datasweep.plantops.common.constants.filtering.IATRowFilterAttributes::ATCOLUMN
+    comOpIn = class com.datasweep.plantops.common.constants.filtering.IFilterComparisonOperators::IN
+    fltrATRow.addSearchBy("department_name", colAttr, comOpIn, vectorDepartmentName)
+    
+    vectorAT = fltrATRow.exec()
+    
+    vectorSubMenuID = vector()
+    foreach atrow(vectorAT)
+    {
+        if(!vectorSubMenuID.contains(atrow.getValue("privilege_id")))
+        {
+            vectorSubMenuID.add(atrow.getValue("privilege_id"))
+        }
+    }
+    
+    renderSubMenuTree(treeview, vectorSubMenuID, useCaseConfig)
+    
+    treeview.expandAll()
+}
+
+/**
+ * 描述: 渲染给出的菜单ID列表构成的子菜单树.
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象。
+ * @parameter: vectorSubMenuID - Class:(Vector<String>)
+ *      菜单ID列表，整体菜单结构的一个子集
+ * @parameter: useCaseConfig - 菜单树数据结构对象
+ * @return: void
+ * @author: Lin Hui 04/04/2016
+ */
+function renderSubMenuTree(treeview, vectorSubMenuID, useCaseConfig)
+{
+    vectorDT = useCaseConfig.getDataTemplates()
+    foreach dtObj(vectorDT)
+    {
+        if(vectorSubMenuID.contains(dtObj.getId()))
+        {
+            treenodeChild = renderMenuAsChild(treeview, dtObj, false, vectorSubMenuID)
+            renderSubMenuTreeChildren(treenodeChild, vectorSubMenuID, dtObj)
+        }
+    }
+}
+
+/**
+ * (内部方法)描述: 渲染当前菜单节点下的所有子菜单节点.
+ * 
+ * @parameter: treenode - Class:(com.datasweep.compatibility.ui.TreeNode)
+ *      当前菜单节点。
+ * @parameter: vectorSubMenuID - Class:(Vector<String>)
+ *      菜单ID列表，整体菜单结构的一个子集
+ * @parameter: dtParent - Class:(com.ftpc.common.usecaseconfig.DataTemplate)
+ *      当前菜单节点对应的菜单数据对象
+ * @return: void
+ * @author: Lin Hui 04/04/2016
+ */
+function renderSubMenuTreeChildren(treenode, vectorSubMenuID, dtParent)
+{
+    vectorDT = dtParent.getDataTemplates()
+    foreach dtObj(vectorDT)
+    {
+        if(vectorSubMenuID.contains(dtObj.getId()))
+        {
+            treenodeChild = renderMenuAsChild(treenode, dtObj, false, vectorSubMenuID)
+            renderSubMenuTreeChildren(treenodeChild, vectorSubMenuID, dtObj)
+        }
+    }
+}
+
+/**
+ * 描述: 设置所有菜单节点的复选框的选中状态.
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象。
+ * @parameter: checked - Class:(Boolean)
+ *      复选框选中状态
+ * @return: void
+ * @author: Lin Hui 04/04/2016
+ */
+function setTreeNodeAllChecked(treeview, checked)
+{
+    arrayNode = treeview.getNodes()
+    foreach treenode(arrayNode)
+    {
+        treenode.setChecked(checked)
+        setTreeNodeAllChecked(treenode, checked)
+    }
+}
+
+
+/**
+ * 描述: 设置给出的菜单ID对应的节点的复选框的选中状态.
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象。
+ * @parameter: vectorMenuID - Class:(Vector<String>)
+ *      菜单ID列表。
+ * @parameter: checked - Class:(Boolean)
+ *      复选框选中状态
+ * @return: void
+ * @author: Lin Hui 04/04/2016
+ */
+function setTreeNodeChecked(treeview, vectorMenuID, checked)
+{
+    arrayNode = treeview.getNodes()
+    foreach treenode(arrayNode)
+    {
+        menuData = treenode.getNodeObject()
+        if(vectorMenuID.contains(menuData.getId()))
+        {
+            treenode.setChecked(checked)
+        }
+        
+        setTreeNodeChecked(treenode, vectorMenuID, checked)
+    }
+}
+
+
+
+/**
+ * 描述: 菜单节点的复选框状态发生变化，触发该方法，将该节点的所有父节点及子节点的状态更新.
+ * 
+ * @parameter: TreeViewEvent - tree view event object 
+ * @return: void
+ * @author: Lin Hui 03/21/2016
+ */
+function treeNodeChecked(TreeViewEvent)
+{
+    treenode = TreeViewEvent.getSource()
+    treenodeParent = treenode.getParent()
+    
+    // set parent node checked state
+    menuData = treenode.getNodeObject()
+    
+    if(menuData instanceof class com.ftpc.common.ui.menu.MenuData)
+    {
+        if(menuData.getMenuType() != class com.ftpc.common.ui.menu.MenuType::ACTION)
+        {
+            setParentNodeChecked(treenode, treenode.getChecked())
+        }
+        else if(treenode.getChecked())
+        {
+            setParentNodeChecked(treenode, treenode.getChecked())
+        }
+    }
+            
+    // set children node checked state
+    setChildrenNodeChecked(treenode)
+    
+    treenode.expand()
+}
+
+
+
+/**
+ * Description: recursive function to set parent nodes check state.
+ * 
+ * @parameter: treenode - Class:(com.datasweep.compatibility.ui.TreeNode)
+ *      current active tree node object 
+ * @parameter: checked - Class:(Boolean)
+ *      tree node checked state 
+ * @return: void
+ * @author: Lin Hui 03/21/2016
+ */
+function setParentNodeChecked(treenode, checked)
+{
+    treenodeParent = treenode.getParent()
+    if(treenodeParent != null)
+    {
+        if(checked)
+        {
+            if(!treenodeParent.getChecked())
+            {
+                treenodeParent.setChecked(true)
+            }
+            setParentNodeChecked(treenodeParent, checked)
+        }
+        else
+        {
+            isParentChecked = false
+            arrayNode = treenodeParent.getNodes()
+            if(arrayNode != null)
+            {
+                foreach treenodeTemp(arrayNode)
+                {
+                    if(treenodeTemp.getChecked())
+                    {
+                        isParentChecked = true
+                        break
+                    }
+                }
+            }
+            
+            if(treenodeParent.getChecked() != isParentChecked)
+            {
+                treenodeParent.setChecked(isParentChecked)
+            }
+            setParentNodeChecked(treenodeParent, isParentChecked)
+        }
+    }
+}
+
+/**
+ * 描述：根据给出的复选框选中状态，获取对应的所有菜单对象的列表。
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象
+ * @parameter: checkState - Class:(Boolean)
+ *      菜单节点复选框选中状态
+ * @return: Vector<MenuData> - 菜单数据列表
+ * @author: Lin Hui 04/19/2016
+ */
+function getAllCheckedMenuData(treeview, checkState)
+{
+    vectorResult = vector()
+    getCheckedMenuData(treeview, vectorResult, checkState)
+    return vectorResult
+}
+
+/**
+ * 描述：根据给出的复选框选中状态，获取对应的所有菜单ID的列表。
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象
+ * @parameter: checkState - Class:(Boolean)
+ *      菜单节点复选框选中状态
+ * @return: Vector<String> - 菜单ID列表
+ * @author: Lin Hui 04/19/2016
+ */
+function getAllCheckedMenuID(treeview, checkState)
+{
+    vectorMenuData = getAllCheckedMenuData(treeview, checkState)
+    vectorMenuID = vector()
+    foreach menuData(vectorMenuData)
+    {
+        isMenu = menuData.getMenuType() == class com.ftpc.common.ui.menu.MenuType::FORM || menuData.getMenuType() == class com.ftpc.common.ui.menu.MenuType::FOLDER || menuData.getMenuType() == null
+        if(isMenu && !vectorMenuID.contains(menuData.getId()))
+        {
+            vectorMenuID.add(menuData.getId())
+        }
+    }
+    
+    return vectorMenuID
+}
+
+
+/**
+ * 描述：根据给出的复选框选中状态，获取对应的所有按钮ID的列表。
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象
+ * @parameter: checkState - Class:(Boolean)
+ *      菜单节点复选框选中状态
+ * @return: Vector<String> - 按钮ID列表
+ * @author: Lin Hui 04/19/2016
+ */
+function getAllCheckedActionID(treeview, checkState)
+{
+    vectorMenuData = getAllCheckedMenuData(treeview, checkState)
+    vectorActionID = vector()
+    foreach menuData(vectorMenuData)
+    {
+        if(menuData.getMenuType() == class com.ftpc.common.ui.menu.MenuType::ACTION && !vectorActionID.contains(menuData.getId()))
+        {
+            vectorActionID.add(menuData.getId())
+        }
+    }
+    
+    return vectorActionID
+}
+
+
+
+/**
+ * 描述：根据给出的复选框选中状态，获取对应的所有权限ID的列表。
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象
+ * @parameter: checkState - Class:(Boolean)
+ *      菜单节点复选框选中状态
+ * @return: Vector<String> - 按钮ID列表
+ * @author: Lin Hui 04/19/2016
+ */
+function getAllCheckedPrivelegeIDByType(treeview, checkState, type)
+{
+    vectorMenuData = getAllCheckedMenuData(treeview, checkState)
+    vectorActionID = vector()
+    foreach menuData(vectorMenuData)
+    {
+        if("Menu".equals(type))
+        {
+            isMenu = menuData.getMenuType() == class com.ftpc.common.ui.menu.MenuType::FORM || menuData.getMenuType() == null || menuData.getMenuType().trim().equals("")
+            if(isMenu && !vectorActionID.contains(menuData.getId()))
+            {
+                vectorActionID.add(menuData.getId())
+            }
+        }
+        if("Action".equals(type))
+        {
+            if(menuData.getMenuType() == class com.ftpc.common.ui.menu.MenuType::ACTION && !vectorActionID.contains(menuData.getId()))
+            {
+                vectorActionID.add(menuData.getId())
+            }
+        }
+        if("PEC".equals(type))
+        {
+            if(menuData.getMenuType() == class com.ftpc.common.ui.menu.MenuType::PEC && !vectorActionID.contains(menuData.getId()))
+            {
+                vectorActionID.add(menuData.getId())
+            }
+        }
+        if("PDA".equals(type))
+        {
+            if(menuData.getMenuType() == class com.ftpc.common.ui.menu.MenuType::PDA && !vectorActionID.contains(menuData.getId()))
+            {
+                vectorActionID.add(menuData.getId())
+            }
+        }
+        if("TP".equals(type))
+        {
+            if(menuData.getMenuType() == class com.ftpc.common.ui.menu.MenuType::TP && !vectorActionID.contains(menuData.getId()))
+            {
+                vectorActionID.add(menuData.getId())
+            }
+        }
+    }
+    
+    return vectorActionID
+}
+
+/**
+ * 描述：根据给出的复选框选中状态，获取对应的所有权限ID的列表，包括菜单和按钮。
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象
+ * @parameter: checkState - Class:(Boolean)
+ *      菜单节点复选框选中状态
+ * @return: Vector<String> - 按钮ID列表
+ * @author: Lin Hui 04/19/2016
+ */
+function getAllCheckedPrivilegeID(treeview, checkState)
+{
+    vectorMenuData = getAllCheckedMenuData(treeview, checkState)
+    vectorPrivilegeID = vector()
+    foreach menuData(vectorMenuData)
+    {
+        if(!vectorPrivilegeID.contains(menuData.getId()))
+        {
+            vectorPrivilegeID.add(menuData.getId())
+        }
+    }
+    
+    return vectorPrivilegeID
+}
+
+
+/**
+ * (内部方法)描述：根据给出的复选框选中状态，获取相同状态的菜单数据列表。
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      菜单树UI对象
+ * @parameter: checkState - Class:(Boolean)
+ *      菜单节点复选框选中状态
+ * @return: Vector<MenuData> - 菜单数据列表
+ * @author: Lin Hui 04/19/2016
+ */
+function getCheckedMenuData(parent, vectorResult, checkState)
+{
+    arrayNode = parent.getNodes()
+    foreach treenode(arrayNode)
+    {
+        if(treenode.getChecked() == checkState)
+        {
+            vectorResult.add(treenode.getNodeObject())
+        }
+        getCheckedMenuData(treenode, vectorResult, checkState)
+    }
+}
+
+
+/**
+ * (内部方法)描述: 通过递归的方式设置所有子节点的选中状态.
+ * 
+ * @parameter: treenode - Class:(com.datasweep.compatibility.ui.TreeNode)
+ *      current active tree node object 
+ * @return: void
+ * @author: Lin Hui 03/21/2016
+ */
+function setChildrenNodeChecked(treenode)
+{
+    arrayNodes = treenode.getNodes()
+    if(arrayNodes != null)
+    {
+        foreach treenodeChild(arrayNodes)
+        {
+            if(treenodeChild.getChecked() != treenode.getChecked())
+            {
+                treenodeChild.setChecked(treenode.getChecked())
+            }
+            setChildrenNodeChecked(treenodeChild)
+        }
+    }
+}
+
+function hasAccessPrivilege(accessPrivilegeName, vectorAccessPrivilege)
+{
+    has = false
+    foreach accessPrivilege(vectorAccessPrivilege)
+    {
+        if(accessPrivilege.getName().equals(accessPrivilegeName))
+        {
+            has = true
+            break
+        }
+    }
+    
+    return has
+}
+
+/**
+ * 描述：根据用户组权限，过滤UseCaseConfig对象
+ * 
+ * @parameter: userGroup - 用户组对象
+ * @parameter: useCaseConfig - UseCaseConfig对象
+ * @return: void
+ * @author Lin Hui 03/25/2016
+ */
+function getUserGroupUseCaseConfig(userGroup, useCaseConfig)
+{
+    useCaseConfigNew = class com.ftpc.common.usecaseconfig.UseCaseConfig()
+    useCaseConfigNew.setId(useCaseConfig.getId())
+    useCaseConfigNew.setPositionNumber(useCaseConfig.getPositionNumber())
+    useCaseConfigNew.setAdministrative(useCaseConfig.isAdministrative())
+    useCaseConfigNew.setAccessPrivilege(useCaseConfig.getAccessPrivilege())
+    
+    vectorAccessPrivilege = userGroup.getPerformerAccessPrivileges()
+    vectorDT = useCaseConfig.getDataTemplates()
+    foreach dtObj (vectorDT)
+    {
+        copyDataTemplate(useCaseConfigNew, dtObj, vectorAccessPrivilege)
+    }
+    
+    return useCaseConfigNew
+}
+
+/**
+ * 描述：内部递归方法，根据权限复制DataTemplate对象
+ */
+function copyDataTemplate(dtNewParent, dtObj, vectorAccessPrivilege)
+{
+    accessPrivilegeName = dtObj.getAccessPrivilege()
+    if(accessPrivilegeName != null && hasAccessPrivilege(accessPrivilegeName, vectorAccessPrivilege))
+    {
+        dtNew = class com.ftpc.common.usecaseconfig.DataTemplate()
+        dtNew.setId(dtObj.getId())
+        dtNew.setPositionNumber(dtObj.getPositionNumber())
+        dtNew.setAdministrative(dtObj.isAdministrative())
+        dtNew.setAccessPrivilege(dtObj.getAccessPrivilege())
+        dtNew.setDataClass(dtObj.getDataClass())
+        dtNew.setExplodeToMultipleNodes(dtObj.getExplodeToMultipleNodes())
+        dtNew.setEditable(dtObj.getEditable())
+        dtNew.setAutoExpand(dtObj.getAutoExpand())
+        
+        dtNew.getParameterList().addAll(dtObj.getParameterList())
+        dtNew.getEmbeddedViews().addAll(dtObj.getEmbeddedViews())
+        
+        dtNewParent.getDataTemplates().add(dtNew)
+        
+        vectorDT = dtObj.getDataTemplates()
+        foreach dtObject (vectorDT)
+        {
+            copyDataTemplate(dtNew, dtObject, vectorAccessPrivilege)
+        }
+    }
+}

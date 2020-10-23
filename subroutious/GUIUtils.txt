@@ -1,0 +1,395 @@
+/**
+ *
+ * import from Longi xian MES systen.
+ * 2019.07.02
+ * @Deprecated method.
+ */
+
+// import("com.rockwell.ftpc.framework.base.object.UIData")
+// import("com.rockwell.ftpc.framework.dictionary.service.ListUtility")
+// import("com.rockwell.ftpc.framework.common.StringUtils")
+import("java.io.File")
+import("java.io.FileOutputStream")
+// listUtility = ListUtility::getInstance(getContext())
+// guiUtil = class com.rockwell.ftpc.framework.common.GUIUtils
+
+/**
+ *
+ * Setup form default style.
+ * @Deprecated method.
+ */
+function setFormStyle() 
+{
+    currentUser = getProperty("CURRENTUSER")
+    if (currentUser == null)
+    {
+        return
+    }
+    listName = currentUser.getStyle()
+    
+    list = getList(listName)
+    s = ""
+    if (list != null) {
+        foreach i (list.getItems()) {
+            s += i
+        }
+    }
+    objForm = getActiveDsForm()
+    response = objForm.applyStylesheet(s, true)
+    checkAndDisplayResponse(response)
+}
+
+function exportToExcel(grid, sheetName)
+{
+    // 1. 准备数据
+    // 1.1 创建DsGrid数组
+    gridArray = createArray(1)
+    gridArray[0] = grid
+    // 1.2 创建SheetName数组
+    sheetNames = createArray(1)
+    sheetNames[0] = sheetName
+    // 1.3 获取保存文件路径
+    filePath = getSaveFilePath(sheetName)
+    if (filePath != null)
+    {
+        // 2. 执行Excel导出
+        excelService = class com.rockwell.ftpc.framework.excel.service.POIExcelService(getContext())
+        response = excelService.toExcelFile(filePath,"",gridArray, sheetNames)
+        checkAndDisplayResponse(response)
+         return "1"
+    }else{
+         //dialogOk("提示","导出路径不能为空！")
+         return "0"
+    }
+}
+//得到保存框全路径 add by victor
+function getSaveFilePath(filePath)
+{
+    
+   fileService = class com.rockwell.ftpc.framework.excel.service.FileService(getContext())
+    fullPath = fileService.getDownLoadFilePath(filePath)
+    
+    return fullPath
+     
+}
+
+
+/**
+ * 获取字段所在列
+ */
+function getColumnIndex(grid, str){
+    i=0
+    foreach column(grid.getColumnDefinitions()){
+        s = column.getBoundObjectArg()
+        if (s == str){
+            return i
+        }
+        i++
+    }
+    return -1
+}
+
+/**
+ * 获取list中定义的code-name对应关系
+ * 用vector<UIData> 作为返回结果
+ */
+function getListObject(listName)
+{
+    vectorList = vector()
+    vectorStrings = getList(listName).getItems()
+    foreach strings(vectorStrings)
+    {
+        strArr = strings.split(",")
+        if (strArr.length > 1)
+        {
+            uiData = UIData()
+            uiData.setKey(strArr[0])
+            uiData.setDescription(strArr[1])
+            vectorList.add(uiData)
+        }
+    }
+    return vectorList
+}
+
+/**
+ * 把uiData设置到combobox上
+ */
+function setComboboxItems(combobox, uiData)
+{
+    vecData = vector()
+    vecData.addAll(uiData)
+    combobox.setItems(vecData.toArray())
+}
+/**
+ * 把uiData设置到combobox上，并且在第一个选项上加上""
+ */
+function setComboboxItemsWithAll(combobox, uiData)
+{
+    vecData = vector()
+    vecData.add("")
+    vecData.addAll(uiData)
+    combobox.setItems(vecData.toArray())
+}
+
+/**
+ * 将combobox的当前值设置制定key的值。
+ * key可以是一个在combobox下列列表中的一个字符串
+ * key也可以是combobox中的下拉列表对象UIData的key值
+ * 如果没有找到匹配的内容，combobox设置为不选择
+ * 返回选中的列表索引
+ */
+function setComboboxSelected(combobox, key)
+{
+    if (key != null)
+    {
+        for (i=0;i<combobox.getItemCount();i++)
+        {
+            obj = combobox.getItem(i)
+            if (obj == null) continue
+            objKey = ""
+            if (obj instanceof UIData)
+            {
+                objKey = obj.getKey()
+                
+            }else{
+                objKey = obj.toString()              
+            }
+            if (objKey.equals(key))
+            {
+                combobox.setSelectedIndex(i)
+                return i 
+            }
+        }
+    }
+    combobox.setSelectedIndex(-1)
+    return -1
+}
+
+/**
+ * combobox设置为UIData时
+ * 获取combobox下拉框的选择的内容的key值
+ * 
+ */
+function getSelectedComboboxKey(combobox)
+{
+    obj = combobox.getSelectedItem()
+    if (obj == null)
+    {
+        return "" 
+    }
+    if (obj instanceof UIData)
+    {
+        return obj.getKey()
+    }else{
+        return obj.toString()
+    }
+}
+
+function getValueByKey(dictionary, key)
+{
+    if (StringUtils::trimToEmpty(key) == "")
+    {
+        return ""
+    }else{
+        return listUtility.getValueByKey(dictionary, key.toString())
+    }
+}
+
+function setRowColor(grid, row, color)
+{
+    if (grid.getNumberOfRows() > row){
+        for (i=0;i<grid.getNumberOfColumns();i++)
+        {
+            grid.setCellBackColor(row, i, color)
+        }
+    }
+}
+
+function setHandCursor(control){
+    if (control instanceof FlatLabel)
+    {
+        guiUtil::addHanderCursorForFlatLabel(control)
+    }
+    if (control instanceof FlatButton)
+    {
+        guiUtil::addHanderCursorForButton(control)
+    }
+ 
+}
+
+function removeHandCursor(control)
+{
+    if (control instanceof FlatLabel)
+    {
+        guiUtil::removeHanderCursorForFlatLabel(control)
+    }
+    if (control instanceof FlatButton)
+    {
+        guiUtil::removeHanderCursorForButton(control)
+    }
+}
+
+
+//下载文件到指定目录
+function downloadFile(filePath,localFilePath) {
+    bytesArray = readBytesFromFile(filePath)
+    file = File(localFilePath)
+    outputStream = FileOutputStream(file)
+    outputStream.write(bytesArray)
+    outputStream.close()
+}
+
+/**
+ * 空值提示
+ * @param control 需要校验的控件
+ * @param promptText 提示内容
+ */
+function isNullPromp(control,promptText){
+    inputValue=""
+    if(control instanceof FlatLabel || control instanceof Edit){
+         inputValue = control.getText()
+    }else if(control instanceof ComboBox){
+        inputValue = control.getSelectedItem()
+    }else if(control instanceof DateTimePicker|| control instanceof SmartEdit){
+         inputValue = control.getValue()
+    }
+    if(inputValue==null||inputValue==""){
+         //dialogError(promptText)
+         dialogOk("提示",promptText)
+         control.focus()
+         if(!(control instanceof DateTimePicker)) control.setBackColor(Color::RED)
+         return true
+    }else{
+        if(!(control instanceof DateTimePicker)) control.setBackColor(Color::WHITE)
+        return false
+    }
+}
+
+/**
+ * Init grid first column
+ */
+function InitCls(grid,x,y){
+ grid.setCellText(x,y,"□")
+}
+/**
+ * set grid first column
+ */
+function setCls(grid,x,y){
+if(grid.getCellText(x,y)=="√"){
+  grid.setCellText(x,y,"□")
+}else
+  grid.setCellText(x,y,"√")
+}
+
+//重置密码，默认密码8888
+function resetPassword(userName){
+    restPassWord ="D1b.J6PZo/cpMCLN1WA3GM6UCLN1WA3GM6UCLN1WA3GM6U"
+    sql=" update app_user set Password='"+restPassWord+"' where User_Name='"+userName+"'"
+    
+    sqlArray = createArray(1)
+    sqlArray[0] = sql
+    resultInt = executeStatements(sqlArray)
+    return resultInt
+}
+
+
+
+
+
+//数据字典维护取值
+function getCommonData(dataType){
+    //查询数据
+sql = " select bd.key_s,bd.value_s from at_wmsbasedictionarydetail bd "
+sql += " left join at_wmsbasedictionaryhead bh on bd.artkey_i = bh.atr_key"
+sql += " where bh.name_s  = '" + dataType + "'"
+vecData = getArrayDataFromActive(sql)
+      
+    vectorOp = vector()
+    for(i=0;i<vecData.size(); i++){
+        str = vecData.get(i)[0]
+        str1 = vecData.get(i)[1]
+        uiData = UIData()
+        uiData.setKey(vecData.get(i)[0])
+        uiData.setDescription(vecData.get(i)[1])
+        vectorOp.add(uiData)
+    }
+    
+    //setComboboxItemsWithAll(combobox,vectorOp) 
+    return vectorOp
+}
+
+
+//数据字典维护取值
+function getBaseDictionaryData(dataType){
+    //查询数据
+sql = " select bd.key_s,bd.value_s from at_wmsbasedictionarydetail bd "
+sql += " left join at_wmsbasedictionaryhead bh on bd.artkey_i = bh.atr_key"
+sql += " where bh.name_s  = '" + dataType + "'"
+vecData = getArrayDataFromActive(sql)
+      
+dataMap =   hashtable()
+for(i=0;i<vecData.size(); i++){
+    str = vecData.get(i)[0]
+    str1 = vecData.get(i)[1]
+    dataMap.put(str,str1)
+}
+    
+return dataMap
+  
+}
+
+
+
+function removeControl(panelName, index) {
+    panelName.remove(panelName.findNamedControl("label" + index))
+    panelName.remove(panelName.findNamedControl("Del" + index))
+}
+
+function isNotEmpty(str) {
+    flag = true
+    if(str == null || str.equals("")) { //调用该方法的时候，这一步会按照两个判断句的先后顺序执行，即先判断是否为null，再判断是否为空。这类判断句要注意先后顺序。
+        flag = false
+    }
+    return flag
+}
+
+//获取工厂车间信息
+function getAreaData(){
+    //查询数据
+sql = " select a.area_name,a.description from area a where 1=1  "
+// sql += " left join at_wmsbasedictionaryhead bh on bd.artkey_i = bh.atr_key"
+// sql += " where bh.name_s  = '" + dataType + "'"
+vecData = getArrayDataFromActive(sql)
+      
+vectorOp = vector()
+    for(i=0;i<vecData.size(); i++){
+        str = vecData.get(i)[0]
+        str1 = vecData.get(i)[1]
+        uiData = UIData()
+        uiData.setKey(vecData.get(i)[0])
+        uiData.setDescription(vecData.get(i)[1])
+        vectorOp.add(uiData)
+    } 
+return vectorOp
+  
+}
+
+//获取车间产线信息
+function getProductionLineData(){
+    //查询数据
+sql = " select pl.p_line_name,pl.description from production_line pl  "
+
+vecData = getArrayDataFromActive(sql)
+      
+vectorOp = vector()
+    for(i=0;i<vecData.size(); i++){
+        str = vecData.get(i)[0]
+        str1 = vecData.get(i)[1]
+        uiData = UIData()
+        uiData.setKey(vecData.get(i)[0])
+        uiData.setDescription(vecData.get(i)[1])
+        vectorOp.add(uiData)
+    } 
+return vectorOp
+  
+}

@@ -1,0 +1,113 @@
+importSubroutine("MES_Common_UI")
+importSubroutine("MES_Common_Time")
+importSubroutine("MES_Common_Combobox")
+importSubroutine ("ra_errorHandling")
+importSubroutine ("MES_Common_Base")
+importSubroutine ("MES_Common_Log")
+importSubroutine("MES_PP_Common")
+importSubroutine("MES_Common_DataDict")
+importSubroutine("MES_OM_Common") 
+DSS_NAME = "PDS"
+/**
+ * 描述: 获取IMS中间表的业务信息：新增，更新
+ * 
+ * @author: Deng Bing 05/29/2020
+ * @revision: 1.0
+ **/
+function getAccountInfoByIMS(listboxMessage)
+{
+    sql = "select cs.account_id,
+           cs.uda#3,
+    	   cs.name,
+    	   cs.description,
+    	   cs.uda#0,
+    	   cs.uda#1,
+    	   cs.uda#2,
+    	   cs.part_no,
+    	   cs.part_desc,
+    	   cs.price
+    	  from Account_ims cs "
+    //sql += " where  ps.part_number = 'A001'"
+    vectorData = getArrayDataFromActive(sql) 
+    user = getCurrentUser()
+    name = user.getName()
+    userDesc = user.getDescription()
+    vectorAccount = vector()
+    vectorFlag = vector()
+    if(!vectorData.isEmpty())
+    {
+        addLastInfoToListBox(listboxMessage,"开始执行")
+        for(i=0;i<vectorData.size();i++)
+        {
+            data = vectorData.get(i)
+            accountName = data[0]
+            if(accountName != null)
+            {
+                account = getAccountByName(accountName)
+                if(account == null)
+                {
+                   account = createAccount()
+                   account.setUDA(name,"create_by")
+                   account.setUDA(userDesc,"created_by_desc")
+                }
+                else
+                {
+                    println(account+"已存在")
+                }
+                vectorAccount.add(account)
+                //获取保存成功的条数
+                flag = saveToDB(account,userDesc,data,listboxMessage,name)
+                if(flag == true)
+                {
+                    vectorFlag.add(flag)
+                }
+            }
+        }
+    }
+    if(vectorFlag.size() == vectorAccount.size())
+    {
+        handleInfoMsg("MES_MAINFROM_MSG_TRX", "SAVE_SUCCESSFULLY", null, null, HANDLER_OPTION_DEFAULT, null)
+        logInfo(FORM_MODULE," save succefully", getDBTime(), "subroutine:MES_OM_Interface_GetAccoutInfoByIMS"  , "Function:getAccountInfoByIMS()")
+        addLastInfoToListBox(listboxMessage,"执行完毕")
+    }
+}
+//保存到PART表
+function saveToDB(account,userDesc,data,listboxMessage,name)
+{
+    
+    flag = false
+    account.setAccountId(data[0])
+    account.setName(data[2])
+    account.setDescription(data[3])
+    account.setUDA(data[4],0)
+    account.setUDA(data[5],1)
+    account.setUDA(data[6],2)
+    account.setUDA(data[1],3)
+    account.setUDA(data[8],"part_no")
+    account.setUDA(getPart(data[8]).getDescription(),"part_desc")
+    account.setUDA(data[9],"price")
+    account.setUDA(name,"last_modified_by")
+    account.setUDA(userDesc,"last_modified_by_desc")
+    response = account.save(null,null, null)
+    if(response.isOk())
+    {
+        addLastInfoToListBox(listboxMessage,"客户:"+partObj.getPartNumber()+"保存成功")
+        println("客户:"+data[2]+"保存成功")
+        logInfoMessage("subroutine:MES_OM_Interface_GetAccoutInfoByIMS:客户"+data[2]+"保存成功")
+        //listboxMessage.setText("产品:"+partObj.getPartNumber()+"保存成功")
+        
+        flag = true
+        //return true
+    }
+    else
+    {
+        addLastInfoToListBox(listboxMessage,"客户:"+data[2]+"保存失败")
+        println("客户:"+data[2]+"保存失败")
+        logErrorMessage("subroutine:MES_OM_Interface_GetAccoutInfoByIMS:客户"+data[2]+"保存失败"+response.getFirstErrorMessage())
+        //listboxMessage.setText("产品:"+partObj.getPartNumber()+"保存失败")
+        
+        flag = false
+        //return false
+    }
+    return flag
+}

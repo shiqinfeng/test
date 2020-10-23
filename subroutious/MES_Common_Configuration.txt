@@ -1,0 +1,231 @@
+/**
+ * 描述: 提供获取Application配置的方法
+ * 1.获取全局属性配置
+ * 2.获取类型属性配置
+ * 3.获取对象属性配置
+ * 
+ * @author: Lin Hui 04/05/2016
+ * @revision: 1.0
+ **/
+
+
+
+/**
+ * 常量定义：默认使用的Application对象
+ * 
+ * 备注：根据项目具体使用的Application对象进行修改
+ * @author: Lin Hui 03/31/2016
+ */
+DEFAULT_APPLICATION_NAME = "MasterConfiguration"
+
+APPLICATION_OBJECT_PROPERTY_NAME = "GloableApplicationConfiguration"
+
+/**
+ * 描述：获取默认的Application对象，名字为定义的常量 DEFAULT_APPLICATION_NAME
+ * 
+ * @return: com.datasweep.compatibility.client.Application - 默认的Application对象
+ * @author: Lin Hui 03/31/2016
+ */
+function getApplicationConfiguration()
+{
+    return getApplicationConfiguration(DEFAULT_APPLICATION_NAME)
+}
+
+/**
+ * 描述：根据名字获取对应的Application对象
+ * 
+ * @parameter: applicationName - Class:(java.lang.String)
+ *          application名字
+ * @return: com.datasweep.compatibility.client.Application - Application对象
+ * @author: Lin Hui 03/31/2016
+ */
+function getApplicationConfiguration(applicationName)
+{
+    hashtableApplication = getProperty(APPLICATION_OBJECT_PROPERTY_NAME)
+    if(hashtableApplication == null)
+    {
+        hashtableApplication = hashtable()
+        setProperty(APPLICATION_OBJECT_PROPERTY_NAME, hashtableApplication)
+    }
+    
+    application = hashtableApplication.get(applicationName)
+    if(application == null)
+    {
+        application = getApplication(applicationName)
+        hashtableApplication.put(applicationName, application)
+    }
+    
+    return application
+}
+
+/**
+ * 描述：获取指定Application的全局属性
+ * 
+ * @parameter: application - Class:(com.datasweep.compatibility.client.Application)
+ *          application 对象
+ * @parameter: propertyName - Class:(java.lang.String)
+ *          属性名称
+ * @parameter: defaultValue - Class:(java.lang.Object)
+ *          属性默认值
+ * @return: java.lang.Object - 属性值
+ * @author: Lin Hui 03/31/2016
+ */
+function getApplicationGlobalConfiguration(application, propertyName, defaultValue)
+{
+    configurationProperty = application.getConfigurationProperty(propertyName)
+    if(configurationProperty != null)
+    {
+        value = configurationProperty.getValue()
+        if(value != null)
+        {
+            return value
+        }
+    }
+    
+    return defaultValue
+}
+
+/**
+ * 描述：获取默认Application的全局属性
+ * 
+ * @parameter: application - Class:(com.datasweep.compatibility.client.Application)
+ *          application 对象
+ * @parameter: propertyName - Class:(java.lang.String)
+ *          属性名称
+ * @parameter: defaultValue - Class:(java.lang.Object)
+ *          属性默认值
+ * @return: java.lang.Object - 属性值
+ * @author: Lin Hui 03/31/2016
+ */
+function getGlobalConfiguration(propertyName, defaultValue)
+{
+    application = getApplicationConfiguration()
+    return getApplicationGlobalConfiguration(application, propertyName, defaultValue)
+}
+
+
+/**
+ * 描述：根据对象类型获取Application的通用属性设置。
+ * 
+ * @parameter: application - Class:(com.datasweep.compatibility.client.Application)
+ *          application 对象
+ * @parameter: type - Class:(short 或者 java.lang.String)
+ *          对象类型，可以是类com.datasweep.plantops.common.constants.IObjectTypes定义的常量，也可以是字符串表示的类型。
+ * @parameter: propertyName - Class:(java.lang.String)
+ *          属性名称
+ * @parameter: defaultValue - Class:(java.lang.Object)
+ *          属性默认值
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function getApplicationConfigurationByType(application, type, propertyName, defaultValue)
+{
+    objectType = type
+    if(type instanceof String)
+    {
+        // 如有需要，请扩展。请按类型首字母的排列顺序添加。
+        if(type.equalsIgnoreCase("AccessPrivilege"))
+        {
+            objectType = class com.datasweep.plantops.common.constants.IObjectTypes::TYPE_ACCESSPRIVILEGE
+        }
+        else if(type.equalsIgnoreCase("Library"))
+        {
+            objectType = class com.datasweep.plantops.common.constants.IObjectTypes::TYPE_LIBRARY
+        }
+        else if(type.equalsIgnoreCase("ProductionLine"))
+        {
+            objectType = class com.datasweep.plantops.common.constants.IObjectTypes::TYPE_PRODUCTIONLINE
+        }
+        else if(type.equalsIgnoreCase("Station"))
+        {
+            objectType = class com.datasweep.plantops.common.constants.IObjectTypes::TYPE_STATION
+        }
+        else if(type.equalsIgnoreCase("WorkCenter"))
+        {
+            objectType = class com.datasweep.plantops.common.constants.IObjectTypes::TYPE_WORKCENTER
+        }
+        else if(type.equalsIgnoreCase("User"))
+        {
+            objectType = class com.datasweep.plantops.common.constants.IObjectTypes::TYPE_USER
+        }
+    }
+    
+    configurationProperty = application.getConfigurationProperty(objectType, propertyName)
+    if(configurationProperty != null)
+    {
+        value = configurationProperty.getValue()
+        if(value != null)
+        {
+            return value
+        }
+    }
+    
+    return defaultValue
+}
+
+/**
+ * 描述：根据对象类型获取默认的Application的通用属性设置。
+ * 
+ * @parameter: type - Class:(short 或者 java.lang.String)
+ *          对象类型，可以是类com.datasweep.plantops.common.constants.IObjectTypes定义的常量，也可以是字符串表示的类型。
+ * @parameter: propertyName - Class:(java.lang.String)
+ *          属性名称
+ * @parameter: defaultValue - Class:(java.lang.Object)
+ *          属性默认值
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function getConfigurationByType(type, propertyName, defaultValue)
+{
+    application = getApplicationConfiguration()
+    return getApplicationConfigurationByType(application, type, propertyName, defaultValue)
+}
+
+
+/**
+ * 描述：根据对象获取Application的对应的对象的属性设置。
+ * 
+ * @parameter: application - Class:(com.datasweep.compatibility.client.Application)
+ *          application 对象
+ * @parameter: object - Class:(java.lang.Object <extend com.datasweep.compatibility.client.Keyed>)
+ *          对象，类com.datasweep.compatibility.client.Keyed的子类。
+ * @parameter: propertyName - Class:(java.lang.String)
+ *          属性名称
+ * @parameter: defaultValue - Class:(java.lang.Object)
+ *          属性默认值
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function getApplicationConfigurationByObject(application, object, propertyName, defaultValue)
+{
+    configurationProperty = application.getConfigurationProperty(object, propertyName)
+    if(configurationProperty != null)
+    {
+        value = configurationProperty.getValue()
+        if(value != null)
+        {
+            return value
+        }
+    }
+    
+    return defaultValue
+}
+
+
+/**
+ * 描述：根据对象获取默认的Application的对应的对象的属性设置。
+ * 
+ * @parameter: object - Class:(java.lang.Object <extend com.datasweep.compatibility.client.Keyed>)
+ *          对象，类com.datasweep.compatibility.client.Keyed的子类。
+ * @parameter: propertyName - Class:(java.lang.String)
+ *          属性名称
+ * @parameter: defaultValue - Class:(java.lang.Object)
+ *          属性默认值
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function getConfigurationByObject(object, propertyName, defaultValue)
+{
+    application = getApplicationConfiguration()
+    return getApplicationConfigurationByObject(application, object, propertyName, defaultValue)
+}

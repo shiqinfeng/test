@@ -1,0 +1,890 @@
+importSubroutine("MES_Common_UseCaseConfig")
+/**
+ * 描述：获取当前登录用户拥有的所有菜单，不区分系统管理员与非系统管理员。
+ * 
+ * @return: Vector<java.lang.String> - 菜单列表
+ * @author: Lin Hui 03/31/2016
+ */
+function getCurrentUserAllMenuID()
+{
+    return getUserAllMenuID(getCurrentUser())
+}
+
+
+/**
+ * 描述：获取用户拥有的所有菜单，不区分系统管理员与非系统管理员。
+ * 
+ * @parameter: user - Class:(com.datasweep.compatibility.client.User)
+ *          用户对象
+ * @return: Vector<String> - 菜单ID列表
+ * @author: Lin Hui 03/31/2016
+ */
+function getUserAllMenuID(user)
+{
+    vectorMenuID = vector()
+    vectorUserGroup = getUserGroupsForUser(user)
+    vectorMenuID.addAll(getUserGroupsMenuID(vectorUserGroup))
+    
+    // 获取用户额外菜单
+    fltrAt = createATRowFilter("UM_User_Privilege")
+    fltrAt.forColumnNameEqualTo("user_name", user.getName())
+    fltrAt.forColumnNameEqualTo("type", "Menu")
+    vectorAt = fltrAt.exec()
+    vectorUserMenuID = vector()
+    foreach atrow(vectorAt)
+    {
+        vectorUserMenuID.add(atrow.getValue("privilege_id"))
+    }
+    
+    vectorMenuID.addAll(vectorUserMenuID)
+    
+    return vectorMenuID
+}
+
+/**
+ * 描述：获取用户拥有的按钮权限。
+ * 
+ * @parameter: user - Class:(com.datasweep.compatibility.client.User)
+ *          用户对象
+ * @return: Vector<String> - 菜单ID列表
+ * @author: Lin Hui 03/31/2016
+ */
+function getUserActionIDVector(user)
+{
+    vectorActionID = vector()
+    vectorUserGroup = getUserGroupsForUser(user)
+    vectorActionID.addAll(getUserGroupsActionID(vectorUserGroup))
+    
+    // 获取用户额外菜单
+    fltrAt = createATRowFilter("UM_User_Privilege")
+    fltrAt.forColumnNameEqualTo("user_name", user.getName())
+    fltrAt.forColumnNameEqualTo("type", "Action")
+    vectorAt = fltrAt.exec()
+    vectorUserActionID = vector()
+    foreach atrow(vectorAt)
+    {
+        vectorUserActionID.add(atrow.getValue("privilege_id"))
+    }
+    
+    vectorActionID.addAll(vectorUserActionID)
+    
+    return vectorActionID
+}
+
+
+/**
+ * 描述：获取多个用户组拥有的所有权限ID，包括菜单和按钮。
+ * 
+ * @parameter: vectorUserGroup - Class:(Vector<com.datasweep.compatibility.client.UserGroup> 或者 UserGroup[] )
+ *          用户组列表或者数组
+ * @return: Vector<java.lang.String> - 权限ID列表，包括菜单和按钮
+ * @author: Lin Hui 03/31/2016
+ */
+function getUserGroupsPrivilegeID(vectorUserGroup)
+{
+    vectorGroupMenuID = vector()
+    vectorGroupName = vector()
+    foreach userGroup(vectorUserGroup)
+    {
+        vectorGroupName.add(userGroup.getName())
+    }
+    fltrGroupMenu = createATRowFilter("UM_UserGroup_Privilege")
+    colAttr = class com.datasweep.plantops.common.constants.filtering.IATRowFilterAttributes::ATCOLUMN
+    comOpIn = class com.datasweep.plantops.common.constants.filtering.IFilterComparisonOperators::IN
+    fltrGroupMenu.addSearchBy("usergroup_name", colAttr, comOpIn, vectorGroupName)
+    vectorGroupMenu = fltrGroupMenu.exec()
+    vectorGroupMenuID = vector()
+    foreach atrow(vectorGroupMenu)
+    {
+        if(!vectorGroupMenuID.contains(atrow.getValue("privilege_id")))
+        {
+            vectorGroupMenuID.add(atrow.getValue("privilege_id"))
+        }
+    }
+    return vectorGroupMenuID
+}
+
+
+/**
+ * 描述：获取多个用户组拥有的所有菜单。
+ * 
+ * @parameter: vectorUserGroup - Class:(Vector<com.datasweep.compatibility.client.UserGroup> 或者 UserGroup[] )
+ *          用户组列表或者数组
+ * @return: Vector<java.lang.String> - 菜单列表
+ * @author: Lin Hui 03/31/2016
+ */
+function getUserGroupsMenuID(vectorUserGroup)
+{
+    vectorGroupMenuID = vector()
+    vectorGroupName = vector()
+    foreach userGroup(vectorUserGroup)
+    {
+        vectorGroupName.add(userGroup.getName())
+    }
+    fltrGroupMenu = createATRowFilter("UM_UserGroup_Privilege")
+    colAttr = class com.datasweep.plantops.common.constants.filtering.IATRowFilterAttributes::ATCOLUMN
+    comOpIn = class com.datasweep.plantops.common.constants.filtering.IFilterComparisonOperators::IN
+    fltrGroupMenu.addSearchBy("usergroup_name", colAttr, comOpIn, vectorGroupName)
+    fltrGroupMenu.forColumnNameEqualTo("type", "Menu")
+    vectorGroupMenu = fltrGroupMenu.exec()
+    vectorGroupMenuID = vector()
+    foreach atrow(vectorGroupMenu)
+    {
+        if(!vectorGroupMenuID.contains(atrow.getValue("privilege_id")))
+        {
+            vectorGroupMenuID.add(atrow.getValue("privilege_id"))
+        }
+    }
+    return vectorGroupMenuID
+}
+
+
+/**
+ * 描述：获取多个用户组拥有的所有按钮权限。
+ * 
+ * @parameter: vectorUserGroup - Class:(Vector<com.datasweep.compatibility.client.UserGroup> 或者 UserGroup[] )
+ *          用户组列表或数组
+ * @return: Vector<java.lang.String> - 按钮ID列表
+ * @author: Lin Hui 03/31/2016
+ */
+function getUserGroupsActionID(vectorUserGroup)
+{
+    vectorGroupActionID = vector()
+    vectorGroupName = vector()
+    foreach userGroup(vectorUserGroup)
+    {
+        vectorGroupName.add(userGroup.getName())
+    }
+    fltrGroupMenu = createATRowFilter("UM_UserGroup_Privilege")
+    fltrGroupMenu.forColumnNameEqualTo("type", "Action")
+    colAttr = class com.datasweep.plantops.common.constants.filtering.IATRowFilterAttributes::ATCOLUMN
+    comOpIn = class com.datasweep.plantops.common.constants.filtering.IFilterComparisonOperators::IN
+    fltrGroupMenu.addSearchBy("usergroup_name", colAttr, comOpIn, vectorGroupName)
+    vectorGroupMenu = fltrGroupMenu.exec()
+    vectorGroupActionID = vector()
+    foreach atrow(vectorGroupMenu)
+    {
+        if(!vectorGroupActionID.contains(atrow.getValue("privilege_id")))
+        {
+            vectorGroupActionID.add(atrow.getValue("privilege_id"))
+        }
+    }
+    return vectorGroupActionID
+}
+
+
+/**
+ * 描述：获取用户拥有的所有权限，不区分系统管理员与非系统管理员。
+ * 
+ * @parameter: user - Class:(com.datasweep.compatibility.client.User)
+ *          用户对象
+ * @return: Vector<String> - 菜单ID列表
+ * @author: Lin Hui 03/31/2016
+ */
+function getUserPrivilegeID(user)
+{
+    isAdmin = isSystemAdministrator(user)
+    vectorPrivilegeID = vector()
+    vectorUserGroup = getUserGroupsForUser(user)
+    vectorPrivilegeID.addAll(getUserGroupsPrivilegeID(vectorUserGroup, isAdmin))
+    
+    // 获取用户额外菜单
+    fltrAt = createATRowFilter("UM_User_Privilege")
+    if(!isAdmin)
+    {
+        fltrAt.forColumnNameEqualTo("user_name", user.getName())
+    }
+    
+    vectorAt = fltrAt.exec()
+    vectorUserMenuID = vector()
+    foreach atrow(vectorAt)
+    {
+        vectorUserMenuID.add(atrow.getValue("privilege_id"))
+    }
+    
+    vectorPrivilegeID.addAll(vectorUserMenuID)
+    
+    return vectorPrivilegeID
+}
+
+/**
+ * 描述：获取多个用户组拥有的所有的权限。
+ * 
+ * @parameter: vectorUserGroup - Class:(Vector<com.datasweep.compatibility.client.UserGroup> 或者 UserGroup[] )
+ *          用户组列表或数组
+ * @return: Vector<java.lang.String> - 按钮ID列表
+ * @author: Lin Hui 03/31/2016
+ */
+function getUserGroupsPrivilegeID(vectorUserGroup, isAdmin)
+{
+    vectorGroupPrivilegeID = vector()
+    vectorGroupName = vector()
+    foreach userGroup(vectorUserGroup)
+    {
+        vectorGroupName.add(userGroup.getName())
+    }
+    fltrGroupMenu = createATRowFilter("UM_UserGroup_Privilege")
+    if(!isAdmin)
+    {
+        colAttr = class com.datasweep.plantops.common.constants.filtering.IATRowFilterAttributes::ATCOLUMN
+        comOpIn = class com.datasweep.plantops.common.constants.filtering.IFilterComparisonOperators::IN
+        fltrGroupMenu.addSearchBy("usergroup_name", colAttr, comOpIn, vectorGroupName)
+    }
+    vectorGroupMenu = fltrGroupMenu.exec()
+    vectorGroupPrivilegeID = vector()
+    foreach atrow(vectorGroupMenu)
+    {
+        if(!vectorGroupPrivilegeID.contains(atrow.getValue("privilege_id")))
+        {
+            vectorGroupPrivilegeID.add(atrow.getValue("privilege_id"))
+        }
+    }
+    return vectorGroupPrivilegeID
+}
+
+/**
+ * 描述：检查当前登录的用户是否具有执行动作的权限
+ * 
+ * @parameter: action - Class: (com.ftpc.common.usecaseconfig.Action)
+ *          动作对象
+ * @return: boolean - 是否检查通过
+ * @author: Lin Hui 03/31/2016
+ */
+function checkTransactionPrivilege(action)
+{
+    checkTransactionPrivilege(action, getCurrentUser())
+}
+
+/**
+ * 描述：检查用户是否具有执行动作的权限
+ * 
+ * @parameter: action - Class: (com.ftpc.common.usecaseconfig.Action)
+ *          动作对象
+ * @parameter: user - Class: (com.datasweep.compatibility.client.User)
+ *          用户对象
+ * @return: boolean - 是否检查通过
+ * @author: Lin Hui 03/31/2016
+ */
+function checkTransactionPrivilege(action, user)
+{
+    if(action == null)
+    {
+        return true
+    }
+    else if(action.getPrivilege() == null)
+    {
+        return false
+    }
+    else if(user.hasPrivilege(action.getPrivilege()))
+    {
+        return true
+    }
+    else
+    {
+        return false
+    }
+}
+
+/**
+ * 描述：获取下一级部门列表
+ * 
+ * @parameter: departmentName - Class:(java.lang.String)
+ *      部门名称
+ * @return: Vector<ATRow> - 下一级部门列表(ATRow)
+ * @author: Lin Hui 03/31/2016
+ */
+function getChildrenDepartmentOnlyNextLevel(departmentName)
+{
+    getChildrenDepartmentOnlyNextLevel(departmentName, createATRowFilter("UM_Department").exec())
+}
+
+/**
+ * 描述：获取下一级部门列表
+ * 
+ * @parameter: departmentName - Class:(java.lang.String)
+ *      部门名称
+ * @parameter: vectorDepartment - Class:(Vector<ATRow>)
+ *      所有部门列表 (从性能优化方面考虑，减少访问数据库)
+ * @return: Vector<ATRow> - 下一级部门列表(ATRow)
+ * @author: Lin Hui 03/31/2016
+ */
+function getChildrenDepartmentOnlyNextLevel(departmentName, vectorDepartment)
+{
+    vectorResult = vector()
+    foreach atrow(vectorDepartment)
+    {
+        if(atrow.getValue("name") != null && atrow.getValue("name").equals(departmentName))
+        {
+            foreach atrowResult (vectorDepartment)
+            {
+                if(atrowResult.getValue("parent_department_name") != null && atrowResult.getValue("parent_department_name").equals(departmentName))
+                {
+                    vectorResult.add(atrowResult)
+                }
+            }
+            break
+        }
+    }
+    return vectorResult
+}
+
+/**
+ * 描述：获取所有的下级部门
+ * 
+ * @parameter: departmentName - Class:(java.lang.String)
+ *      部门名称
+ * @return: Vector<ATRow> - 所有下级部门列表(ATRow)
+ * @author: Lin Hui 03/31/2016
+ */
+function getAllChildrenDepartment(departmentName)
+{
+    getAllChildrenDepartment(departmentName, createATRowFilter("UM_Department").exec())
+}
+
+/**
+ * 描述：获取所有的下级部门
+ * 
+ * @parameter: departmentName - Class:(java.lang.String)
+ *      部门名称
+ * @parameter: vectorDepartment - Class:(Vector<ATRow>)
+ *      所有部门列表 (从性能优化方面考虑，减少访问数据库)
+ * @return: Vector<ATRow> - 所有下级部门列表(ATRow)
+ * @author: Lin Hui 03/31/2016
+ */
+function getAllChildrenDepartment(departmentName, vectorDepartment)
+{
+    vectorResult = vector()
+    foreach atrow(vectorDepartment)
+    {
+        if(atrow.getValue("name") != null && atrow.getValue("name").equals(departmentName))
+        {
+            foreach atrowResult (vectorDepartment)
+            {
+                if(atrowResult.getValue("parent_department_name") != null && atrowResult.getValue("parent_department_name").equals(departmentName))
+                {
+                    vectorResult.add(atrowResult)
+                    addChildrenDepartment(atrowResult.getValue("name"), vectorDepartment, vectorResult)
+                }
+            }
+            break
+        }
+    }
+    
+    return vectorResult
+}
+
+/**
+ * (内部方法)描述：递归方式获取下级部门
+ * 
+ * @parameter: departmentName - Class:(java.lang.String)
+ *      部门名称
+ * @parameter: vectorDepartment - Class:(Vector<ATRow>)
+ *      所有部门列表 (从性能优化方面考虑，减少访问数据库)
+ * @parameter: vectorResult - Class:(Vector<ATRow>)
+ *      下级部门列表(引用传递，保存最终结果)
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function addChildrenDepartment(departmentName, vectorDepartment, vectorResult)
+{
+    foreach atrow(vectorDepartment)
+    {
+        if(atrow.getValue("name") != null && atrow.getValue("name").equals(departmentName))
+        {
+            foreach atrowResult (vectorDepartment)
+            {
+                if(atrowResult.getValue("parent_department_name") != null && atrowResult.getValue("parent_department_name").equals(departmentName))
+                {
+                    vectorResult.add(atrowResult)
+                    addChildrenDepartment(atrowResult.getValue("name"), vectorDepartment, vectorResult)
+                }
+            }
+            break
+        }
+    }
+}
+
+/**
+ * 描述：判断用户是否系统管理员
+ * 
+ * @parameter: user - Class:(com.datasweep.compatibility.client.User)
+ *      用户对象
+ * @return: boolean - 是否系统管理员
+ * @author: Lin Hui 03/31/2016
+ */
+function isSystemAdministrator(user)
+{
+    if(user.getName().equals("admin"))
+    {
+        return true
+    }
+    else
+    {
+        createGlobalFunctions("MES_Common_Configuration")
+        userGroup = getGlobalConfiguration("SystemAdministratorUserGroup", getUserGroupByName("SystemAdministrator"))
+        if(user.getUserGroups().contains(userGroup))
+        {
+            return true
+        }
+    }
+    
+    return false
+}
+
+
+/**
+ * 描述：判断当前登录用户是否系统管理员
+ * 
+ * @return: boolean - 是否系统管理员
+ * @author: Lin Hui 03/31/2016
+ */
+function isCurrentUserSystemAdministrator()
+{
+    user = getCurrentUser()
+    return isSystemAdministrator(user)
+}
+
+/**
+ * 描述：判断当前登录用户是否系统管理员
+ * 
+ * @return: boolean - 是否管理员
+ * @author: wanghao 07/10/2020
+ */
+function isCurrentUserAdmin()
+{
+    user = getCurrentUser()
+    vectorUserGroup = getUserGroupsForUser(user)
+    if(vectorUserGroup!=null&&vectorUserGroup.size()>0){
+        sql ="select distinct s.code_S,s.value_s,p.module_I,p.name_S from at_sm_datadictionar p left join at_sm_datadictionaryitem s on p.atr_key = s.parent_key where p.module_I = '10' and p.name_S = 'adminGroup'"  
+        vectorResult = querySql(sql)
+        if(vectorResult!=null&&vectorResult.size()>0){
+            foreach adminGroup(vectorResult){
+                foreach userGroup(vectorUserGroup){
+                    uniqueName = userGroup.getUniqueName()
+                    groupName = adminGroup[0]
+                    if(uniqueName.equals(groupName)){
+                        return true
+                    }
+                }
+            }
+        }
+    }
+    return false
+}
+
+/**
+ * 描述：获取用户关联的用户组，不包含系统创建的用户组。
+ * 
+ * @parameter: user - Class:(com.datasweep.compatibility.client.User)
+ *      用户对象
+ * @return: Vector<UserGroup> - 用户组列表
+ * @author: Lin Hui 03/31/2016
+ */
+function getUserGroupsForUser(user)
+{
+    vectorResult = vector()
+    vectorGroup = user.getUserGroups()
+    foreach userGroup(vectorGroup)
+    {
+        if(userGroup.getUDA("configurable") != null && userGroup.getUDA("configurable").trim().equals("1"))
+        {
+            vectorResult.add(userGroup)
+        }
+    }
+    return vectorResult
+}
+
+/**
+ * 描述：获取用户组关联的用户，不包含系统创建的用户(admin)。
+ * 
+ * @parameter: userGroup - Class:(com.datasweep.compatibility.client.UserGroup)
+ *      用户对象
+ * @return: Vector<User> - 用户列表
+ * @author: Lin Hui 03/31/2016
+ */
+function getUsersForUserGroup(userGroup)
+{
+    vectorResult = vector()
+    vectorUser = userGroup.getUsers()
+    foreach user(vectorUser)
+    {
+//         if(user.getUDA("configurable") != null && user.getUDA("configurable").trim().equals("1"))
+//         {
+            vectorResult.add(user)
+//         }
+    }
+    return vectorResult
+}
+
+/****************************菜单权限树增加页面*******************************/
+
+/**
+ * 描述：菜单权限树增加额外的页面和按钮配置（现场界面, PDA, 平板电脑）。
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      树形控件
+ * @return: void
+ * @author: Lin Hui 04/20/2016
+ */
+function addExtraFormAndAction(treeview)
+{
+    filter = createATRowFilter("UM_Transaction_Form")
+    vectorForm = filter.exec()
+    filter = createATRowFilter("UM_Transaction_Action")
+    vectorAction = filter.exec()
+    
+    renderExtraMenu(treeview, "PEC", vectorForm, vectorAction)
+    renderExtraMenu(treeview, "PDA", vectorForm, vectorAction)
+    renderExtraMenu(treeview, "TP", vectorForm, vectorAction)
+    renderExtraMenu(treeview, "TYPE1", vectorForm, vectorAction)
+    renderExtraMenu(treeview, "TYPE2", vectorForm, vectorAction)
+}
+
+/**
+ * 描述：菜单权限树增加额外的页面和按钮配置（现场界面, PDA, 平板电脑）。
+ * 
+ * @parameter: treeview - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      树形控件
+ * @return: void
+ * @author: Lin Hui 04/20/2016
+ */
+function addDepartmentExtraFormAndAction(treeview, vectorDepartmentName)
+{
+    colAttr = class com.datasweep.plantops.common.constants.filtering.IATRowFilterAttributes::ATCOLUMN
+    comOpIn = class com.datasweep.plantops.common.constants.filtering.IFilterComparisonOperators::IN
+    
+    fltrATRow = createATRowFilter("UM_Department_Privilege")
+    fltrATRow.addSearchBy("department_name", colAttr, comOpIn, vectorDepartmentName)
+    vectorType = vector()
+    vectorType.add("PEC")
+    vectorType.add("PDA")
+    vectorType.add("TP")
+    vectorType.add("TYPE1")
+    vectorType.add("TYPE2")
+    fltrATRow.addSearchBy("type", colAttr, comOpIn, vectorType)
+    
+    vectorAT = fltrATRow.exec()
+    
+    vectorSubMenuID = vector()
+    foreach atrow(vectorAT)
+    {
+        if(!vectorSubMenuID.contains(atrow.getValue("privilege_id")))
+        {
+            vectorSubMenuID.add(atrow.getValue("privilege_id"))
+        }
+    }
+    
+    filter = createATRowFilter("UM_Transaction_Form")
+    filter.addSearchBy("id", colAttr, comOpIn, vectorSubMenuID)
+    vectorForm = filter.exec()
+    filter = createATRowFilter("UM_Transaction_Action")
+    filter.addSearchBy("id", colAttr, comOpIn, vectorSubMenuID)
+    vectorAction = filter.exec()
+    
+    renderExtraMenu(treeview, "PEC", vectorForm, vectorAction)
+    renderExtraMenu(treeview, "PDA", vectorForm, vectorAction)
+    renderExtraMenu(treeview, "TP", vectorForm, vectorAction)
+    renderExtraMenu(treeview, "TYPE1", vectorForm, vectorAction)
+    renderExtraMenu(treeview, "TYPE2", vectorForm, vectorAction)
+}
+
+
+/**
+ * 描述：菜单权限树增加额外的页面配置（现场界面, PDA, 平板电脑）。
+ * 
+ * @parameter: type - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      树形控件
+ * @parameter: vectorForm - Class:(com.datasweep.compatibility.ui.TreeView)
+ *      树形控件
+ * @return: void
+ * @author: Lin Hui 02/23/2017
+ */
+function renderExtraMenu(treeControl, type, vectorForm, vectorAction)
+{
+    vectorFormATRow = getExtraForm(type, vectorForm)
+    if(treeControl instanceof class com.datasweep.compatibility.ui.TreeView)
+    {
+        treenode = null
+        if("PEC".equals(type))
+        {
+            menuData = class com.ftpc.common.ui.menu.MenuData()
+            menuData.setId("PEC")
+            menuData.setAccessPrivilege("PEC")
+            menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::PEC)
+            
+            treenode = treeControl.addNode("现场执行界面")
+            treenode.setNodeObject(menuData)
+        }
+        if("PDA".equals(type))
+        {
+            menuData = class com.ftpc.common.ui.menu.MenuData()
+            menuData.setId("PDA")
+            menuData.setAccessPrivilege("PDA")
+            menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::PDA)
+            
+            treenode = treeControl.addNode("PDA手持")
+            treenode.setNodeObject(menuData)
+        }
+        if("TP".equals(type))
+        {
+            menuData = class com.ftpc.common.ui.menu.MenuData()
+            menuData.setId("TP")
+            menuData.setAccessPrivilege("TP")
+            menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::TP)
+            
+            treenode = treeControl.addNode("车载终端")
+            treenode.setNodeObject(menuData)
+        }
+        renderExtraMenu(treenode, type, vectorForm, vectorAction)
+    }
+    else
+    {
+        for(atrow : vectorFormATRow)
+        {
+            menuData = transferToExtraMenuData(atrow)
+            treenode = treeControl.addNode(atrow.getValue("description"), null)
+            treenode.setNodeObject(menuData)
+            
+            vectorActionATRow = getExtraAction(type, atrow.getValue("id"), vectorAction)
+            for(action : vectorActionATRow)
+            {
+                actionData = transferToExtraMenuData(action)
+                treenodeAction = treenode.addNode(action.getValue("description"), null)
+                treenodeAction.setNodeObject(actionData)
+            }
+        }
+    }
+}
+
+
+function getExtraForm(type, vectorFormATRow)
+{
+    vectorAT = vector()
+    for(atrow : vectorFormATRow)
+    {
+        if(type.equals(atrow.getValue("type")))
+        {
+            vectorAT.add(atrow)
+        }
+    }
+    return vectorAT
+}
+
+
+function getExtraAction(type, trxFormId, vectorActionATRow)
+{
+    vectorAT = vector()
+    for(atrow : vectorActionATRow)
+    {
+        if(type.equals(atrow.getValue("type")) && trxFormId.equals(atrow.getValue("trx_form_id")))
+        {
+            vectorAT.add(atrow)
+        }
+    }
+    return vectorAT
+}
+
+/**
+ * 描述: transfer data template object to menu data object.
+ * 
+ * @parameter: atrow - Class:(ATRow)
+ *      ATRow对象
+ * @return: menuData - menu data object
+ * @author: Lin Hui 03/21/2016
+ */
+function transferToExtraMenuData(atrow)
+{
+    menuData = class com.ftpc.common.ui.menu.MenuData() // class com.ftpc.common.ui.menu.MenuData   - member help: menu
+    menuData.setId(atrow.getValue("id"))
+    menuData.setAccessPrivilege(atrow.getValue("id"))
+    
+    if("PEC".equals(atrow.getValue("type")))
+    {
+        menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::PEC)
+    }
+    else if("PDA".equals(atrow.getValue("type")))
+    {
+        menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::PDA)
+    }
+    else if("TP".equals(atrow.getValue("type")))
+    {
+        menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::TP)
+    }
+    else if("TYPE1".equals(atrow.getValue("type")))
+    {
+        menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::TYPE1)
+    }
+    else if("TYPE2".equals(atrow.getValue("type")))
+    {
+        menuData.setMenuType(class com.ftpc.common.ui.menu.MenuType::TYPE2)
+    }
+    
+    if(atrow.getATDefinition().getName().equals("UM_Transaction_Form"))
+    {
+        menuData.setFormName(atrow.getValue("form"))
+    }
+    else if(atrow.getATDefinition().getName().equals("UM_Transaction_Action"))
+    {
+        menuData.setActionName(atrow.getValue("action"))
+    }
+    
+    return menuData
+}
+
+/**
+ * 描述：控制按钮的访问权限，隐藏未授权的按钮。
+ * 
+ * @parameter: hashtableButton - Class:(Hashtable<String, control>)
+ *      需要进行权限控制的按钮，key是按钮的名称，control是需要隐藏的UI，可以是按钮本身的对象，也可以是包含按钮的容器(该容器只有一个按钮，主要是控制隐藏按钮后的页面布局)
+ * @parameter: isPreview - Class:(Boolean)
+ *      是否是预览模式
+ * @return: void
+ * @author: Lin Hui 04/20/2016
+ */
+function setupButtonAccess(hashtableButton)
+{
+    form = getActiveDsForm()
+    formName = form.getName()
+    hashtableAction = hashtable()
+    if(formName.equals("MES_OM_Capacity")){
+        hashtableAction = getPrivilegeActionMap("CapacityManagement")
+    }else if(formName.equals("MES_OM_RouteMain")){
+        hashtableAction = getPrivilegeActionMap("RouteMainManagement")
+    }else{
+        hashtableAction = form.getProperty("ActionMap")
+    }
+    isPreview = form.getProperty("RunMode") != null && form.getProperty("RunMode").equals("Preview")
+    if(isPreview || !isCurrentUserSystemAdministrator())
+    {
+        if(hashtableAction == null || hashtableAction.isEmpty())
+        {
+            foreach control(hashtableButton.values())
+            {
+                control.setVisible(false)
+            }
+        }
+        else
+        {
+            vectorButtonName = vector()
+            foreach buttonName(hashtableAction.keySet())
+            {
+                vectorButtonName.add(hashtableAction.get(buttonName))
+            }
+        
+            foreach buttonName(hashtableButton.keySet())
+            {
+                if(vectorButtonName.contains(buttonName))
+                {
+                    hashtableButton.get(buttonName).setVisible(true)
+                }
+                else
+                {
+                    hashtableButton.get(buttonName).setVisible(false)
+                }
+            }
+        }
+    }
+}
+
+
+function setNodeCheckedForPrivilegeIDs(treenode, vectorMenuId)
+{
+    arrayNode = treenode.getNodes()
+    foreach treenodeChild(arrayNode)
+    {
+        treenodeChild.setChecked(false)
+        nodeMenu = treenodeChild.getNodeObject()
+        foreach menuId(vectorMenuId)
+        {
+            if(menuId==nodeMenu.getId())
+            {
+                treenodeChild.setChecked(true)
+                break
+            }
+        }
+        setNodeCheckedForPrivilegeIDs(treenodeChild, vectorMenuId)
+    }
+}
+
+function getAssignableMenuIdList(vectorAssignableMenuId,treenode)
+{
+    arrayNode = treenode.getNodes()
+    foreach treenodeChild(arrayNode)
+    {
+        if(treenodeChild.getChecked())
+        {
+            vectorAssignableMenuId.add(treenodeChild.getNodeObject().getId())
+        }
+        getAssignableMenuIdList(vectorAssignableMenuId,treenodeChild)
+    }
+}
+
+
+function hasPrivilege(user, privilegeId){
+    vectorPrivilege = getUserPrivilegeID(user)
+    return vectorPrivilege.contains(privilegeId)
+}
+
+/**
+ * 根据菜单id获取当前用户按钮hashmap
+ * dtId:菜单按钮
+ * 
+ * */
+function getPrivilegeActionMap(dtId){
+    useCaseConfig = getUseCaseConfig("UseCaseConfig")
+    vectorDT = useCaseConfig.getDataTemplates()
+    hashtableIdAndActionMap = hashtable()      //key - menu id;    value - action map
+    //vectorButton =  getUserActionIDVector(getCurrentUser())
+    if(vectorDT!=null&&vectorDT.size()>0){
+        foreach dtObj(vectorDT){
+            addChildMenu(dtObj,hashtableIdAndActionMap,useCaseConfig,dtId)
+        }
+    }
+    
+    return hashtableIdAndActionMap.get(dtId)
+}
+
+function addChildMenu(dtObject,hashtableIdAndActionMap,useCaseConfig,dtId){
+    vectorDT = dtObject.getDataTemplates()
+    if(vectorDT!=null&&vectorDT.size()>0){
+        foreach dtObj(vectorDT){
+            addChildMenu(dtObj,hashtableIdAndActionMap,useCaseConfig,dtId)
+        }
+    }else{
+        if(dtObject.getId().equals(dtId)){
+            vectorAction = dtObject.getActionList()
+            if(vectorAction.size() > 0)
+            {
+                vectorActionID = getUserActionIDVector(getCurrentUser())
+                hashtable = hashtable()
+                foreach action(vectorAction)
+                {
+                    id = action.getId()
+                    if(id == null || id.trim().equals(""))
+                    {
+                        id = action.getIdref()
+                        if(id != null && !id.trim().equals(""))
+                        {
+                            if(vectorActionID.contains(id))
+                            {
+                                actionObj = class com.rockwell.common.usecaseconfig.utilities.UseCaseUtility::getAction(useCaseConfig, id)
+                                hashtable.put(id, actionObj.getActionClass())
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(vectorActionID.contains(id))
+                        {
+                            hashtable.put(id, action.getActionClass())
+                        }
+                    }
+                }
+                hashtableIdAndActionMap.put(dtObject.getId(), hashtable)
+            }
+        }
+        
+    }
+    
+}
+

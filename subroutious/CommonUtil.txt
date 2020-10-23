@@ -1,0 +1,263 @@
+/**
+ * Description:从DsGrid控件中删除当前选中行的记录。这里只是控件层面的删除，不是数据库层面的删除。
+ * Author: 王磊
+ * */
+function deleteFromGrid(grid) {
+    currentRow = grid.getSelectedRow()
+    if( currentRow>= 0) {
+        grid.deleteGridRow(currentRow)
+    }
+    if(currentRow < grid.getNumberOfRows()) {
+        grid.setSelectedRow(currentRow)
+    } else{
+        if(grid.getNumberOfRows() > 0) {
+            grid.setSelectedRow(grid.getNumberOfRows() -1 )
+        }else {
+            grid.setSelectedRow(-1)
+        }
+    }
+}
+
+/**
+ * Description:隐藏DsGrid空间中，宽度等于5的列。
+ * Parameter: DsGrid名称
+ * */
+function hideColumn(gridName){
+    for(i=0;i<gridName.getNumberOfColumns();i++){
+        if(gridName.getColumn(i).getWidth()==5)
+            gridName.getColumn(i).setVisible(false);
+    }
+}
+
+function addVectorToGrid(vec, grid, startCol) { //startCol：当前显示的数组，在Grid中显示的起始列的索引。如果前面需要空出一列作为序号，这里可以设为1；如果不需要，这里设为0即可。
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+    grid.setSelectedRow(-1)
+    for(i = 0; i < vec.size(); i++) {
+        row = vec.get(i)
+        num = grid.getNumberOfRows()
+        updateRowToGrid(row, grid, num, startCol)
+    }
+    grid.resizeColumnsToFit()
+}
+
+function updateRowToGrid(row, grid, num, startCol) { //startCol：当前显示的数组，在Grid中显示的起始列的索引。如果前面需要空出一列作为序号，这里可以设为1；如果不需要，这里设为0即可。
+    for(i = 0; i < row.length; i++) {
+        grid.setCellText(num, i + startCol, row[i])
+    }
+}
+
+function getHTMLFormat(msg) {
+    return "<HTML><FONT SIZE=5 FACE=仿宋>" + msg + "</FONT></HTML>"
+}
+
+function getHTMLFormat(msg, fontSize, fontFace) {
+    return "<HTML><FONT SIZE=" + fontSize + " FACE=" + fongFace + ">" + msg + "</FONT></HTML>"
+}
+
+/**
+ * Description:将ATR_KEY字段加到DsGrid中的最后一列，可以通过此方法取出当前选中行的ATR_KEY字段，
+ * Parameter: DsGrid名称
+ * Author: 王磊
+ * */
+function getRowValue(grid) {
+    return grid.getCellValue(grid.getSelectedRow(), grid.getNumberOfColumns() - 1)
+}
+
+/**
+ * Description:要求各组件的命名按照一定规范，即 控件类别+控件名称，如果是必填项，需要再在后面加Key。
+ * Parameter: panel名称
+ * Author: 王磊
+ * */
+function setInitValue(panel) {
+    controls = panel.getControls()
+    for(control:controls) {
+        name = control.getName()
+        if(name.indexOf("smartEdit") > -1) {
+            control.setValue(null)
+        }
+        if(name.indexOf("edit") > -1) {
+            control.setText(null)
+        }
+        if(name.indexOf("dateTime") > -1) {
+            if(control.getShowNone()) {
+                control.setShowNoneIsChecked(false)
+            }
+        }
+        if(name.indexOf("combobox") > -1) {
+            control.setSelectedIndex(-1)
+        }
+        if(name.indexOf("checkbox") > -1) {
+            control.setChecked(false)
+        }
+    }
+}
+
+/**
+ * Description: 初始化Form中某个Panel的各控件（包含Grid）。
+ * Parameter: panel名称
+ *            DsGrid名称
+ * Author: 王磊
+ * */
+function initState(panel, grid) {
+    setInitValue(panel)
+    //setButtonState(panel, true)
+    setAllControlsEnabled(panel, true)
+    //grid.setSelectedRow(-1)
+    grid.clearGrid()
+}
+
+/**
+ * Description: 初始化Form中某个Panel的各控件（不包含Grid）
+ * Parameter: panel名称
+ * Author: 王磊
+ * */
+function initState(panel) {
+    setInitValue(panel)
+    //setButtonState(panel, true)
+    setAllControlsEnabled(panel, true)
+}
+
+/**
+ * Description: 设置Panel中每个控件为可用或不可用的状态、
+ * Parameter: panel名称  
+ *            状态
+ * Author: 王磊
+ * */
+function setAllControlsEnabled(panel, flag) {
+    controls = panel.getControls()
+    for(control:controls) {
+        control.setEnabled(flag)
+    }
+}
+ 
+/**
+ * Description: 设置Panel中某个控件（筛选条件：名称中包含某个字符串）为可用或不可用的状态
+ * Parameter: panel名称  
+ *            筛选条件字符串
+ *            状态
+ * Author: 王磊
+ * */
+function setControlsEnabled(panel, subStr, flag) {
+    controls = panel.getControls()
+    for(control:controls) {
+        name = control.getName()
+        index = name.indexOf(subStr)
+        if(index > -1) {
+            control.setEnabled(flag)
+        }
+    }
+}
+
+/**
+ * Description: 判定Panel中必填项是否为空
+ * Parameter: panel名称
+ * Author: 王磊
+ * */
+function isRequiredPass(panel) {
+    flag = true
+    controls = panel.getControls()
+    for(control:controls) {
+        toopTipText = control.getToopTipText()
+        if(toopTipText != null && toopTipText.indexOf("必填项")) {
+            flag = false
+            control.focus()
+            dialogError(toopTipText)
+            break
+        }
+    }
+    return flag
+}
+
+function isNotEmpty(str) {
+    flag = true
+    if(str == null || str.equals("")) { //调用该方法的时候，这一步会按照两个判断句的先后顺序执行，即先判断是否为null，再判断是否为空。这类判断句要注意先后顺序。
+        flag = false
+    }
+    return flag
+}
+
+function convertNullToEmpty(str) {
+    if(str == null) {
+        return ""
+    }else {
+        return str
+    }
+}
+
+//自动生成dsgrid中的序号列
+//参数说明：grid--DsGrid名称
+//        gridRowNum--dsgrid中记录行数
+function setGridSeq(grid) {
+    for(i = 0; i < grid.getNumberOfRows(); i++) {
+        grid.setCellText(i, 0, i+1)
+    }
+}
+//自动生成dsgrid中的序号列,当序号在第二列
+//参数说明：grid--DsGrid名称
+//        gridRowNum--dsgrid中记录行数
+function setGridSeqAtColumn2(grid) {
+    for(i = 0; i < grid.getNumberOfRows(); i++) {
+        grid.setCellText(i, 1, i+1)
+    }
+}
+// 获取指定列的prop name属性。可以把该属性定义为ATDefinition中的字段名，结合DBUtil中的insertRecord方法使用。
+// 参数说明：grid--DsGrid名称
+//         index--列索引值
+function getGridHeadName(grid, index) {
+    return grid.getColumn(index).getBoundObjectArg()
+}
+
+// 对比传入的文件名的后缀是否与suffixName相同。该方法用于导出或生成文件时，判定目标文件的后缀名是否正确，从而判定是否需要在生成文件的同时由程序自动添加后缀。
+// 参数说明：fileName--文件名
+//         suffixName--要进行对比的文件后缀名
+function isSuffixName(fileName, suffixName) {
+    fileSuffixName = fileName.substring(fileName.lastIndexOf(".") + 1)
+    if(suffixName.equals(fileSuffixName)) {
+        return true
+    } else {
+        return false
+    }
+}
+
+// 如果DsGrid中已经定义Prop Arg属性，那么可以使用该方法，按照DsGrid列的顺序，将所有列依次取出，拼接成字符串，并输出在控制台中。
+// 用于快速生成select语句的参数列表，避免按照数据库一个一个字段写。
+// 需要注意的是：拼接过程中，默认所有字段都是字符串类型，所以字段名后缀加的都是“_s”，如果是其他类型的值，需要在书写select语句的时候，手动更改。
+// 参数说明：grid--DsGrid名称
+function getDsGridColumnNamesArray(grid) {
+    tempStr = ""
+    for(i = 0; i < grid.getNumberOfColumns(); i++) {
+        tempStr = tempStr + grid.getColumn(i).getBoundObjectArg() + "_s,"
+    }
+    print(tempStr.substring(0, tempStr.length() - 1))
+}
+
+/*根据ATDefinition字段名称，动态生成DsGrid表头信息。*/
+/*
+atDefinition = getATDefinition("QMCheckResult") //必须与自建表的名称一致
+colList = atDefinition.getATColumnDefinitions()
+colDescArray = createArray(colList.size())
+for(i = 0; i < colList.size(); i++) {
+    col = colList.elementAt(i)
+    //colDescArray[i] = col.getDescription()
+    println(col.getName() + "#" + col.getDescription())
+}
+*/
+//findNamedControl(java.lang.String name)
+function removeControl(index) {
+    panelFileName.remove(panelFileName.findNamedControl("smartEdit" + index))
+    panelFileName.remove(panelFileName.findNamedControl("Del" + index))
+}
+
+function removeControl2(panelName, index) {
+    panelName.remove(panelName.findNamedControl("label" + index))
+    panelName.remove(panelName.findNamedControl("Del" + index))
+}
+
+function convertNullToZero(str) {
+    if(str == null) {
+        return 0
+    } else {
+        return str
+    }
+}

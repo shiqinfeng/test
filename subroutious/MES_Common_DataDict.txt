@@ -1,0 +1,718 @@
+/**
+ * Description: provide common functions to generate label or report object and print command
+ * 
+ * Author: Tim Liu
+ * Date: 2013/08/08
+ * Revision: 1.0
+ * 
+ **/
+ 
+importSubroutine("MES_PP_Common_Constant")
+importSubroutine("MES_Common_Time")
+importSubroutine("MES_Common_DsList")
+importSubroutine("MES_Common_Configuration")
+importSubroutine("MES_Common_Base")
+importSubroutine("MES_Common_Log")
+/** ************************** UDA DD **********************************************/
+BIW_BSN="BSN"
+
+TCF_NAME = "T&F"
+
+UDA_ORDER_BSN = "BSN"
+
+UDA_ORDERITEM_BSN = "BSN"
+SITE_NO = "D001"
+/**
+ * unit and order UDA
+ * Shi Minglou/2013/11/13
+ * */
+// ORDER_UDA_MODEL = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::MODEL
+// UNIT_UDA_BSN = class com.rockwell.autosuite.mes.constants.common.UnitUDAName::BSN
+// UNIT_UDA_VIN = class com.rockwell.autosuite.mes.constants.common.UnitUDAName::VIN
+// UNIT_UDA_RFID = class com.rockwell.autosuite.mes.constants.common.UnitUDAName::RFID
+
+/**
+ * user UDA
+ * Shi Minglou/2013/11/21
+ * */
+// USER_UDA_STATION = class com.rockwell.autosuite.mes.constants.common.UserUDAName::STATION
+/**
+* Station UDA   
+* Shi Zhiping/2013/11/06
+* */
+
+// UDA_STATION_JMS_QUEUE_NAME = class com.rockwell.autosuite.mes.constants.common.StationUDAName::JMS_QUEUE_NAME
+// UDA_STATION_TYPE = class com.rockwell.autosuite.mes.constants.common.StationUDAName::STATION_TYPE
+// UDA_CLIENT_ADDR = class com.rockwell.autosuite.mes.constants.common.StationUDAName::CLIENT_ADDR
+// UDA_FTT_STATION = class com.rockwell.autosuite.mes.constants.common.StationUDAName::FTT_STATION
+// UDA_QIP_TYPE = class com.rockwell.autosuite.mes.constants.common.StationUDAName::QIP_TYPE
+/**
+* part UDA Name
+* Shi Zhiping/2013/12/10
+* */
+
+// UDA_MATERIAL_TYPE = class com.rockwell.autosuite.mes.constants.common.PartUDAName::MATERIAL_TYPE
+// UDA_MATERIAL_TYPE_FERT = class com.rockwell.autosuite.mes.constants.common.PartUDAName::MATERIAL_TYPE_FERT
+// UDA_MATERIAL_TYPE_VEHI = class com.rockwell.autosuite.mes.constants.common.PartUDAName::MATERIAL_TYPE_VEHI
+/***************************** LM DD **********************************************/
+/**
+* Liang Shengxi/2013/11/8
+* */
+
+//lOCATION_TYPE
+// LOCATION_TYPE_LS = (int)class com.rockwell.autosuite.mes.constants.common.LocationType::LS
+// LOCATION_TYPE_TR = (int)class com.rockwell.autosuite.mes.constants.common.LocationType::TR
+// LOCATION_TYPE_SEQ = (int)class com.rockwell.autosuite.mes.constants.common.LocationType::SEQ
+// LOCATION_TYPE_KIT = (int)class com.rockwell.autosuite.mes.constants.common.LocationType::KIT
+// LOCATION_TYPE_MP = (int)class com.rockwell.autosuite.mes.constants.common.LocationType::MP
+
+//LOCATION_CLASS
+// LOCATION_CLASS_AREA = (int)class com.rockwell.autosuite.mes.constants.common.LocationClass::AREA
+// LOCATION_CLASS_STORAGE = (int)class com.rockwell.autosuite.mes.constants.common.LocationClass::STORAGE
+
+//EQUIPMENTTYPE
+EQUIPMENT_CLASS_TYPE_PR = 40
+// (int)class com.rockwell.autosuite.mes.constants.common.EquipmentTypeId::PR
+EQUIPMENT_CLASS_TYPE_PDA = 30
+// (int)class com.rockwell.autosuite.mes.constants.common.EquipmentTypeId::PDA
+EQUIPMENT_CLASS_TYPE_TP = 20
+// (int)class com.rockwell.autosuite.mes.constants.common.EquipmentTypeId::TP
+EQUIPMENT_CLASS_TYPE_CB = 10
+// (int)class com.rockwell.autosuite.mes.constants.common.EquipmentTypeId::CB
+
+//PART_PUSH_TYPE
+// PART_PUSH_TYPE_KB = class com.rockwell.autosuite.mes.constants.common.PART_PUSH_TYPE::KB
+// PART_PUSH_TYPE_KIT = class com.rockwell.autosuite.mes.constants.common.PART_PUSH_TYPE::KIT
+// PART_PUSH_TYPE_SEQ = class com.rockwell.autosuite.mes.constants.common.PART_PUSH_TYPE::SEQ
+// PART_PUSH_TYPE_JIS = class com.rockwell.autosuite.mes.constants.common.PART_PUSH_TYPE::JIS
+
+//EquipmentClassUDAName
+EquipmentClassUDAName_TYPE_ID ="type_id";
+// class com.rockwell.autosuite.mes.constants.common.EquipmentClassUDAName::TYPE_ID
+
+//EquipmentTypeId
+EquipmentTypeId_CB = 10L;
+// class com.rockwell.autosuite.mes.constants.common.EquipmentTypeId::CB
+EquipmentTypeId_PDA = 30L;
+// class com.rockwell.autosuite.mes.constants.common.EquipmentTypeId::PDA
+EquipmentTypeId_PR = 40L;
+// class com.rockwell.autosuite.mes.constants.common.EquipmentTypeId::PR
+EquipmentTypeId_TP = 20L; 
+// class com.rockwell.autosuite.mes.constants.common.EquipmentTypeId::TP
+
+//TaskStatus
+// TASK_STATUS_CANCEL = class com.rockwell.autosuite.mes.constants.lm.TaskStatus::CANCEL
+// TASK_STATUS_INIT = class com.rockwell.autosuite.mes.constants.lm.TaskStatus::INIT
+// TASK_STATUS_PICKED = class com.rockwell.autosuite.mes.constants.lm.TaskStatus::PICKED
+// TASK_STATUS_PICKING = class com.rockwell.autosuite.mes.constants.lm.TaskStatus::PICKING
+// TASK_STATUS_RECE_PICK = class com.rockwell.autosuite.mes.constants.lm.TaskStatus::RECE_PICK
+// TASK_STATUS_RECE_REPL = class com.rockwell.autosuite.mes.constants.lm.TaskStatus::RECE_REPL
+// TASK_STATUS_REPLENISHED = class com.rockwell.autosuite.mes.constants.lm.TaskStatus::REPLENISHED
+
+//KbPartPushInfoStatus
+// KbPartPushInfoStatus_INIT =class com.rockwell.autosuite.mes.constants.lm.KbPartPushInfoStatus::INIT
+// KbPartPushInfoStatus_PICKED =class com.rockwell.autosuite.mes.constants.lm.KbPartPushInfoStatus::PICKED
+
+// TaskType
+// TASK_TYPE_AUTO = class com.rockwell.autosuite.mes.constants.lm.TaskType::AUTO
+// TASK_TYPE_HAND = class com.rockwell.autosuite.mes.constants.lm.TaskType::HAND
+
+// LmOrderStatus
+// LM_ORDER_STATUS_INIT = class com.rockwell.autosuite.mes.constants.lm.LmOrderStatus::INIT
+// LM_ORDER_STATUS_REPL = class com.rockwell.autosuite.mes.constants.lm.LmOrderStatus::REPL
+
+// Print Status
+PRINT_STATUS_INIT = "";
+//class com.rockwell.autosuite.mes.constants.print.PrintStatus::INIT
+PRINT_STATUS_PRINTED = "PRINTED";
+//class com.rockwell.autosuite.mes.constants.print.PrintStatus::PRINTED
+PRINT_STATUS_REPRINTED = "REPRINTED";
+//class com.rockwell.autosuite.mes.constants.print.PrintStatus::REPRINTED
+
+/***************************** QM DD **********************************************/
+
+/**
+* workshop type 
+* Minglou Shi/2013/10/28
+* */
+// WORKSHOP_BIW = class com.rockwell.autosuite.mes.utilities.common.ShopMasterManager::getInstance().getBIWShop().getName() 
+// WORKSHOP_PAINT = class com.rockwell.autosuite.mes.utilities.common.ShopMasterManager::getInstance().getPaintShop().getName() 
+// WORKSHOP_ASSEMBLY = class com.rockwell.autosuite.mes.utilities.common.ShopMasterManager::getInstance().getAssemblyShop().getName() 
+// WORKSHOP_STAMPING = class com.rockwell.autosuite.mes.utilities.common.ShopMasterManager::getInstance().getPressShop().getName() 
+
+// DEFECT_STATUS_OPEN = class com.rockwell.autosuite.mes.constants.qm.DefectStatus::DEFECT_STATUS_OPEN
+// DEFECT_STATUS_CLOSE = class com.rockwell.autosuite.mes.constants.qm.DefectStatus::DEFECT_STATUS_CLOSE
+// DEFECT_STATUS_DIVERT = class com.rockwell.autosuite.mes.constants.qm.DefectStatus::DEFECT_STATUS_DIVERT
+// DEFECT_STATUS_REPAIRED = class com.rockwell.autosuite.mes.constants.qm.DefectStatus::DEFECT_STATUS_REPAIRED
+
+
+/**
+* Station type UDA 
+* Zhiping Shi/2013/11/13
+* */
+STATION_ITEM = "station_item"
+
+
+/**
+* barcodeParseRule
+* Zhiping Shi/2013/11/13
+* */
+// BARCODERULEITEM_CONTAINING = class com.rockwell.autosuite.mes.constants.qm.BarcodeParseRule::BARCODEPARSERULE_CONTAINING
+// BARCODERULEITEM_EQUALS = class com.rockwell.autosuite.mes.constants.qm.BarcodeParseRule::BARCODEPARSERULE_EQUALS
+// BARCODERULEITEM_STARTWITH = class com.rockwell.autosuite.mes.constants.qm.BarcodeParseRule::BARCODEPARSERULE_STARTWITH
+// BARCODEPARSEITEM_BY_INDEX = class com.rockwell.autosuite.mes.constants.qm.BarcodeParseRule::BARCODEPARSERULE_BY_INDEX
+// BARCODEPARSERULE_BY_SIZE = class com.rockwell.autosuite.mes.constants.qm.BarcodeParseRule::BARCODEPARSERULE_BY_SIZE
+// BARCODEPARSERULE_BY_FEATURE_CODE = class com.rockwell.autosuite.mes.constants.qm.BarcodeParseRule::BARCODEPARSERULE_FEATURE_CODE
+// BARCODEPARSERULE_BY_IN = class com.rockwell.autosuite.mes.constants.qm.BarcodeParseRule::BARCODEPARSERULE_BY_IN
+/**
+* BarCodeInfo
+* Zhiping Shi/2013/11/15
+* */
+// BARCODEINFO_PARTNUMBER = class com.rockwell.autosuite.mes.constants.qm.BarCodeInfoItemName::BARCODEINFO_PARTNUMBER
+// BARCODEINFO_SUPPLIER = class com.rockwell.autosuite.mes.constants.qm.BarCodeInfoItemName::BARCODEINFO_SUPPLIER
+// BARCODEINFO_SERIALNUMBER = class com.rockwell.autosuite.mes.constants.qm.BarCodeInfoItemName::BARCODEINFO_SERIALNUMBER
+// BARCODEINFO_UDA1 = class com.rockwell.autosuite.mes.constants.qm.BarCodeInfoItemName::BARCODEINFO_UDA1
+// BARCODEINFO_UDA2 = class com.rockwell.autosuite.mes.constants.qm.BarCodeInfoItemName::BARCODEINFO_UDA2
+// BARCODEINFO_UDA3 = class com.rockwell.autosuite.mes.constants.qm.BarCodeInfoItemName::BARCODEINFO_UDA3
+
+/**
+* KeyPartBinding
+* Zhiping Shi/2013/11/27
+* */
+
+// JEITASKS_TYPE_SP = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::JEITASKS_TYPE_SP
+// ATTRIBUTE_TYPE_MESSAGEID = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::ATTRIBUTE_TYPE_MESSAGEID
+// ATTRIBUTE_NAME_MESSAGEID = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::ATTRIBUTE_NAME_MESSAGEID
+// EXCEPTION_ACTION_MANDATORY = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::EXCEPTION_ACTION_MANDATORY
+// JEITASKS_TYPE_EP = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::JEITASKS_TYPE_EP
+// GE_TYPE = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::GE_TYPE
+// BARCODE_TYPE = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::BARCODE_TYPE
+// PART_TYPE = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::PART_TYPE
+// BARCODE_NUM = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::BARCODE_NUM
+// SE_BARCODE = class com.rockwell.autosuite.mes.constants.qm.KeyPartBinding::SE_BARCODE
+
+/**
+* TARGET   type 
+* Minglou Shi/2013/12/18
+* */
+// QM_TARGET_TYPE_STATION = class com.rockwell.autosuite.mes.constants.qm.IQMTargetType::TARGET_TYPE_STATION
+
+/**
+*   TARGET type 
+* Zhiping Shi/2013/12/20
+* */
+
+// QM_TARGET_TYPE_PLANT = class com.rockwell.autosuite.mes.constants.qm.IQMTargetType::TARGET_TYPE_PLANT
+// QM_TARGET_TYPE_PLATFORM = class com.rockwell.autosuite.mes.constants.qm.IQMTargetType::TARGET_TYPE_PLATFORM
+// QM_TARGET_TYPE_PRODUCTIONLINE = class com.rockwell.autosuite.mes.constants.qm.IQMTargetType::TARGET_TYPE_PRODUCTIONLINE
+// QM_TARGET_TYPE_WORKGROUP = class com.rockwell.autosuite.mes.constants.qm.IQMTargetType::TARGET_TYPE_WORKGROUP
+// QM_TARGET_TYPE_WORKSHOP = class com.rockwell.autosuite.mes.constants.qm.IQMTargetType::TARGET_TYPE_WORKSHOP
+
+
+/**
+* objectType
+* Zhiping Shi/2013/12/24
+* */
+OBJECT_TYPE_AREA = 171
+//class com.datasweep.plantops.common.constants.IObjectTypes::TYPE_AREA
+OBJECT_TYPE_PRODUCTIONLINE = 23
+//class com.datasweep.plantops.common.constants.IObjectTypes::TYPE_PRODUCTIONLINE
+// OBJECT_TYPE_DATA_LONG = class com.datasweep.plantops.common.constants.IDataTypes::TYPE_LONG
+// 
+// APPLICATION_TYPE_AREA = class com.rockwell.autosuite.mes.constants.qm.ApplicationType::APPLICATION_TYPE_AREA
+// APPLICATION_TYPE_PRODUCTIONLINE = class com.rockwell.autosuite.mes.constants.qm.ApplicationType::APPLICATION_TYPE_PRODUCTIONLINE
+// APPLICATION_NAME_SIP_LAYPUT = class com.rockwell.autosuite.mes.constants.qm.ApplicationType::APPLICATION_NAME_SIP_LAYPUT
+// ALARMRULE_TYPE_STATION = class com.rockwell.autosuite.mes.constants.qm.AlarmRuleType::ALARMRULE_TYPE_STATION
+// ALARMRULE_TYPE_DEFECT =  class com.rockwell.autosuite.mes.constants.qm.AlarmRuleType::ALARMRULE_TYPE_DEFECT
+
+
+/***************************** OM DD **********************************************/
+/**
+* Order UDA Name
+* Wu Jianxi/2013/11/06
+* */
+// ORDER_UDA_BODY_TYPE = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::BODY_TYPE
+// ORDER_UDA_MODEL = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::MODEL
+// ORDER_UDA_ORDER_STATUS =class com.rockwell.autosuite.mes.constants.common.OrderUDAName::ORDER_STATUS
+// ORDER_UDA_ORDER_TYPE = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::ORDER_TYPE
+// ORDER_UDA_PART_NUMBER = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::PART_NUMBER
+// ORDER_UDA_PAINT_COLOR = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::PAINT_COLOR
+// ORDER_UDA_PLAN_START_TIME = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::PLAN_START_TIME
+// ORDER_UDA_PLAN_START_DATE = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::PLAN_START_DATE
+// ORDER_UDA_PLAN_COMPLETION_TIME = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::PLAN_COMPLETION_TIME
+// ORDER_UDA_PLAN_COMPLETION_DATE = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::PLAN_COMPLETION_DATE
+// ORDER_UDA_SALES_ORDER = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::SALES_ORDER
+// ORDER_UDA_SUN_ROOF = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::SUN_ROOF
+// ORDER_UDA_SHIFT = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::SHIFT
+// ORDER_UDA_SEQUENCE_NUMBER = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::SEQUENCE_NUMBER
+// ORDER_UDA_QTY = class com.rockwell.autosuite.mes.constants.common.OrderUDAName::QTY
+
+
+/**
+* Work Center UDA Name
+* Wu Jianxi/2014/1/17
+* */
+WORK_CENTER_UDA_SHOP ="shop";
+//class com.rockwell.autosuite.mes.constants.common.WorkCenterUDAName::SHOP
+WORK_CENTER_UDA_TYPE = "type";
+//class com.rockwell.autosuite.mes.constants.common.WorkCenterUDAName::TYPE
+WORK_CENTER_UDA_ID = "id";
+//class com.rockwell.autosuite.mes.constants.common.WorkCenterUDAName::ID
+WORK_CENTER_UDA_CODE ="type";
+// class com.rockwell.autosuite.mes.constants.common.WorkCenterUDAName::CODE
+// WORK_CENTER_UDA_JPH = class com.rockwell.autosuite.mes.constants.common.WorkCenterUDAName::JPH
+// WORK_CENTER_UDA_OPR = class com.rockwell.autosuite.mes.constants.common.WorkCenterUDAName::OPR
+
+/**
+* Work Center UDA Name
+* Wu Jianxi/2014/2/13
+* */
+// SQD_TYPE_SUB = "SUB"
+// SQD_TYPE_MAIN = "MAIN"
+
+/***************************** SM DD **********************************************/
+/**
+* Station type Name
+* Li Deyang/2013/12/09
+* */
+// STATION_TYPE_SIP = class com.rockwell.autosuite.mes.constants.sm.StationType::SIP
+// STATION_TYPE_RW = class com.rockwell.autosuite.mes.constants.sm.StationType::RW
+// STATION_TYPE_ALARM = class com.rockwell.autosuite.mes.constants.sm.StationType::ALARM
+// STATION_TYPE_ANDON = class com.rockwell.autosuite.mes.constants.sm.StationType::ANDON
+// STATION_TYPE_TITO = class com.rockwell.autosuite.mes.constants.sm.StationType::TITO
+// STATION_TYPE_GENEALOGY = class com.rockwell.autosuite.mes.constants.sm.StationType::GENEALOGY
+// STATION_TYPE_ERRORPROOFING = class com.rockwell.autosuite.mes.constants.sm.StationType::ERRORPROOFING
+/**
+* area UDA Name
+* Li Deyang/2014/01/18
+* */
+AREA_UDA_ID = "id";
+//class  com.rockwell.autosuite.mes.constants.common.AreaUDAName::ID
+AREA_UDA_CODE = "code";
+//class  com.rockwell.autosuite.mes.constants.common.AreaUDAName::CODE
+// AREA_UDA_JPH = class  com.rockwell.autosuite.mes.constants.common.AreaUDAName::JPH
+// AREA_UDA_OPR = class  com.rockwell.autosuite.mes.constants.common.AreaUDAName::OPR
+AREA_UDA_CSN_CODE = "csn_code";
+//class  com.rockwell.autosuite.mes.constants.common.AreaUDAName::CSN_CODE
+
+/**
+* productionLine UDA Name
+* Li Deyang/2014/01/18
+* */
+PROLINE_UDA_ID ="id";
+//class   com.rockwell.autosuite.mes.constants.common.ProductionLineUDAName::ID
+PROLINE_UDA_CODE ="code";
+//class com.rockwell.autosuite.mes.constants.common.ProductionLineUDAName::CODE
+// PROLINE_UDA_JPH = class  com.rockwell.autosuite.mes.constants.common.ProductionLineUDAName::JPH
+// PROLINE_UDA_OPR = class  com.rockwell.autosuite.mes.constants.common.ProductionLineUDAName::OPR
+
+/**
+* print Type
+* Liang Shengxi/2014/01/18
+* */
+LOCAL = 20L;
+//class com.rockwell.autosuite.mes.constants.print.PrintType::LOCAL
+NETWORK = 10L;
+//class com.rockwell.autosuite.mes.constants.print.PrintType::NETWORK
+SHARE = 30L;
+//class com.rockwell.autosuite.mes.constants.print.PrintType::SHARE
+
+
+/**
+ * print status
+ * Liang Shengxi 2014/01/21
+ * **/
+MANIFEST_INIT ="";// class com.rockwell.autosuite.mes.constants.print.PrintStatus::MANIFEST_INIT
+MANIFEST_PRINTED = "PRINTED";//class com.rockwell.autosuite.mes.constants.print.PrintStatus::MANIFEST_PRINTED
+MANIFEST_REPRINTED ="REPRINTED";// class com.rockwell.autosuite.mes.constants.print.PrintStatus::MANIFEST_REPRINTED
+
+/**
+ * rule type
+ * Liang Shengxi 2014/02/14
+ * **/
+// INTERCEPTION = class com.rockwell.autosuite.mes.constants.print.RuleType::INTERCEPTION
+// ESCAPE = class com.rockwell.autosuite.mes.constants.print.RuleType::ESCAPE
+// REGULAR = class com.rockwell.autosuite.mes.constants.print.RuleType::REGULAR
+
+/**
+ * take out  type
+ * Deyang  Li 2014/02/18
+ * **/
+// TITO_TYPE_SUB = class com.rockwell.autosuite.mes.constants.common.TITOTakeType::TAKE_TYPE_SUB_LINE
+// TITO_TYPE_MAIN = class com.rockwell.autosuite.mes.constants.common.TITOTakeType::TAKE_TYPE_MAIN_LINE
+
+
+// ORDER_CATEGORY_VEHICLE = class com.rockwell.autosuite.mes.constants.common.OrderCategory::MTO
+// ORDER_CATEGORY_STOCK = class com.rockwell.autosuite.mes.constants.common.OrderCategory::MTS
+
+/**
+ * check list status
+ * Chongkai Wei 2014/06/13
+ * **/
+// CHECKLIST_STATUS_TODO = class com.rockwell.autosuite.mes.constants.qm.CheckListStatus::CHECKLIST_STATUS_TODO
+// CHECKLIST_STATUS_OPEN = class com.rockwell.autosuite.mes.constants.qm.CheckListStatus::CHECKLIST_STATUS_OPEN
+// CHECKLIST_STATUS_PASS = class com.rockwell.autosuite.mes.constants.qm.CheckListStatus::CHECKLIST_STATUS_PASS
+// CHECKLIST_STATUS_REPAIRED = class com.rockwell.autosuite.mes.constants.qm.CheckListStatus::CHECKLIST_STATUS_REPAIRED
+// CHECKLIST_STATUS_CLOSED = class com.rockwell.autosuite.mes.constants.qm.CheckListStatus::CHECKLIST_STATUS_CLOSED
+// CHECKLIST_SIP = class com.rockwell.autosuite.mes.constants.qm.CheckListStatus::SIP
+// CHECKLIST_EQI = class com.rockwell.autosuite.mes.constants.qm.CheckListStatus::EQI
+
+// SECTION_CHECK_LIST = "CHECK LIST"
+
+/**
+ * PrintDataMapType
+ * Smile 2014/10/14
+ * **/
+ 
+// PRINT_MAPPING_FUEL = class com.rockwell.autosuite.mes.constants.common.PrintDataMapType::PRINT_MAPPING_FUEL
+// PRINT_MAPPING_FUEL_CONSUMPTION = class com.rockwell.autosuite.mes.constants.common.PrintDataMapType::PRINT_MAPPING_FUEL_CONSUMPTION
+// PRINT_MAPPING_COC = class com.rockwell.autosuite.mes.constants.common.PrintDataMapType::PRINT_MAPPING_COC
+// PRINT_MAPPING_COQ = class com.rockwell.autosuite.mes.constants.common.PrintDataMapType::PRINT_MAPPING_COQ
+// PRINT_MAPPING_VIN = class com.rockwell.autosuite.mes.constants.common.PrintDataMapType::PRINT_MAPPING_VIN
+
+/**
+ * author : Deng Bing
+ * Smile 2020/03/10
+ * Description: 通过车间查询科室、部门
+ * return:科室编号sectionNo，科室描述sectionName，部门编号departNo，部门描述departName
+ * **/
+function getInfoByArea(name)
+{
+     array = createArray(4)
+     sql = "select dt.parent_department_S  from AT_UM_Department dt where dt.department_no_S = '"+name+"' "
+     vectorData = getArrayDataFromActive(sql)
+     //vectorResult = vector()
+     if(!vectorData.isEmpty())
+     {
+        sectionNo = vectorData.get(0)[0]
+        
+        sqlS = "select dt.parent_department_S ,dt.department_desc_S from AT_UM_Department dt where dt.department_no_S = '"+sectionNo+"' "
+        vectorDataS = getArrayDataFromActive(sqlS)
+        if(!vectorDataS.isEmpty())
+        {
+            departNo = vectorDataS.get(0)[0]
+            sectionName = vectorDataS.get(0)[1]
+            sqlSS = "select dt.department_desc_S from AT_UM_Department dt where dt.department_no_S = '"+departNo+"' "
+            vectorDataSS = getArrayDataFromActive(sqlSS)
+            if(!vectorDataSS.isEmpty())
+            {
+                departName = vectorDataSS.get(0)[0]
+            }
+        }
+        array[0] = sectionNo
+        array[1] = sectionName
+        array[2] = departNo
+        array[3] = departName
+     }
+     println(array)
+     return  array
+}
+/**
+ * author : Deng Bing
+ * Smile 2020/05/11
+ * Description: 返回数据字典的value
+ * param:grid,vectorData:数据集,n：列,name：字典名称,module：模块（Long）,code:字典项code
+ * return:value
+ * **/
+function setDicDataDescToGrid(grid,vectorData,n,name,module)
+{   
+    
+    if(vectorData!=null&&vectorData.size() > 0)
+    {
+        for(i = 0 ;i < vectorData.size(); i++)
+        {
+            code= grid.getCellText(i,n)
+            vulue = initComboboxByDic(name,module,code)
+            if(vulue != null)
+            {
+                grid.setCellValue(i,n,vulue) 
+            }
+        }
+    }
+    grid.resizeColumnsToFit()
+}
+/**
+ * author : Deng Bing
+ * Smile 2020/05/18
+ * Description: 返回生产地简称
+ * param:grid,vectorData:数据集,n：列,,code:生产地编号
+ * return:value
+ * **/
+function setAddrDataDescToGrid(grid,vectorData,n)
+{   
+    
+    if(vectorData.size() > 0)
+    {
+        for(i = 0 ;i < vectorData.size(); i++)
+        {
+            code= grid.getCellText(i,n)
+            vulue = getDescByAddrCode(code)
+            if(vulue != null)
+            {
+                grid.setCellValue(i,n,vulue) 
+            }
+        }
+    }
+    grid.resizeColumnsToFit()
+}
+   /**
+ * @author: dengbing
+ * @date: 2020-05-18
+ * @description: 返回生产地简称
+ * @versions:1.0
+ * */
+function  getDescByAddrCode(code){
+    value = null
+    sql ="select st.description from SITE st where st.site_name =  '"+code+"'"  
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    return value
+}
+/**
+ * author : Deng Bing
+ * Smile 2020/05/25
+ * Description: 返回工厂名称
+ * 
+ * param:grid,vectorData:数据集,n：列,,code:生产地编号
+ * return:value
+ * **/
+function setFactoryNameDataDescToGrid(grid,vectorData,n)
+{   
+    
+    if(vectorData.size() > 0)
+    {
+        for(i = 0 ;i < vectorData.size(); i++)
+        {
+            code= grid.getCellText(i,n)
+            vulue = getDescByFactoryNo(code)
+            if(vulue != null)
+            {
+                grid.setCellValue(i,n,vulue) 
+            }
+        }
+    }
+    grid.resizeColumnsToFit()
+}
+   /**
+ * @author: dengbing
+ * @date: 2020-05-25
+ * @description: 返回工厂名称
+ * @versions:1.0
+ * */
+function  getDescByFactoryNo(code){
+    value = null
+    sql ="select dp.factory_name_S from AT_OM_Default_Plant dp where dp.factory_no_S = '"+code+"'"  
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    return value
+}
+   /**
+ * @author: dengbing
+ * @date: 2020-05-11
+ * @description: 返回数据字典项value
+ * @versions:1.0
+ * */
+function  initComboboxByDic(name,module,code){
+    value = null
+    sql ="select distinct s.value_s from at_sm_datadictionar p left join at_sm_datadictionaryitem s on p.atr_key = s.parent_key  
+       where p.module_I = "+module+" and p.name_S = '"+name+"' and s.code_S = '"+code+"' "  
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    return value
+}
+
+/**
+ * author : Deng Bing
+ * Smile 2020/05/12
+ * Description: 返回数据字典的value,并设置到下拉框
+ * param:name：字典名称,module：模块（Long）,code:字典项code
+ * return:value
+ * **/
+function setDicDataDescToCombobox(name,module,code,combobox)
+{   
+    value = initComboboxByDictionary(name,module,code)
+    combobox.setSelectedText(value)
+}
+
+function setDicDataDescToEdit(edit,code,name,module){
+    value = initComboboxByDic(name,module,code)
+    edit.setText(value)
+}
+/**
+ * author : Deng Bing
+ * Smile 2020/06/8
+ * Description: 返回部门名称
+ * param:grid,vectorData:数据集,n：列,,code:部门编号
+ * return:value
+ * **/
+function setDepartmentDataDescToGrid(grid,vectorData,n)
+{   
+    
+    if(vectorData.size() > 0)
+    {
+        for(i = 0 ;i < vectorData.size(); i++)
+        {
+            key= grid.getCellText(i,n)
+            if(key==null){
+                 grid.setCellValue(i,n,"") 
+            }else{
+                keyStr = String::valueOf(key)
+                if(isEmptyStr(keyStr.trim())){
+                    grid.setCellValue(i,n,"") 
+                }else{
+                     vulue = getDescByDepartmentKey(key)
+                    if(vulue != null)
+                    {
+                        grid.setCellValue(i,n,vulue) 
+                    }else{
+                        grid.setCellValue(i,n,"") 
+                    }
+                }
+            }
+           
+        }
+    } 
+    grid.resizeColumnsToFit()
+}
+/**
+ * author : Deng Bing
+ * Smile 2020/06/2
+ * Description: 返回店铺名称
+ * param:grid,vectorData:数据集,n：列,,code:店铺编号
+ * return:value
+ * **/
+function setSzoneDataDescToGrid(grid,vectorData,n)
+{   
+    
+    if(vectorData.size() > 0)
+    {
+        for(i = 0 ;i < vectorData.size(); i++)
+        {
+            code= grid.getCellText(i,n)
+            vulue = getDescBySzoneCode(code)
+            if(vulue != null)
+            {
+                grid.setCellValue(i,n,vulue) 
+            }
+        }
+    } 
+}
+/**
+ * author : Deng Bing
+ * Smile 2020/06/2
+ * Description: 返回店铺名称
+ * **/
+function  getDescBySzoneCode(code){
+    value = null
+    sql ="select sz.description from STORAGE_ZONE sz  where sz.storage_zone_name = '"+code+"'"  
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    return value
+}
+/**
+ * author : Deng Bing
+ * Smile 2020/06/8
+ * Description: 返回部门名称
+ * **/
+function  getDescByDepartmentCode(code){
+    value = null
+    sql ="select ud.department_desc_S from AT_UM_Department ud 
+           where ud.department_no_S = '"+code+"'"  
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    return value
+}
+
+/**
+ * author : Deng Bing
+ * Smile 2020/06/8
+ * Description: 返回部门名称
+ * **/
+function  getDescByDepartmentKey(key){
+    value = null
+    sql ="select ud.department_desc_S from AT_UM_Department ud 
+           where ud.atr_key = "+key
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    return value
+}
+/**
+ * author : Deng Bing
+ * Smile 2020/06/8
+ * Description: 返回部门编号
+ * **/
+function  getCodeByDepartmentDesc(desc){
+    value = null
+    sql ="select ud.department_no_S from AT_UM_Department ud 
+           where ud.department_desc_S = '"+desc+"'"  
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    if(value == null)
+    {
+        println("部门名称："+desc+"在部门表没有对应的编码")
+    }
+    return value
+}
+
+/**
+ * author : Deng Bing
+ * Smile 2020/06/8
+ * Description: 返回部门key
+ * **/
+function  getKeyByDepartmentDesc(desc){
+    value = null
+    sql ="select ud.atr_key from AT_UM_Department ud 
+           where ud.department_desc_S = '"+desc+"'"  
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    if(value == null)
+    {
+        println("部门名称："+desc+"在部门表没有对应的编码")
+    }
+    return value
+}
+
+/**
+ * author : Deng Bing
+ * Smile 2020/06/8
+ * Description: 返回部门key
+ * **/
+function  getKeyByDepartmentDescAndParentDepartmentKey(desc,parentKey){
+    value = null
+    sql ="select ud.atr_key from AT_UM_Department ud 
+           where ud.department_desc_S = '"+desc+"' and ud.parent_department_I="+parentKey  
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    if(value == null)
+    {
+        println("部门名称："+desc+"在部门表没有对应的编码")
+    }
+    return value
+}

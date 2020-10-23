@@ -1,0 +1,247 @@
+import("java.io.*")
+import("org.apache.poi.hssf.usermodel.HSSFCell")
+import("org.apache.poi.hssf.usermodel.HSSFRow")
+import("org.apache.poi.hssf.usermodel.HSSFSheet")
+import("org.apache.poi.hssf.usermodel.HSSFWorkbook")
+import("org.apache.poi.hssf.usermodel.HSSFPatriarch")
+import("org.apache.poi.hssf.usermodel.HSSFClientAnchor")
+import("java.util.UUID")
+import("org.apache.poi.ss.usermodel.Cell")
+import("org.apache.poi.ss.usermodel.DateUtil")
+import("org.apache.poi.ss.usermodel.Row")
+import("org.apache.poi.ss.usermodel.Sheet")
+import("org.apache.poi.ss.usermodel.Workbook")
+import("org.apache.poi.xssf.usermodel.XSSFWorkbook")
+import("org.apache.poi.ss.usermodel.WorkbookFactory")
+import("org.apache.poi.poifs.filesystem.POIFSFileSystem")
+import("java.text.SimpleDateFormat")
+import("java.math.BigDecimal")
+
+/**
+ * 说明：将指定Excel文件导入DsGrid中。
+ * 参数：fileName--导入的Excel文件全名（路径+文件名）
+ *      grid--导入的目标DsGrid的名称
+ * */
+function excelToGrid(fileName, grid) {
+    workbook = null
+    fin = FileInputStream(fileName)
+    suffix = fileName.substring(fileName.lastIndexOf(".") + 1)
+    if("xlsx".equals(suffix)) {
+        //dialogOk("提示", getHTMLFormat("暂不支持Excel2003以上版本。"))
+        workbook = XSSFWorkbook(fin)
+    } else if("xls".equals(suffix)) {
+        workbook = HSSFWorkbook(fin)
+    }
+    rowNum = -1
+    grid.clearGrid()
+    //fin = FileInputStream(fileName)
+    //workbook = HSSFWorkbook(fin)
+    sheet = workbook.getSheetAt(0)
+    rowI = sheet.getLastRowNum()
+    colNum = grid.getNumberOfColumns()
+    if(rowI >= 1){
+        for(r = 0; r <= rowI; r++) {  
+            row=sheet.getRow(r)
+            colI = row.getLastCellNum()
+            for(c = 0; c < colNum; c++){
+                cell = row.getCell(c)
+                str = ""
+                if(cell != null) {
+                    cellType = cell.getCellType()
+                    switch(cellType) {
+                    	case HSSFCell::CELL_TYPE_NUMERIC:
+                    	   //str = "" + (long)cell.getNumericCellValue()
+                    	   format = cell.getCellStyle().getDataFormat()
+                           cellValue = cell.getNumericCellValue()
+                    	   if (format == 14 || format == 31 || format == 57 || format == 58 || (176<=format && format<=178) || (182<=format && format<=196) || (210<=format && format<=213) || (208==format ) ) { // 日期
+                    	       sdf = SimpleDateFormat("yyyy-MM-dd")
+                    	       str = sdf.format(DateUtil::getJavaDate(cellValue))
+                           } else if (format == 20 || format == 32 || format==183 || (200<=format && format<=209) ) { // 时间
+                               sdf = SimpleDateFormat("HH:mm")
+                               str = sdf.format(DateUtil::getJavaDate(cellValue))
+                           } else { // 不是日期格式
+                               str = BigDecimal(String::valueOf(cell)).toPlainString()
+                           }
+                    	   break
+                    	case HSSFCell::CELL_TYPE_STRING:
+                    	   str = cell.getStringCellValue().trim()
+                    	   break  
+                    	case HSSFCell::CELL_TYPE_BOOLEAN:
+                    	   str = "" + cell.getBooleanCellValue()  
+                    	   break  
+                    	case HSSFCell::CELL_TYPE_FORMULA:
+                    	   str = "" + cell.getCellFormula() 
+                    	   break  
+                    	default:  
+                    	   str = "" 
+                    	   break
+                    }
+                    grid.setCellText(r, c, str)
+                } else {
+                    grid.setCellText(r, c, "")
+                }
+            }
+        }
+        grid.deleteGridRow(0)
+        //setGridSeq(grid)   //如有需要，可以增加第一列的序号，具体参照CommonUtil中的方法。
+    } else {
+        dialogOk("提示", getHTMLFormat("打开的文件无记录，请确认后重新打开"))
+    }
+//     } else {
+//         dialogOk("提示", getHTMLFormat("只能导入Excel2003版本的文件。"))
+//     }
+}
+
+
+/**
+ * 说明：将指定Grid中的内容导出至Excel中。
+ * 参数：gridList--导出的grid列表。这里可以一次性导出多个List到同一个Excel文件的不同Sheet中。
+ * */
+function gridToExcel(gridList) {
+    catch(Exception, function (e) {
+        dialogError(getHTMLFormat("程序有错，导出数据失败!!") + "\n" + e)
+    })
+    fileName = saveFileDialog()
+    if(isNotEmpty(fileName)) {
+        if(!isSuffixName(fileName, "xls")) {
+            fileName = fileName + ".xls"
+        }
+        flag = 1
+        dir = File(fileName)
+        if(dir.exists()) {
+            flag = dialogOkCancel("确认", getHTMLFormat("文件已存在，是否替换原来文件？"))
+        }
+        if(flag == 1) {
+        	wb = HSSFWorkbook()
+        	for(n = 0; n < gridList.size(); n++) {
+                gridAt = gridList.get(n)
+                writeSheet(wb, gridAt, n)
+        	}
+        	fout = FileOutputStream(fileName)
+        	wb.write(fout)
+        	fout.close()
+        	dialogOk("提示", getHTMLFormat("数据导出成功，请查阅！！"))
+    	}
+    }
+}
+
+/**
+ * 说明：将指定内容写入到Sheet中
+ * 参数：wb--HSSFWorkbook对象
+ *      gridAt--当前需要导出的grid对象
+ *      n--当前导出的grid的下标
+ * */
+function writeSheet(wb, gridAt, n) {
+    sheet = wb.createSheet()    
+    sheetName = "sheet" + (n + 1)
+    if(isNotEmpty(gridAt.getToolTipText())) {
+        sheetName = gridAt.getToolTipText()
+    }
+    wb.setSheetName(n, sheetName)
+    row = sheet.createRow(0)
+    strs = gridAt.getColumnHeadings()
+    k = 0
+    for(i = 0; i < strs.length; i++) {
+        if(gridAt.getColumnWidth(i) > 7) {
+            cell = row.createCell(short(k))
+            cell.setCellValue(strs[i])
+            k++
+        }
+    }
+    for(i = 0; i < gridAt.getNumberOfRows(); i++){
+        row = sheet.createRow(i + 1)
+        k = 0
+        for(j = 0; j < gridAt.getNumberOfColumns(); j++) {
+            if(gridAt.getColumnWidth(j) > 7) {
+                cell = row.createCell(short(k))
+                cellValue = gridAt.getCellText(i, j)
+                if(cellValue != null) {
+                    cell.setCellValue(gridAt.getCellText(i, j))
+                } else {
+                    cell.setCellValue("")
+                }
+                k++
+            }
+        }
+    }
+}
+
+/**
+ * 说明：将文件上传到指定目录中
+ * 参数：fileName--需要上传的文件全名（路径+文件名）
+ * */
+function uploadFile(fileName, targetPath) {
+    file = File(fileName)
+    /**
+     * 如果在附件上传时，需要按照一定逻辑分目录存储（例如按照文件类别存储等）。这里可参照以下代码。
+     * */
+    /*
+    extension = fileName.substring(fileName.lastIndexOf("."))
+    prefix = ""
+    if(extension.equals(".jpg")||extension.equals(".png")||extension.equals(".gif")) {
+        prefix = "images"
+    } else {
+        prefix = "docs"
+    }
+    */
+    filePath = file.getAbsolutePath()
+    targetDir = File(targetPath) 
+    targetFile = File(targetDir.getPath() + "/" + file.getName()) //这里默认的上传后的文件名依然是原文件名，这里可以根据实际需求，修改file.getName()部分，按照文件名生成规则替换即可。
+    if(!targetDir.exists()) {
+        targetDir.mkdir()
+    }  
+    /**
+     * 关于copyFile方法的说明：经测试，该方法可以使用，但是存在一个问题，正如方法名所述，文件拷贝是连同文件名和文件内容
+     * 一起拷贝到第二个参数指明的目录。一般情况下，附件上传和下载都需要重新命名，所以在附件上传和下载功能中，copyFile方法并不适用。
+     * */
+    //copyFile(fileName, targetDir.getPath()) 
+    
+    copyByChannel(fileName, targetFile, "附件上传成功")
+}
+
+/**
+ * 说明：下载文件到指定目录
+ * 参数：sourceFile--要下载的文件全名（路径+文件名）
+ * */
+function downloadFile(sourceFile) {
+    sourceFileSuffix = sourceFile.substring(sourceFile.lastIndexOf(".") + 1) //获取源文件的后缀名，以便在下载时，自动填充。
+    fileName = saveFileDialog()
+    if(isNotEmpty(fileName)) {
+        if(!isSuffixName(fileName, sourceFileSuffix)) {  //匹配目标文件是否有源文件的后缀名，如果没有，自动填充。
+            fileName = fileName + "." + sourceFileSuffix
+        }
+        flag = 1
+        dir = File(fileName)
+        if(dir.exists()) {
+            flag = dialogOkCancel("确认", getHTMLFormat("文件已存在，是否替换原来文件？"))
+        }
+        if(flag == 1) {
+            copyByChannel(sourceFile, dir, "附件下载成功")
+    	}
+    }
+}
+
+/**
+ * 说明：使用文件流的方式，将文件从一个目录拷贝到另一个目录。
+ * 参数：sourceFile--文件源目录
+ *      targetfile--文件目的目录
+ *      msg--拷贝成功后的提示语
+ * */
+function copyByChannel(sourceFile, targetFile, msg) {
+    catch(Exception, function (e) {
+        dialogError(getHTMLFormat("程序有错，导出数据失败!!") + "\n" + e)
+    })
+    targetFile.createNewFile()
+    fis = FileInputStream(sourceFile)
+    fos = FileOutputStream(targetFile)
+    in = fis.getChannel()
+    out = fos.getChannel()
+    in.transferTo(0,in.size(),out)
+    
+    fis.close()
+    fos.close()
+    in.close()
+    out.close()
+    
+    dialogOk("提示", getHTMLFormat(msg))
+}

@@ -1,0 +1,628 @@
+/**
+ * 描述: 提供操作表格相关的方法.
+ * 
+ * @author: Lin Hui 08/06/2019
+ * @revision: 2.0
+ **/
+
+// 表格复选框选中时的文本
+SELECTED_CHAR = "√"
+
+// 表格复选框未选中时的文本
+DESELECTED_CHAR = "□"
+import("com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility")
+
+SELECTED_ICON = getImage("grid_SelectedRow")
+DESELECTED_ICON = getImage("grid_DeSelectedRow")
+
+/**
+ * 描述：设置表格，使表格第一列带有复选框
+ * 
+ * @parameter: grid - 表格对象
+ * @return void
+ * @author: Lin Hui 08/06/2018
+ */
+function setGridWithCheckbox(grid)
+{
+    cols = grid.getNumberOfColumns()
+    if(cols < 2)
+    {
+        dialogError("表格至少有两列，才能支持复选框！")
+        return
+    }
+    count = grid.getNumberOfRows()
+    for(i = 0; i < count; i++)
+    {
+        setRowChecked(grid, i, false)
+    }
+    
+//     form = getActiveDsForm()
+    form = grid.getForm()
+    propertyNameInit = "GridCheckboxEnableInit-" + form.getName() + "-" + grid.getName()
+    isInited = form.getProperty(propertyNameInit)
+    if(true != isInited)
+    {
+        script = "doGridCellSelectedSub(" + grid.getName() + ", CellEvent)"
+        oldScript = grid.getCellSelectedScript()
+//         grid.setCellSelectedScript(script + "\n" + oldScript)
+        println("GridCellSelectedScript: " + grid.getCellSelectedScript())
+        
+        columnSelectedScript = "doGridColumnSelectedSub(" + grid.getName() + ", ColumnEvent) "
+        columnSelectedOldScript = grid.getColumnSelectedScript()
+//         grid.setColumnSelectedScript(columnSelectedOldScript + "\n" + columnSelectedScript)
+        println("GridColumnSelectedScript: " + grid.getColumnSelectedScript())
+        
+        if(!grid.getAllowCellSelection())
+        {
+            grid.setAllowCellSelection(true)
+        }
+        form.setProperty(propertyNameInit, true)
+    }
+}
+
+/**
+ * 描述：选择列选中时，触发的方法
+ * 
+ * @param grid - 表格对象
+ * @param rowIndex - 行号
+ * @return void
+ * @author: Lin Hui 08/06/2019
+ */
+function doSelectRow(grid, rowIndex)
+{
+    checked = true
+    backColor = grid.getCellBackColor(rowIndex, 1)
+    selectedColor = grid.getCellSelectionBackground()
+    text = SELECTED_CHAR
+    imageIcon = SELECTED_ICON
+    oldSelected = grid.getCellObject(rowIndex, 0);
+    if ( (null != oldSelected) && oldSelected == true )
+    {
+        checked = false
+        text = DESELECTED_CHAR
+        selectedColor = backColor
+        imageIcon = DESELECTED_ICON
+    }
+    grid.setCellObject(rowIndex, 0, checked)
+    grid.setCellText(rowIndex, 0, text)
+    if (null != imageIcon)
+    {
+        grid.setCellImage(rowIndex, 0, imageIcon, 0);
+    }
+    else
+    {
+        grid.setCellBackColor(rowIndex, 0, selectedColorselectedColor);
+    }
+    
+    grid.setAllowCellSelection(true)
+    grid.setSelectedCell(rowIndex, 1)
+}
+
+/**
+ * 描述：设置指定行选中状态
+ * 
+ * @param grid - 表格对象
+ * @param rowIndex - 行号
+ * @param rowIndex - 选中状态
+ * @return void
+ * @author: Lin Hui 08/06/2019
+ */
+function setRowChecked(grid, rowIndex, checked)
+{
+    grid.setCellObject(rowIndex, 0, checked)
+    if(checked)
+    {
+        grid.setCellText(rowIndex, 0, SELECTED_CHAR)
+        grid.setCellImage(rowIndex, 0, SELECTED_ICON, 0)
+    }
+    else
+    {
+        grid.setCellText(rowIndex, 0, DESELECTED_CHAR)
+        grid.setCellImage(rowIndex, 0, DESELECTED_ICON, 0)
+    }
+    backColor = grid.getCellBackColor(rowIndex, 1)
+    grid.setCellBackColor(rowIndex, 0, backColor)
+}
+
+/**
+ * 描述：内部方法，单元格被选中时触发的方法。
+ * 
+ * @parameter: grid - 表格对象
+ * @parameter: CellEvent - 表格单元格选中事件
+ * @parameter: checkStateChangeFunction - 复选框状态改变的事件方法(function)
+ * @return void
+ * @author: Lin Hui 04/12/2016
+ */
+function doGridCellSelectedSub(grid, CellEvent)
+{
+    colIdx = CellEvent.getNewColumn()
+    if(colIdx == 0)
+    {
+        doSelectRow(grid, CellEvent.getNewRow())
+    }
+}
+
+/**
+ * 描述：内部方法，单元格被选中时触发的方法。
+ * 
+ * @parameter: grid - 表格对象
+ * @parameter: CellEvent - 表格单元格选中事件
+ * @parameter: checkStateChangeFunction - 复选框状态改变的事件方法(function)
+ * @return void
+ * @author: Lin Hui 04/12/2016
+ */
+function doGridColumnSelectedSub(grid, ColumnEvent)
+{
+    if(ColumnEvent.getColumn() == 0)
+    {
+        form = getActiveDsForm()
+        propertyName = "GridColumnSelectAll-" + form.getName() + "-" + grid.getName()
+        selectAll = form.getProperty(propertyName)
+        if(true == selectAll)
+        {
+            setAllChecked(grid, false)
+            form.setProperty(propertyName, false)
+        }
+        else
+        {
+            setAllChecked(grid, true)
+            form.setProperty(propertyName, true)
+        }
+    }
+}
+
+/**
+ * 描述：获取所有复选框被选中的对象。
+ * 
+ * @parameter: grid - 表格对象
+ * @return vector - 选中的对象列表
+ * @author: Lin Hui 04/12/2016
+ */
+function getCheckedObjects(grid)
+{
+    vectorChecked = vector()
+    count = grid.getNumberOfRows()
+    for(i = 0; i < count; i++)
+    {
+        checked = grid.getCellObject(i, 0)
+        if(checked)
+        {
+            vectorChecked.add(grid.getRowObject(i))
+        }
+    }
+    
+    return vectorChecked
+}
+
+/**
+ * 描述：设置对象在表格中的选中状态。
+ * 
+ * @parameter: grid - 表格对象
+ * @parameter: vectorObject - 对象列表
+ * @parameter: checkState - 是否被选中
+ * @return void
+ * @author: Lin Hui 04/12/2016
+ */
+function setCheckedObjects(grid, vectorObject, checkState)
+{
+    count = grid.getNumberOfRows()
+    for(i = 0; i < count; i++)
+    {
+        object = grid.getRowObject(i)
+        if(object != null && vectorObject.contains(object))
+        {
+            oldCheckState = getGridRowCheckedState(grid, i)
+            if(oldCheckState != checkState)
+            {
+                setRowChecked(grid, i, checkState)
+            }
+        }
+    }
+    grid.repaint()
+}
+
+/**
+ * 描述：设置表格中所有对象的选中状态。
+ * 
+ * @parameter: grid - 表格对象
+ * @parameter: checkState - 是否被选中
+ * @return void
+ * @author: Lin Hui 04/12/2016
+ */
+function setAllChecked(grid, checkState)
+{
+    count = grid.getNumberOfRows()
+    for(i = 0; i < count; i++)
+    {
+        setRowChecked(grid, i, checkState)
+    }
+}
+
+/**
+ * 描述：获取表格中指定的行的选中状态。
+ * 
+ * @parameter: grid - 表格对象
+ * @parameter: rowIdx - 表格行号，从0开始
+ * @return boolean - 是否被选中
+ * @author: Lin Hui 04/12/2016
+ */
+function getGridRowCheckedState(grid, rowIdx)
+{
+    count = grid.getNumberOfRows()
+    if(rowIdx < count)
+    {
+        return grid.getCellObject(rowIdx, 0)
+    }
+    
+    return false
+}
+
+
+/* 
+ * setGridSeq
+ * @param: grid grid object
+ * Minglou Shi/2013/09/17
+ * @param: grid : need sort grid
+ */
+function setGridSeq(grid)
+{
+    setGridSeq(grid, 0)
+}
+
+/* 
+ * 描述：设置表格排序号.
+ * 
+ * @parameter: grid - 表格对象
+ * @parameter: columnIndex - 数据列位置，从0开始。
+ * 
+ * @author: Lin Hui 2014/01/17
+ */
+function setGridSeq(grid, columnIndex)
+{
+    rowNum = grid.getNumberOfRows()
+    for(i = 0; i < rowNum; i++)
+    {
+        grid.setCellValue(i, columnIndex, (i + 1))
+    }
+    grid.resizeColumnsToFit()
+}
+
+/* 
+ * 将Vector的记录更新到Gird
+ * @param vectorArray 数据集
+ * @param grid grid对象
+ * 
+ */
+function addVectorToGrid(vectorArray, grid)
+{
+    for (i = 0; i < vectorArray.size(); i++)
+    {
+        rowData = vectorArray.elementAt(i)
+        count = grid.getNumberOfRows()
+        updateRowToGrid(rowData, grid, count)        
+    }
+}
+
+/* 
+ * 将row记录写到Grid中
+ * @param: row list中存放的行对象
+ * @param: grid grid对象
+ * @param: num 行号
+ * 
+ */
+function updateRowToGrid(rowData, grid, rowIndex)
+{
+    cols = rowData.length
+    if(rowData.length > grid.getNumberOfColumns())
+    {
+        cols = grid.getNumberOfColumns()
+    }
+    
+    for(i = 0; i < cols; i++)
+    {
+        grid.setCellText(rowIndex, i, rowData[i])
+    }
+    grid.setRowObject(rowIndex, rowData)
+}
+
+
+function setSelectedRowObjects(gridDataDictActivity, rowObject)
+{
+    vectorObject = vector()
+    vectorObject.add(rowObject)
+    gridDataDictActivity.setSelectedRowObjects(vectorObject)
+}
+
+/* 
+ * 设置表格指定行的背景色
+ * @param: grid grid对象
+ * @param: rowIndex 表格的行号，从0开始
+ * @param: color 颜色
+ * 
+ */
+function setRowBackgroupColor(grid, rowIndex, color)
+{
+    cols = grid.getNumberOfColumns()
+    for(i = 0; i < cols; i++)
+    {
+        grid.setCellBackColor(rowIndex, i, color)
+        
+    }
+    grid.refresh()
+}
+
+/* 
+ * 显示grid上方信息
+ * @param: grid grid控件
+ * @param: type 类型，1：共n条 2：共n条，选中m条
+ * @param:m 内容显示的控件，FlatLabel
+ */
+function glbSetGridHeaderLabelText(grid, type, cContorl)
+{
+    text = glbGetGridHeaderText(grid, type)
+    cContorl.setText(text)
+}
+
+
+
+
+function setDataToGrid(vectorData, grid)
+{
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+    size = vectorData.size()
+    for(i = 0; i < size; i++)
+    {
+        rowData = vectorData.elementAt(i)
+        len = rowData.length
+        for(j = 0; j < len; j++)
+        {
+            grid.setCellText(i, j, rowData[j])
+        }
+    }
+    
+//     grid.resizeColumnsToFit()
+//     setGridSeq(grid)
+}
+
+/* 
+ * 获取message信息，用于grid上方显示
+ * @param: grid grid控件
+ * @param: type 类型，1：共n条 2：共n条，选中m条
+ * @return message内容
+ */
+function glbGetGridHeaderText(grid, type)
+{
+    msgPackage = "MES_MAINFROM_MSG_TRX"
+    rowCount = 0
+    selectedCount = 0
+    if(grid instanceof class com.datasweep.compatibility.ui.grid.DsGrid)
+    {
+        rowCount = grid.getNumberOfRows()
+        selectedCount = grid.getSelectedRowCount()
+    }
+    else if(grid instanceof class com.rockwell.mes.clientfw.pmc.impl.view.activities.GridDataDictActivity)
+    {
+        ptsGrid = grid.getGrid()
+        rowCount = ptsGrid.getNumberOfRows()
+        objs = grid.getSelectedRowObjects()
+        selectedCount = objs.size()
+    }
+    if(type == 1)
+    {
+        paraArray = createArray(1)
+        paraArray[0] = rowCount
+        msgId = "GRID_HEADER_TEXT_TOTAL_COUNT"
+    }
+    else
+    {   
+        paraArray = createArray(2)
+        paraArray[0] = rowCount
+        paraArray[1] = selectedCount
+        msgId = "GRID_HEADER_TEXT_SELECTED_COUNT"
+    }
+    return I18nMessageUtility::getLocalizedMessage(msgPackage, msgId, paraArray)
+}
+
+/**
+ * 设置表格单元格文本可复制
+ * 
+ */
+function setGridCellTextCopyEnable(grid)
+{
+    if(grid instanceof class com.datasweep.compatibility.ui.grid.DsGrid)
+    {
+        class com.ftpc.common.ui.grid.GridUtility::setGridCellTextCopyEnable(grid)
+    }
+}
+
+/**
+ * 设置FTPC表格单元格控件为不可编辑的编辑框
+ * 
+ * @param grid FTPC表格
+ */
+function setReadOnlyCellControl(grid)
+{
+    columns = grid.getNumberOfColumns()
+    edit = class com.datasweep.compatibility.ui.Edit()
+    edit.setReadOnly(true)
+    for(i = 0; i < columns; i++)
+    {
+        grid.setColumnControl(i, edit)
+    }
+}
+
+
+/**
+ * 设置列水平居中对齐
+ * @param: grid - DsGrid表格对象
+ * @param: cols - 列序号数组，int[]
+ */
+function setGridHorizontalAlignCenter(grid, cols)
+{
+    foreach col(cols)
+    {
+        grid.getColumn(col).setHorizontalAlign(class com.datasweep.compatibility.ui.grid.HorizontalAlignStyle::CENTER)
+    }
+}
+
+/**
+ * 设置列水平居左对齐
+ * @param: grid - DsGrid表格对象
+ * @param: cols - 列序号数组，int[]
+ */
+function setGridHorizontalAlignLeft(grid, cols)
+{
+    foreach col(cols)
+    {
+        grid.getColumn(col).setHorizontalAlign(class com.datasweep.compatibility.ui.grid.HorizontalAlignStyle::LEFT)
+    }
+}
+
+function addDataToGrid(vectorData, grid)
+{
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+    size = vectorData.size()
+    for(i = 0; i < size; i++) 
+    {
+        rowData = vectorData.elementAt(i)
+        len = rowData.length
+        for(j = 0; j < len; j++)
+        {
+            grid.setCellText(i, j, rowData[j])
+        }
+    }
+    
+}
+
+function glbInitGrid(grid)
+{
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+    grid.resizeColumnsToFit()
+}
+
+function glbInitActivityGrid(activityGrid)
+{
+    glbInitGrid(activityGrid.getGrid())
+}
+
+/**
+ * @param Grid: grid
+ * @param Int: rowNum
+ * @param Color: color
+ * */
+function setRowColor(grid,rowNum,color)
+{
+    colNum = grid.getNumberOfColumns()    
+    for(i=0;i<colNum;i++)
+    {
+        grid.setCellBackColor(rowNum,i,color)    
+    }
+}
+
+function FillBindGridWithVector( grid, vectorData, arrayHeader, toResize)
+{
+    if (grid == null)
+    {
+        return -1
+    }
+    
+    grid.beginUpdate()
+    grid.clearGrid()      
+    grid.setNumberOfRows(0)
+    if (arrayHeader != null && arrayHeader.length >0)
+    {
+        grid.setColumnHeadings(arrayHeader)
+    }
+    
+    for(i = 0; vectorData != null && i < vectorData.size(); i++) 
+    {   
+        row = vectorData.get(i) 
+        if (row instanceof class java.lang.Object[])
+        {
+            object = row[0]
+            
+            for (j=0; j < grid.getNumberOfColumns() ; j++)
+            {
+                if(row[j+1] != null)
+                {
+                    grid.setCellText(i, j, row[j+1].toString())  // fill data    
+                }
+            } 
+            grid.setRowObject(i, object) // atRow object
+        }
+        else if (row != null)
+        {
+            grid.setRowObject(i, row)
+            grid.setCellText(i, 1, row.toString())  // fill data 
+        }
+        
+    }
+    
+    if (toResize == true)
+    {
+        grid.resizeColumnsToFit() 
+    }
+    grid.endUpdate()
+    grid.setColumnAutoSort(true)    
+    return 0
+}
+
+/* 
+ * first column of grid is auto increment index 
+ * parameter:
+ *      grid:       DsGrid instance
+ *      vectorData: a vector containing array object or object
+ *      arrayHeader: grid header column
+ *      toResize: resize the columns or not
+ */
+function FillBindGridWithVectorIndex( grid, vectorData, arrayHeader, toResize)
+{
+    if (grid == null)
+    {
+        return -1
+    }
+    
+    grid.beginUpdate()
+    grid.clearGrid()      
+    grid.setNumberOfRows(0)
+    if (arrayHeader != null && arrayHeader.length >0)
+    {
+        grid.setColumnHeadings(arrayHeader)
+    }
+    
+    for(i = 0; vectorData != null && i < vectorData.size(); i++) 
+    {   
+        row = vectorData.get(i)
+        grid.setCellText(i, 0, i + 1)  // add index    
+        if (row instanceof class java.lang.Object[])
+        {
+            object = row[0]
+            
+            for (j=1; j < grid.getNumberOfColumns(); j++)
+            {
+                if(row[j] != null)
+                {
+                    grid.setCellText(i, j, row[j].toString())  // fill data    
+                }
+            } 
+            grid.setRowObject(i, object) // atRow object
+        }
+        else if (row != null)
+        {
+            grid.setRowObject(i, row)
+            grid.setCellText(i, 1, row.toString())  // fill data 
+        }
+        
+    }
+    
+    if (toResize == true)
+    {
+        grid.resizeColumnsToFit() 
+    }
+    grid.endUpdate()
+    grid.setColumnAutoSort(true)    
+    return 0
+}

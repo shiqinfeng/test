@@ -1,0 +1,148 @@
+importSubroutine("MES_Common_UI")
+importSubroutine("MES_Common_Time")
+importSubroutine("MES_Common_Combobox")
+importSubroutine ("ra_errorHandling")
+importSubroutine ("MES_Common_Base")
+importSubroutine ("MES_Common_Log")
+importSubroutine("MES_PP_Common")
+importSubroutine("MES_Common_DataDict")
+importSubroutine("MES_OM_Common") 
+
+import("com.rockwell.discrete.mes.system.model.om.capacity.MESOMCapacity")
+import("com.rockwell.discrete.mes.system.model.om.capacity.MESOMCapacityFilter")
+/**
+ * 描述: 获取IMS中间表的PART信息：新增，更新
+ * 
+ * @author: Deng Bing 05/26/2020
+ * @revision: 1.0
+ **/
+function getRouteStepInfoByIMS(partNo)
+{
+    sql = "select LTRIM(RTRIM(rsi.part_number)),LTRIM(RTRIM(rsi.step_no)),LTRIM(RTRIM(rsi.step_name)),LTRIM(RTRIM(rsi.pline)),
+    LTRIM(RTRIM(rsi.equipment_class_no)),LTRIM(RTRIM(rsi.report_flag)) from route_step_ims rsi
+    where  LTRIM(RTRIM(rsi.part_number)) = '"+partNo+"' order by rsi.step_no"
+    vectorData = getArrayDataFromActive(sql) 
+    user = getCurrentUser()
+    userName = user.getName()
+    vectorStep = vector()
+    vectorFlag = vector()
+    if(!vectorData.isEmpty())
+    {
+        routeObj = getRoute(partNo)
+        if(routeObj==null){
+            routeObj = createRoute(partNo)
+        }
+        steps = routeObj.getSteps()
+        if(steps!=null&&steps.size()>0){
+            return
+        }
+        for(i=0;i<vectorData.size();i++)
+        {
+            data = vectorData.get(i)
+            stepName = data[2]
+            if(!isEmptyStr(stepName))
+            {
+                stepObj = routeObj.addStep(getOperation(stepName))
+                if(stepObj==null){
+                    //dialogError("查询无此工序")
+                    return
+                }
+                vectorStep.add(stepObj)
+                flag = saveToDB(routeObj,stepObj,userName,data,i+1)
+                if(flag==true){
+                    vectorFlag.add(flag)
+                }
+                
+            }
+        }
+    }
+    if(vectorFlag.size() == vectorStep.size())
+    {
+        logInfo(FORM_MODULE," save succefully", getDBTime(), "subroutine:MES_OM_Interface_GetRouteStepInfoByIMSToDb"  , "Function:getRouteStepInfoByIMS()")
+    }
+}
+//保存到PART表
+function saveToDB(routeObj,stepobj,userName,data,i)
+{
+    flag = false
+        if(stepobj==null){
+        dialogError("查询无此工序")
+        return
+    }
+    pLineName = data[3]
+    pLineObj = getProductionLineByName(pLineName)
+    reportFlag = data[5]
+    newReportFlag=10
+    if(reportFlag!=null&&reportFlag.equals("True")){
+        newReportFlag=20
+    }
+    stepobj.setUDA(newReportFlag,"report_flag")
+    stepobj.setUDA(Long::valueOf(i*10),"sort_seq")
+    if(pLineObj!=null){
+        defaultPline = pLineObj.getKey()
+        stepobj.setUDA(defaultPline,2)
+//         if(defaultPline != null && wc != null)
+//         {
+//             pline = getProductionLineByKey(Long::valueOf(defaultPline))
+//             vectorPLine = routeOBJ.getProductionLines()
+//             hasPLine = false
+//             foreach pLineObj(vectorPLine){
+//                 if(pline.getKey()==pLineObj.getKey()){
+//                     hasPLine=true
+//                 }
+//             }
+//             if(!hasPLine){
+//                 routeOBJ.addProductionLine(pline)
+//             }
+//             
+//             stepobj.setDefaultWorkCenter(pline,wc)
+//         }
+    }
+    
+    
+	//addEquipmentClass = activityControlSbAddList.getObjects()
+    
+    response = routeObj.save(null,null,null)
+    if(response.isOk())
+    {
+        //关联设备类
+//         if(data[4]!=null){
+//     	    partObj = getPart(data[0])
+//             partKey = partObj.getKey()      
+//             ftrCapacity = MESOMCapacityFilter()
+//             ftrCapacity.forRoutekeyEqualTo(routeObj.getKey())
+//             ftrCapacity.forPlinekeyEqualTo(Long::valueOf(defaultPline))
+//             ftrCapacity.forRoutestepkeyEqualTo(stepobj.getKey())
+//             vectorCapacity = ftrCapacity.getFilteredObjects()
+//             
+//             equipmentClass = getEquipmentClassByName(data[4])
+//             mesOmCapacity = MESOMCapacity()
+// 			if(!vectorCapacity.isEmpty()){
+// 			     foreach capacity(vectorCapacity){
+// 			         if(capacity.getEckey()==equipmentClass.getKey()){
+// 			             mesOmCapacity = capacity
+// 			         }
+// 			     }
+// 			}
+// 			mesOmCapacity.setEckey(equipmentClass.getKey())   //设置设备类
+// 			mesOmCapacity.setDefaultecflag(Long::valueOf("10")) //默认设备类
+//             mesOmCapacity.setRoutekey(routeOBJ.getKey())
+//             mesOmCapacity.setPlinekey(Long::valueOf(defaultPline))
+//             mesOmCapacity.setRoutestepkey(stepobj.getKey())
+//             mesOmCapacity.setCreatedby(userName)
+//             mesOmCapacity.setPartkey(partKey)
+//             mesOmCapacity.save()
+//     		
+//     	}
+        println("工步:"+data[2]+"保存成功")
+        logInfoMessage("subroutine:getRouteStepInfoByIMSToDb:产品"+data[2]+"保存成功")
+        flag = true
+    }
+    else
+    {
+        println("工步:"+data[2]+"保存失败")
+        logErrorMessage("subroutine:getRouteStepInfoByIMSToDb:产品"+data[2]+"保存失败"+response.getFirstErrorMessage())
+        flag = false
+    }
+    return flag
+}

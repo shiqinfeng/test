@@ -1,0 +1,38 @@
+
+function getInfoDialogTitle()
+{
+    return class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage("MES_UI_Common", "dialog_title_info")
+}
+
+
+function getQuestionDialogTitle()
+{
+    return class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage("MES_UI_Common", "dialog_title_confirm")
+}
+
+
+
+function getWarnDialogTitle()
+{
+    return class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage("MES_UI_Common", "dialog_title_warn")
+}
+
+
+
+function getErrorDialogTitle()
+{
+    return class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage("MES_UI_Common", "dialog_title_error")
+}
+
+
+function getLocalizedMessage(messagePack, messageID, args)
+{
+    if(args == null)
+    {
+        return class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage(messagePack, messageID)
+    }
+    else
+    {
+        return class com.rockwell.mes.commons.base.ifc.i18n.I18nMessageUtility::getLocalizedMessage(messagePack, messageID, args)
+    }
+}

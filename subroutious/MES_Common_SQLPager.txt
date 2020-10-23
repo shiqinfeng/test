@@ -1,0 +1,44 @@
+
+/**
+ * SQL分页查询，返回生产数据库的分页数据
+ * 
+ * @param sql : SQL语句
+ * @param pageIndex : 页数，第几页，从1开始。
+ * @param pageCount: 每页返回数据
+ * @return: Vector<String[]> - 分页数据
+ * @author: Lin Hui 12/20/2013
+ * 
+ */
+function getDataFromDB(sql, pageIndex, pageCount)
+{
+    rownumStart = ((pageIndex - 1) * pageCount) + 1
+    rownumEnd = pageIndex * pageCount
+    sqlPager = "select * from (select t.*,rownum seq from (" + sql + ") t) where seq >= " + rownumStart + " and seq <= " + rownumEnd
+    if(environment.isDebugging())
+    {
+        println(sqlPager)
+    }
+    return getArrayDataFromActive(sqlPager)
+}
+
+/**
+ * SQL分页查询，返回生产数据库的分页数据
+ * 
+ * @param sql : SQL语句
+ * @param pageIndex : 页数，第几页，从1开始。
+ * @param pageCount: 每页返回数据
+ * @return: Vector<String[]> - 分页数据
+ * @author: Lin Hui 12/20/2013
+ * 
+ */
+function getDataFromDB(sql, pageIndex, pageCount)
+{
+    rownumStart = ((pageIndex - 1) * pageCount) + 1
+    rownumEnd = pageIndex * pageCount
+    sqlPager = "select * from (select t.*,rownum seq from (" + sql + ") t) where seq >= " + rownumStart + " and seq <= " + rownumEnd
+    if(environment.isDebugging())
+    {
+        println(sqlPager)
+    }
+    return getArrayDataFromActive(sqlPager)
+}

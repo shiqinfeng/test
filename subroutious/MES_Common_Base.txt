@@ -1,0 +1,1191 @@
+Export_MIX_Number = 60000
+
+/*
+ * Description: provide the constant definition
+ * 
+ * Author: Hui Lin
+ * Date: 2013/09/17
+ * Revision: 1.0
+ * 
+ */
+import("java.text.SimpleDateFormat")
+import("com.rockwell.mes.commons.base.ifc.services.PCContext")
+import("com.rockwell.mes.commons.base.ifc.services.ServiceFactory")
+import("com.rockwell.mes.commons.base.ifc.configuration.MESConfiguration")
+import("com.datasweep.common.util.crypto.TextEncrypter")
+import("com.datasweep.plantops.common.constants.filtering.IFilterSortOrders")
+import("com.rockwell.discrete.integration.plc.service.im.ifc.IPLCService")
+//导入导出功能所用到的包
+import("java.io.File")
+import("java.io.FileInputStream")
+import("java.io.FileOutputStream")
+import("javax.swing.JFileChooser")
+import("org.apache.poi.poifs.filesystem.POIFSFileSystem")
+import("org.apache.poi.hssf.usermodel.HSSFWorkbook")
+import("org.apache.poi.hssf.usermodel.HSSFSheet")
+import("org.apache.poi.hssf.usermodel.HSSFFont")
+import("org.apache.poi.hssf.usermodel.HSSFCellStyle")
+import("org.apache.poi.hssf.util.HSSFColor.LIGHT_CORNFLOWER_BLUE")
+import("org.apache.poi.hssf.util.HSSFColor.YELLOW")
+import("com.datasweep.compatibility.client.Area")
+import("com.rockwell.autosuite.mes.model.lm.kanbangroup.*")
+import("com.rockwell.autosuite.mes.constants.print.LogisticsType")
+importSubroutine("ra_errorHandling")
+/*
+ * 1.使用FTSP框架需要初始化环境，在SO中是FormEnvironment，在SOS中是EventSheetEnvironment
+ * 通用：com.datasweep.compatibility.pnuts.Environment
+ * 2.初始化日志组件，支持Log4j日志框架
+ * 
+ * 需要在Form的initForm事件中或者在EventSheet的beforeStart事件中，首个调用该方法进行环境初始化。
+ */
+function initEnvironment()
+{
+    pcEnvironment = PCContext::getEnvironment()
+    if(pcEnvironment == null || pcEnvironment.isDebugging())
+    {
+        PCContext::setEnvironment(environment)
+    }
+    
+    log4jConfigured = getProperty("Log4jConfigured")
+    if(log4jConfigured != true)
+    {
+        class java.lang.System::setProperty("com.rockwell.mes.commons.base.logpath", class com.datasweep.core.eventlog.EventLog::getLogFolder())
+        props = getLog4jProperties()
+        class org.apache.log4j.PropertyConfigurator::configure(props)
+        setProperty("Log4jConfigured", true)
+    }
+}
+
+/**
+ * 将DsList对象转换成一个长字符串
+ * 
+ * @parameter: dsListName - (String)
+ *          DsList名称
+ * @return: 转换后的长字符串
+ * @author: Lin Hui 03/21/2016
+ */
+function dsListToString(dsListName)
+{
+    dsList = getList(dsListName)
+    strBuffer = StringBuffer()
+    if(dsList != null)
+    {
+        vectorS = dsList.getItems()
+        for(i = 0; i < vectorS.size(); i++)
+        {
+            strBuffer.append(vectorS.get(i) + "\n")
+        }
+    }
+    
+    return strBuffer.toString()
+}
+
+/**
+ * 从DsList("Log4jProperties")获取Log4j配置
+ * 
+ * @return: (Properties)Log4j配置对象
+ * @author: Lin Hui 03/21/2016
+ */
+function getLog4jProperties(){
+    string = dsListToString("Log4jProperties")
+    reader = class java.io.StringReader(string)
+    props = class java.util.Properties()
+    props.load(reader)
+    reader.close()
+    return props
+}
+
+
+/**
+ * 获取UUID通用唯一识别码字符串
+ * 
+ * @return: (String) UUID通用唯一识别码字符串
+ * @author: Lin Hui 12/20/2013
+ * 
+ */
+function getUUID()
+{
+    return class java.util.UUID::randomUUID().toString()
+}
+
+/**
+ * SQL分页查询，返回生产数据库的分页数据
+ * 
+ * @param sql : SQL语句
+ * @param pageIndex : 页数，第几页，从1开始。
+ * @param pageCount: 每页返回数据
+ * @return: Vector<String[]> - 分页数据
+ * @author: Lin Hui 12/20/2013
+ * 
+ */
+function getArrayDataByPager(sql, pageIndex, pageCount)
+{
+    rownumStart = ((pageIndex - 1) * pageCount) + 1
+    rownumEnd = pageIndex * pageCount
+    sqlPager = "select * from (select t.*,rownum seq from (" + sql + ") t) where seq >= " + rownumStart + " and seq <= " + rownumEnd
+    if(environment.isDebugging())
+    {
+        println(sqlPager)
+    }
+    return getArrayDataFromActive(sqlPager)
+}
+
+/**
+ * create a new atRow,set values to all columns
+ * @param string: atName the AT name for insert the new record
+ * @values array:an Array contains the value for insert
+ * @return atRowthe handler of the new inserted atRow,if return null,the new row create failed
+ * */
+function newParentATRow(atName,values)
+{
+    atDef = getATDefinition(atName)
+    columns = atDef.getATColumnDefinitionNames()
+    if(values.length != columns.size())
+    {
+        return
+    }
+    columnsArray = createArray(columns.size())
+    for ( index = 0; index < columns.size(); index++)
+    {
+        columnsArray[index] = columns.get(index)
+    }  
+    return newParentATRow(atName,columnsArray,values)
+}
+
+/**
+ * insert a new record the an dependentAT without save, remember to save the data yourself
+ * @param string: atName the AT name for insert the new record
+ * @columns array:an Array of the column names of the AT
+ * @values array:an Array contains the value for insert
+ * @return atRowthe handler of the new inserted atRow,if return null,the new row create failed
+ * */
+function newParentATRowWithoutSave(atName,columns,values)
+{
+    if(columns.length != values.length)
+    {
+        return
+    }
+    flag = false
+    foreach value (values)
+    {
+        if(value != null && value != "")
+        {
+            flag = true
+            break
+        }
+    }
+    if(flag)
+    {
+        atHandler = createATHandler(atName)
+        atRow = atHandler.createATRow()
+		//user = getCurrentUser()
+        for(index = 0;index < columns.length;index++)
+        {
+            if(values[index] != null && values[index] != "")
+            {
+                atRow.setValue(columns[index],values[index])
+            }
+        }
+		//atRow.setName(getMaxRowNumber(atName))
+		//atRow.setPurgeStatus(true)
+        return atRow
+    }
+}
+
+function newParentATRow(atName,columns,values)
+{
+    if(columns.length != values.length)
+    {
+        return
+    }
+    flag = false
+    foreach value (values)
+    {
+        if(value != null && value != "")
+        {
+            flag = true
+            break
+        }
+    }
+    if(flag)
+    {
+        atHandler = createATHandler(atName)
+        atRow = atHandler.createATRow()
+		user = getCurrentUser()
+        for(index = 0;index < columns.length;index++)
+        {
+            if(values[index] != null && values[index] != "")
+            {
+                function f(e)
+                {
+                    println(columns[index])
+                }
+                catch(Exception, f)
+                atRow.setValue(columns[index],values[index])
+            }
+        }
+		//atRow.setName(getMaxRowNumber(atName))
+		//atRow.setPurgeStatus(true)
+        r = atHandler.save()
+        if(r.isError())
+        {
+            println(r.getFirstErrorMessage())
+            atRow = null
+        }
+        return atRow
+    }
+}
+
+/**
+ * delete specified at rows
+ * @param string:the name of AT  
+ * @param array:column names for compare
+ * @param array:column values compare to
+ * @return Response
+ * */
+function deleteATRow(atName,columns,values)
+{
+    if(columns.length != values.length)
+    {
+        return
+    }
+    atHandler = createATHandler(atName)
+    atFilter = createATRowFilter(atName)
+    
+    for ( index = 0; index < columns.length; index++)
+    {
+        atFilter.forColumnNameEqualTo(columns[index],values[index])
+    }
+    atRowVec = atHandler.getATRowsByFilter(atFilter,true)
+    if(atRowVec.size() > 0)
+    {
+        foreach row ( atRowVec )
+        {
+            row.delete()
+        }
+    }
+    return atHandler.save()
+}
+
+ /**
+ * check control is null
+ * @param: control 控件
+ * @return true或者false
+ * Smile Shi/2014/10/11
+ * 
+ * */
+function isEmpty(control){
+    flag=true
+    name=control.getName()
+    if(name.indexOf("smartEdit")>-1){
+        value=control.getValue()
+        if(value==null || value.toString().trim().length()==0){
+            flag=true    
+        }else{
+            return false
+        }
+    }
+    if(name.indexOf("edit")>-1){
+        text=control.getText()
+        if(text.toString().trim().length()==0){
+            flag=true
+        }else{
+            return false
+        }
+    }
+    if(name.indexOf("dateTime")>-1){
+        if(!control.getShowNoneIsChecked()){
+            flag=true
+        }else{
+            return false
+        }
+    }
+    if(name.indexOf("combobox")>-1){
+        if(control.getSelectedIndex()<=0){
+            flag=true
+        }else{
+            return false
+        }
+    }
+    if(name.indexOf("checkbox")>-1){
+        if(!control.getChecked()){
+            flag=true
+        }else{
+            return false
+        }
+    }
+    return flag
+}
+
+/* 
+ * 判断字符串是否为空指针或者空值
+ * 为空返回true，不为空返回false
+ * @param: str 字符串
+ * @return: boolean true或者false
+ * 
+ */
+function isEmptyStr(str)
+{
+    result=false
+    if(str==null||str.toString().trim().length()<1)
+    {
+        result=true
+    }
+    return result
+}
+
+ /**
+ * is all edit can not be null of panel
+ * Smile Shi/2014/10/11
+ * */
+function isRequiredPass(panel){
+    flag=true
+    controls=panel.getControls()
+    for(control:controls){
+        toolTipText = control.getToolTipText()
+        if(toolTipText!=null && toolTipText.indexOf("必填项")>-1 && isEmpty(control)){
+            flag=false
+            control.focus()
+            dialogError(toolTipText)
+            break
+        }
+    }
+    return flag
+}
+
+function getSelectedRow(rowObject,objects) 
+{                                          
+    selectRow = -1                         
+    selectRowKey = rowObject.getKey()      
+    for(i=0;i<=objects.size();i++)         
+    {                                      
+        tempRowObject = objects.get(i)     
+        tempRowKey = tempRowObject.getKey()
+        if(selectRowKey == tempRowKey)     
+        {                                  
+            selectRow = i                  
+            break                          
+        }                                  
+    }                                      
+    return selectRow                       
+} 
+
+function setActivityConfig(activity, dataType)
+{
+    vectorDataSource = getList("DataSource").getItems()
+    dataSourceMap = hashtable()
+    for (i = 0 ; i < vectorDataSource.size(); i++)
+    {
+        str = vectorDataSource.get(i).toString()
+        loca = str.indexOf(":")
+    	if(loca > 0)
+    	{
+    		key = str.substring(0, loca);
+    		value = str.substring(loca+1,str.length())
+    		dataSourceMap.put( key, value)
+    	}
+    }
+    URL = dataType + "_URL"
+    urlValue = dataSourceMap.get(URL)
+    if(!isEmptyStr(urlValue))
+    {
+        activity.setConfigurationItem(DataSourceActivity::CONFIG_ITEM_URL,urlValue)
+    }
+    USER_NAME = dataType + "_USER_NAME"
+    userNameValue = dataSourceMap.get(USER_NAME)
+    if(!isEmptyStr(userNameValue))
+    {
+        activity.setConfigurationItem(DataSourceActivity::CONFIG_ITEM_USER_NAME, userNameValue)
+    }
+    PASSWORD = dataType + "_PASSWORD"
+    passwordValue = dataSourceMap.get(PASSWORD)
+    if(!isEmptyStr(passwordValue))
+    {
+        encrypter = TextEncrypter()
+        passwordValue = encrypter.decrypt(passwordValue)
+        activity.setConfigurationItem(DataSourceActivity::CONFIG_ITEM_PASSWORD, passwordValue)
+    }
+    CLASS_NAME = dataType + "_CLASS_NAME"
+    className = dataSourceMap.get(CLASS_NAME)
+    if(!isEmptyStr(className))
+    {
+        activity.setConfigurationItem(DataSourceActivity::CONFIG_ITEM_DRIVER_CLASS_NAME, className)
+    }
+}
+
+function runFunctionThreadProcess(functionName)
+{  
+    function f(e)
+    {
+        setProperty(functionName, null)
+        println("Process: " + e.getMessage())  
+        return false
+    }
+    catch(Exception, f)
+    
+    PROCESSOR = getProperty(functionName)
+    if(PROCESSOR == null)
+    {
+        setProperty(functionName, "runFunctionThreadProcess")
+		eval(functionName+"()")
+        setProperty(functionName, null)
+	}
+}
+
+/* 
+ * 执行SQL查询
+ * @param: strSql SQL语句
+ * @return: list 结果集
+ * 
+ */
+function querySql(strSql){
+//    logQuerySql(strSql)
+   return querySql(strSql,"")
+}
+
+/* 
+* 执行SQL查询
+ * @param: strSql SQL语句
+ * @param: clause SQL语句
+ * @return: list 结果集
+ * 
+ */
+function querySql(strSql,clause){
+//    strSql = strSql + "   "+ clause
+//    logQuerySql(strSql)
+   return querySql(strSql,clause, "")
+}
+
+/* 
+ * 执行SQL查询
+ * @param: strSql SQL语句
+ * @param: clause SQL语句
+ * @param: orderby 排序
+ * @return: list 结果集
+ * 
+ */
+function querySql(strSql,clause,orderby){
+    strSql = strSql + " " + clause + " " + orderby
+    
+     println(strSql)
+//    logQuerySql(strSql)
+    list = getArrayDataFromActive(strSql)
+    //logQuerySql(list, strSql)
+    return list
+}
+/**
+* 隐藏宽度为5的Grid控件的列
+* @param: grid1 grid控件名
+* @return 无
+**/
+function hideColumn(gridName){
+    for(i=0; i<gridName.getNumberOfColumns(); i++){
+        if(gridName.getColumnWidth(i)==5){
+            gridName.getColumn(i).setVisible(false)
+        }
+    }
+}
+
+/**
+ * 初始化车间下拉框 
+ * 吴建熙 /2016/08/01
+ * @param: combobox: 生产线下拉框控件
+ * @return: 
+ * */
+function initComboboxArea(combobox){
+    initComboboxArea(combobox, null)
+}
+
+function initComboboxArea(combobox, site){
+    vectorArea = vector()
+    if(site instanceof class com.datasweep.compatibility.client.Site){
+        vectorArea = site.getAreas()
+    }else{
+        fltrArea = createAreaFilter()
+        vectorArea = fltrArea.exec()
+    }
+    vectorArea.add(0,null)
+    combobox.setItems(vectorArea.toArray())
+}
+
+/**
+ * 初始化生产线下拉框 
+ * 吴建熙 /2016/08/01
+ * @param: combobox: 生产线下拉框控件
+ * @return: 
+ * */
+function initComboboxPline(combobox){
+    initComboboxPline(combobox, null)
+}
+
+
+/**
+ * 根据车间初始化生产线下拉框，如果车间为空获取所有的生产线 
+ * 吴建熙 /2016/08/01
+ * @param: combobox: 生产线下拉框控件
+ * @param: area: 车间
+ * @return: 
+ * */
+function initComboboxPline(combobox, area){
+    vectorPline = vector()
+    fltrProductionLine = createProductionLineFilter()
+    if(area != null && area instanceof class com.datasweep.compatibility.client.Area){
+        fltrArea = createAreaFilter()
+        fltrArea.addSearchBy(class com.datasweep.plantops.common.constants.filtering.ISTAInstanceFilterAttributes::KEY, class com.datasweep.plantops.common.constants.filtering.IFilterComparisonOperators::EQUAL_TO, area.getKey())
+        fltrProductionLine.forParentAreasIn(fltrArea)
+    }else{
+        fltrProductionLine = createProductionLineFilter()
+        
+    }
+    fltrProductionLine.orderByName(true)
+    vectorPline = fltrProductionLine.exec()
+    vectorPline.add(0,null)
+    combobox.setItems(vectorPline.toArray())
+}
+
+/**
+ * 初始化生产线下拉框 
+ * 吴建熙 /2016/08/01
+ * @param: combobox: 生产线下拉框控件
+ * @return: 
+ * */
+function initComboboxWorkCenter(combobox, pline){
+    vectorWorkCenter = vector()
+    if(pline != null && pline instanceof class com.datasweep.compatibility.client.ProductionLine){
+        vectorWorkCenter = pline.getWorkCenters()
+    }else{
+        fltrWorkCenter = createWorkCenterFilter()
+        vectorWorkCenter = fltrWorkCenter.exec()
+    }
+    vectorWorkCenter.add(0, null)
+    combobox.setItems(vectorWorkCenter.toArray())
+}
+
+/* 
+ * 根据表格的Prop Arg属性的值获取单元格的值
+ * @param: grid grid对象
+ * @param: row 行号
+ * @param: colName 表格Prop Arg属性的值
+ * @return: 单元格的值
+ * 
+ */
+function getRowValue(grid,row,colName){
+   num = grid.getNumberOfColumns()
+   value = ""
+   for(tt=0;tt<num;tt++){
+      if(colName==grid.getColumn(tt).getBoundObjectArg()){
+         value = grid.getCellText(row,tt)
+         if(value==null) 
+             value=""
+         break
+      }
+   }
+   return value
+}
+
+
+/**
+ * 字符串补全
+ * @param str 要补全的字符串
+ * @param leftpad 判断是左补全还是右补全，默认左补全
+ * @param maxlength 与补全字符串比较的长度
+ * @param image 需补全的形状
+ * @return
+ */
+function padStr(str,leftpad,maxlength,image)
+{
+    pad = str
+    sb = stringBuffer()
+    if(str != null)
+    {
+        if(str.length()<maxlength)
+        {
+            if(leftpad)
+            {
+                sb.append(str)
+            }
+            for(i=0;i<maxlength-str.length();i++)
+            {
+                sb.append(image)
+            }
+        }
+        if(!leftpad)
+        {
+            sb.append(str)
+        }
+        pad = sb.toString()
+    }
+    return pad
+}
+/* 
+ * 显示界面帮助信息，获取form名称当做message id
+ */
+function glbShowTooltipForm()
+{
+    msgId = getActiveDsForm().getName()
+    glbShowTooltipForm(msgId)
+}
+/* 
+ * 显示界面帮助信息
+ * @param: msgId MessageId
+ */
+function glbShowTooltipForm(msgId)
+{
+    msgPackage = "MES_FORM_HELP_MSG"
+    tooltip = I18nMessageUtility::getLocalizedMessage(msgPackage, msgId)
+    formName = "MES_SM_Tooltip"
+    form = getForm(formName)
+    setFormProperty(form, "GEELY_MES_TOOLTIP", tooltip)
+    showAsDialog(form)
+}
+/* 
+ * 执行SQL语句（增删改）
+ * @param: strSql SQL语句
+ * 
+ */
+function exeSql(strSql){
+   println(strSql)
+   return executeStatements([strSql])
+}
+
+/* 
+ * 执行SQL语句（增删改）
+ * @param: strSql SQL语句
+ * @param: where 条件语句
+ * 
+ */
+function exeSql(strSql,where){
+   strSql = strSql + " " + where
+   println(strSql)
+   return executeStatements([strSql])
+}
+
+/*
+ * 判断obj参数是null或者空
+ * para: obj object对象
+ * return true or false
+ * */
+function isNullOrEmpty(obj){
+    if(obj == null || obj.equals("")){
+        return true
+    }else{
+        return false
+    }
+    
+}
+
+
+/**
+ * Description: return string of format Time,like "2010-10-20 15:23:44" 
+ * @param Time； time 
+ * @return String: string of format Time
+ **/
+function getStringOfTimeInSql(time){
+    stringOfTime = ""
+    if(time != null){
+        y = time.getYear()
+        m = time.getMonth()
+        d = time.getDay()
+        h = time.getHour()
+        t = time.getMinute()
+        s = time.getSecond()
+        stringOfTime = y + "-"
+        if(m < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + m + "-"
+        
+        if(d < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + d + " "
+        
+        if(h < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + h + ":"
+        
+        if(t < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + t + ":"
+        
+        if(s < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + s
+    }
+    
+    return stringOfTime
+}
+
+
+/* 
+ * 生成Excel表格
+ * @Author :Shengxi Liang 
+ * @param: wb HSSFWorkbook对象
+ * @param: gridAt grid对象
+ * @param: n 第几个表格
+ * @Data: 2013/12/09
+ */
+function writeSheet(wb,gridAt,n)
+{
+   // 建立正常cell样式
+	normalStyle = wb.createCellStyle() // 字体
+	normalfont = wb.createFont()
+	normalfont.setFontHeightInPoints((short) 11)
+	normalfont.setFontName("宋体")
+	normalStyle.setFont(normalfont)// 边框，对齐
+	normalStyle.setAlignment(HSSFCellStyle::ALIGN_CENTER)
+	normalStyle.setVerticalAlignment(HSSFCellStyle::VERTICAL_CENTER)
+	normalStyle.setBorderBottom(HSSFCellStyle::BORDER_THIN)
+	normalStyle.setBorderTop(HSSFCellStyle::BORDER_THIN)
+	normalStyle.setBorderLeft(HSSFCellStyle::BORDER_THIN)
+	normalStyle.setBorderRight(HSSFCellStyle::BORDER_THIN)
+	
+	// 建立表头的cell样式
+	headStyle = wb.createCellStyle()
+	headStyle.cloneStyleFrom(normalStyle)// 字体
+	headFont = wb.createFont()
+	headFont.setFontHeightInPoints((short) 12)
+	headFont.setFontName("宋体")
+	headFont.setBoldweight(HSSFFont::BOLDWEIGHT_BOLD)
+	headStyle.setFont(headFont)// 颜色
+	headStyle.setFillPattern(HSSFCellStyle::SOLID_FOREGROUND)
+	headStyle.setFillForegroundColor(short(55))
+	
+	// 建立选中行的cell样式
+	selectedStyle = wb.createCellStyle()
+	selectedStyle.cloneStyleFrom(normalStyle)// 边框，对齐
+	selectedStyle.setAlignment(HSSFCellStyle::ALIGN_LEFT)// 字体
+	selectedFont = wb.createFont()
+	selectedFont.setFontHeightInPoints((short) 10)
+	selectedFont.setFontName("宋体")
+	selectedFont.setBoldweight(HSSFFont::BOLDWEIGHT_BOLD)
+	selectedFont.setItalic(true)
+	//selectedFont.setColor(short(31))
+	selectedStyle.setFont(selectedFont)
+	
+    sheet=wb.createSheet()
+    sheetName="sheet"+(n+1)
+    if(!isEmptyStr(gridAt.getToolTipText()))
+    {
+        sheetName=gridAt.getToolTipText()+(n+1)
+    }
+    wb.setSheetName(n,sheetName)
+    row=sheet.createRow(0)
+    row.setHeight((short)400)
+    strs=gridAt.getColumnHeadings()
+    //strs=gridAt.getCellObject(row,0)
+    k=0
+    for(i=0;i<strs.length;i++)
+    {
+        if(gridAt.getColumnWidth(i)>0)
+        {
+            cell=row.createCell(short(k))
+            cell.setCellStyle(headStyle)
+            cell.setCellValue(strs[i])
+            sheet.setColumnWidth(k, 4000)
+            k++
+        }
+    }
+    for(i=0;i<gridAt.getNumberOfRows();i++)
+    {
+        row=sheet.createRow(i+1)
+        k=0
+        for(j=0;j<gridAt.getNumberOfColumns();j++)
+        {
+            selectedRow = gridAt.getSelectedRow()
+            if(gridAt.getColumnWidth(j)>0)
+            {
+                cell=row.createCell(short(k))
+                strValue = gridAt.getCellText(i,j)
+                if(strValue!=null) 
+                {
+                    cell.setCellValue(strValue.toString())
+                    cell.setCellStyle(normalStyle)
+                    if(i==selectedRow)
+                    {
+                        cell.setCellStyle(selectedStyle)
+                    }
+                } else 
+                {
+                    cell.setCellValue("")
+                    cell.setCellStyle(normalStyle)
+                    if(i==selectedRow)
+                    {
+                        cell.setCellStyle(selectedStyle)
+                    }
+                }
+                
+                k++
+            }
+        }
+    }
+}
+
+// The grid data export to excel file
+function exportToExcel()
+{
+    controls = activeDsForm.getAllControls()
+    gridList = list()
+    for(control:controls)
+    {
+      strClassName = control.getClass().getName()
+      if(strClassName.equals("com.datasweep.compatibility.ui.grid.DsGrid"))
+      {
+            gridList.add(control)
+      }
+    }
+    if(gridList.size() > 0)
+    {
+        writeExcelForGrids(gridList)
+    }
+    else
+    {
+        handleInfoMsg("MES_LM_MSG_TRX", "EXPORT_NULL", null, null, HANDLER_OPTION_DEFAULT, null)
+    }
+}
+
+// The grid data export to excel file
+function writeExcelForGrids(gridList)
+{
+    fileName=saveFileDialog()
+    if(!isEmptyStr(fileName))
+    {
+        if(!isSuffixName(fileName,".xls"))
+        {
+            fileName=fileName+".xls"
+        }
+        flag=HANDLER_RESULT_YES
+        dir=File(fileName)  
+        if(dir.exists())
+        {
+            flag = handleInfoMsg("MES_LM_MSG_TRX", "IS_COVER", null, null, HANDLER_OPTION_YES_NO, null) 
+        }
+        if(flag == HANDLER_RESULT_YES)
+        {
+        	wb=HSSFWorkbook()
+        	for(n=0;n<gridList.size();n++)
+        	{
+                gridAt=gridList.get(n)
+                writeSheet(wb,gridAt,n)
+        	}
+        	fout=FileOutputStream(fileName)
+        	wb.write(fout)
+        	fout.close()
+        	handleInfoMsg("MES_LM_MSG_TRX", "EXPORT_SUCCESSFULLY", null, null, HANDLER_OPTION_DEFAULT, null)
+    	}
+    }
+}
+
+/* 
+ * 判断导出的文件后缀名是否为制定字符串
+ * @Author :Shengxi Liang 
+ * @param: fileName 文件名
+ * @param: suffixName 文件后缀名
+ * @return： boolean true或者false 正确返回true，错误返回false
+ * @Data: 2013/12/09
+ */
+function isSuffixName(fileName,suffixName)
+{
+    if(isEmptyStr(fileName))
+    {
+        return false
+    }
+    if(isEmptyStr(suffixName))
+    {
+        return false
+    }
+    fileLen=fileName.length()
+    suffixLen=suffixName.length()
+    if(fileLen<=suffixLen)
+    {
+        return false
+    }
+    sufName=fileName.substring(fileLen-suffixLen)
+    if(sufName.equalsIgnoreCase(suffixName))
+    {
+        return true
+    }
+    return false
+}
+
+/*
+* 判断文本是否是整数[9-9]*
+* 只输入数字返回true，否则返回false
+* @return true或者false
+*/
+function isNumber(number){
+
+//     pattern = class java.util.regex.Pattern::compile("d*.?d+$")
+    pattern = class java.util.regex.Pattern::compile("[0-9]*")
+    isMatch = pattern.matcher(number)
+    if(isMatch.matches())
+    {
+        return true
+    }else
+    {
+        return false
+    }
+}
+
+/*
+* 判断文本是否是小数
+* 只输入数字返回true，否则返回false
+* @return true或者false
+* 小数 pattern = class java.util.regex.Pattern::compile("^\\1.\\d{8}")
+
+*/
+function isFloatNumber(number){
+    pattern = class java.util.regex.Pattern::compile("[1-9].\\d{9}")
+    isMatch = pattern.matcher(number)
+    if(isMatch.matches())
+    {
+        return true
+    }else
+    {
+        return false
+    }
+}
+
+
+
+/*
+ * Description: 导出表格数据,只能导出一万条
+ * 
+ * Author: WLX
+ * Date: 2016/12/20
+ * Revision: 1.0
+ * 
+ */
+
+function gridExportExecl(gridResult,sql,fileName){
+    
+    sqlQuery = "select * from (select t.*,rownum seq from (" + sql + ") t) where seq <= " + Export_MIX_Number
+    //总条数
+    vectorCount = getArrayDataFromActive(sqlQuery)
+    setDataToGrid(vectorCount, gridResult)
+    if(vectorCount.size() > 0)
+    {
+        if(!isEmptyStr(fileName))
+        {
+            if(!isSuffixName(fileName,".xls"))
+            {
+                fileName=fileName+".xls"
+            }
+            flag=HANDLER_RESULT_YES
+            dir=File(fileName)  
+            if(dir.exists())
+            {
+                flag = handleInfoMsg("MES_LM_MSG_TRX", "IS_COVER", null, null, HANDLER_OPTION_YES_NO, null) 
+            }
+            if(flag == HANDLER_RESULT_YES)
+            {
+            	wb=HSSFWorkbook()
+                totalRecord = stringToInt(vectorCount.elementAt(0)[0])
+                mod = totalRecord/Export_MIX_Number
+            	for(n=0;n<=mod;n++)
+            	{
+                    writeSheet(wb,gridResult,n)
+            	}
+            	fout=FileOutputStream(fileName)
+            	wb.write(fout)
+            	fout.close()
+            	handleInfoMsg("MES_LM_MSG_TRX", "EXPORT_SUCCESSFULLY", null, null, HANDLER_OPTION_DEFAULT, null)
+        	}
+        }
+    }
+    else
+    {
+        handleInfoMsg("MES_LM_MSG_TRX", "EXPORT_NULL", null, null, HANDLER_OPTION_DEFAULT, null)
+    }
+
+}
+
+
+/**
+ * Description: return string of format Time,like "2010-10-20 15:23:44" 
+ * @param Time； time 
+ * @return String: string of format Time
+ **/
+function getStringOfTimeInSqls(time){
+    stringOfTime = ""
+    if(time != null){
+        y = time.getYear()
+        m = time.getMonth()
+        d = time.getDay()
+        h = time.getHour()
+        t = time.getMinute()
+//         s = time.getSecond()
+        stringOfTime = y + "-"
+        if(m < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + m + "-"
+        
+        if(d < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + d + " "
+        
+        if(h < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + h + ":"
+        
+        if(t < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + t + " "
+        
+//         if(s < 10){
+//             stringOfTime = stringOfTime + "0"
+//         }
+//         stringOfTime = stringOfTime + s
+    }
+    
+    return stringOfTime
+}
+
+
+/**
+ * Description: 将对象转成vector。写入AT表
+ * @param Time: 2019/07/11
+ **/
+function insertRecord(atDefName, objVector) {
+    atDefinition = getATDefinition(atDefName) //必须与自建表的名称一致
+    atRow = atDefinition.createATRow_()
+    for(i = 0; i < objVector.size(); i++) {
+        //若调用该方法，需按照setValue方法的参数要求，自行生成objVector数组，数组包含两个元素，第一个元素为ATDefinition中定义的字段名，第二个参数为对应的字段值。
+        atRow.setValue(objVector.elementAt(i)[0], objVector.elementAt(i)[1])
+    }
+    response = atRow.save(null, null, null)
+    return response
+}
+
+// 获取指定列的prop name属性。可以把该属性定义为ATDefinition中的字段名，结合DBUtil中的insertRecord方法使用。
+// 参数说明：grid--DsGrid名称
+//         index--列索引值
+function getGridHeadName(grid, index) {
+    return grid.getColumn(index).getBoundObjectPropName()
+}
+
+//get PLC service      
+function getPLCService()      
+{      
+    return class com.rockwell.mes.commons.base.ifc.services.ServiceFactory::getService("PLCService", IPLCService)         
+}
+
+/* 
+ * 将Time类型转换字符串(字符串的格式:format)
+ * @param: time 时间
+ * @param: format 格式化形式
+ * @return string 时间的字符串表达式
+ */
+function DateToString(time,format)
+{
+    dateFormat = SimpleDateFormat(format)
+    return dateFormat.format(time.getCalendar().getTime())
+}
+
+/* 
+ * 将字符串转换为dateTimePicker的时间型数据(字符串的格式:yyyy-MM-dd kk:mm:ss)
+ * @param: str 时间的字符串表达式
+ * @return time
+ */
+function StringToDate(str, format){
+    d=date(str, format)
+    t=createTime(d.getYear()+1900,d.getMonth()+1,d.getDate(),d.getHours(),d.getMinutes(),d.getSeconds())
+    return t
+}
+/* 
+ * ＡＴ表保持方法
+ * Author: zhaigj
+ * Date: 201９/0７/２０
+ * Revision: 1.0
+ */
+function saveATObject(ATObject,time,note,accessPrivilege)
+{
+    return ATObject.save(time,note,accessPrivilege)   
+}
+/* 
+ * ＡＴ表删除方法
+ * Author: zhaigj
+ * Date: 201９/0７/２０
+ * Revision: 1.0
+ */
+function deleteATObject(ATObject,time,note,accessPrivilege)
+{
+    return ATObject.delete(time,note,accessPrivilege)   
+}
+/* 
+ * 获取月份代码
+ * Author: fzg
+ * Date: 2019/08/14
+ * Revision: 1.0
+ */
+function getMonthCode(month)
+{
+    switch(month)
+    {
+        case 10:
+            return "A"
+            break
+        case 11:
+            return "B"
+            break
+        case 12:
+            return "C"
+            break
+        default:
+            return month
+     }
+}
+/**
+ * 描述： 获取通过sequenceUserName获取最新的序列
+ *
+ * @parameter: sequenceUserName - String对象
+ *
+ * @return long
+ * 
+ * @author: Yu Liping 10/18/2017
+ */
+function getCusUserSeqCurValue(sequenceUserName){
+    sequenceUserObj = getUserSequenceByName(sequenceUserName)
+    if( sequenceUserObj == null ){
+        sequenceUserObj = createUserSequence(sequenceUserName)
+        sequenceUserObj.setInitialValue(0)
+        sequenceUserObj.setIncrementValue(2)
+        sequenceUserObj.save()
+    }
+    return class java.lang.Long::valueOf(sequenceUserObj.getNextValue().getResult().getValue())
+}	
+
+/**
+ * 描述： 判断员工是否能在选定的工作中心登录
+ *
+ * @parameter: cardNumber - 员工卡号
+ * @parameter: wcName - 工作中心Name
+ * */
+function isCanLogin(cardNumber,wcName){
+    sql="SELECT * FROM AT_UM_EmployeeSkillAllot uesa LEFT JOIN AT_UM_Employee ue 
+    on uesa.user_key_I=ue.atr_key left join AT_UM_SkillRelationshipWC uswc on 
+    convert(varchar(20),uesa.skill_key_I) = uswc.skill_name_S 
+    where uswc.wc_name_S='"+wcName+"' and ue.card_number_S='"+cardNumber+"' "
+    vectorData = getArrayDataFromActive(sql)
+    if(vectorData!=null&&vectorData.size()>0){
+        return true
+    }else{
+        return false
+    }
+}
+							
+							
+							
+							
+							
+							
+							
+							
+							

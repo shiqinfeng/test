@@ -1,0 +1,3865 @@
+/**====================================================
+ * Description: provide common functions to integration module
+ * 
+ * Author: Zhiping Shi
+ * 2016.12.26
+ * 
+ ====================================================**/
+//  
+// import ("com.rockwell.as.jee.UserDefinedJee")
+// import ("com.rockwell.as.jee.JeeManager")
+// import ("com.rockwell.as.jee.JeeType")
+// import ("com.rockwell.as.activity.plc.PlcUtils")
+import ("com.rockwell.discrete.integration.plc.activity.PlcUtils")
+import ("com.rockwell.discrete.mes.order.model.jobno.MESOMJobNo")
+import ("com.rockwell.discrete.mes.order.model.jobno.MESOMJobNoFilter")
+import ("com.rockwell.mes.commons.base.ifc.services.ServiceFactory")
+import("com.rockwell.discrete.mes.order.model.appointMachines.MESOMAppointMachines")
+import("com.rockwell.discrete.mes.order.model.appointMachines.MESOMAppointMachinesFilter")
+import("com.rockwell.discrete.mes.integration.send.SendCommon")
+import("com.rockwell.discrete.mes.integration.ws.send.ManufactureSB.common.APPSCUX_COM_2EBS_WS_X1266505X1X8")
+import("com.rockwell.discrete.mes.integration.send.sendAcquisitionPlanToErp")
+import("com.rockwell.discrete.mes.integration.ws.send.sp.MesWriteBackMoveOrderSoapBiz.APPSCUX_ESB_MOVEORDEX1269365X1X8")//仓库类
+import("com.rockwell.discrete.mes.order.model.materialreturninfo.MESOMMaterialReturnInfo")//退料单
+import("com.rockwell.discrete.mes.order.model.materialreturninfo.MESOMMaterialReturnInfoFilter")//退料单
+import("com.rockwell.discrete.mes.order.model.packprinttray.MESOMPackPrintTray")//托
+import("com.rockwell.discrete.mes.order.model.packprinttray.MESOMPackPrintTrayFilter")//托
+import("com.rockwell.discrete.mes.integration.send.SendMesDeliverWareHouseTxnSoapToErp")
+import("com.rockwell.discrete.mes.integration.ws.send.sp.MesDeliverWareHouseTxnSoapBiz.APPSCUX_WARE_HOUSE_DX1134112X1X8")//仓库类
+
+
+
+importSubroutine("MES_Common_Base")
+importSubroutine("MES_Common_Log")
+importSubroutine("MES_Common_Integration_Constant")
+importSubroutine("MES_PP_Common")
+importSubroutine("MES_PP_Common_Constant")
+
+/**
+ * Write the values to live data tag
+ * Zhiping Shi
+ * @param: liveDataServer : live data server
+ * @param: groupName : which live data group you want to write
+ * @param: values : The values is a array which you want to write
+ * @return: is successfully
+ * */
+function writeValueToPLC(liveDataServer, groupName, values){
+
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "writeValueToPLC"
+    function handleWriteValueToPLCException(exception)
+    {
+        
+        logError(MODULE_IM, "MES_Common_Integraton-[writeValueToPLC]: Write value to PLC failed", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleWriteValueToPLCException)
+    
+    result = true
+    
+    liveDataGroup = liveDataServer.getGroup(groupName)
+    liveDataItems = liveDataGroup.getItems().getItems()
+    
+    logInfo(MODULE_IM, "groupName["+groupName+"],Write data to PLC!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"writeValueToPLC")
+
+    //values verification, if the values contains null, the value will be changed to '0'
+    tagValues = null
+    if(values != null || values.length > 0)
+    {
+        tagValues = createArray(values.length)
+        for(i = 0; i < values.length; i++)
+        {
+            if(values[i] == null)
+            {
+                tagValues[i] = 0
+            }
+            else
+            {
+                tagValues[i] = values[i]
+            }
+        }
+    }
+    
+    arrayExceptions = null
+    if(tagValues != null)
+    {
+        arrayExceptions = liveDataGroup.syncWrite(liveDataItems, tagValues)
+    }
+    
+//     println("Data Items: " + liveDataItems)
+//     println("Items value: " + values)
+    logInfo(MODULE_IM, "Data Items: " + liveDataItems +", Group: " + groupName, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+    logInfo(MODULE_IM, "Items value: " + values +", Group: " + groupName, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+    logInfo(MODULE_IM, "tagValues: " + tagValues +", Group: " + groupName, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+    
+    if(arrayExceptions != null)
+    {
+        for(ftexception : arrayExceptions)
+        {
+            if(ftexception != null)
+            {
+                functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "writeValueToPLC"
+                logError(MODULE_IM, "Fail to write data to PLC, Group: " + groupName, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+                logException(MODULE_IM, ftexception)
+                result = false
+                break
+            }
+        }
+    }
+    
+    return result
+}
+
+
+ /**
+ * Reads the values from live data group
+ * Zhiping Shi
+ * @param: liveDataServer : live data server
+ * @param: groupName : which live data group you want to read
+ * @param: values : The values is a array which you want to read
+ * @return: array include the group values
+ * */
+function readValuesFromPLC(liveDataServer, groupName){
+    function handleReadValuesFromPLCException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "readValuesFromPLC"
+        logError(MODULE_IM, "MES_INTEGRATION_MSG_ERROR-[readValuesFromPLC]: Read value from PLC failed", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+
+    }
+    catch(Exception, handleReadValuesFromPLCException)
+    liveDataGroup = liveDataServer.getGroup(groupName)
+    liveDataItems = liveDataGroup.getItems().getItems()    
+    itemValues = liveDataGroup.syncRead(class com.rockwell.livedata.LiveDataSource::OPCDevice, liveDataItems)
+    return itemValues
+}
+
+ /**
+ * Read the command tag value, include high byte and lowbyte vlaue
+ * Zhiping Shi
+ * @param: liveDataServer : live data server
+ * @param: groupName : which live data group you want to write
+ * @return: live data tag value
+ * */
+function readCommandValueFromPLC(liveDataServer, groupName){   
+    function handleReadCommandValueFromPLCException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "readCommandValueFromPLC"
+        logError(MODULE_IM, "MES_INTEGRATION_MSG_ERROR-[readCommandValueFromPLC]: Read command value from PLC failed,", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleReadCommandValueFromPLCException)
+    itemValues = readValuesFromPLC(liveDataServer, groupName)
+    tagValue = itemValues[0].getValue()
+    return tagValue
+}
+
+/**
+ * Write falut code to plc falut tag when SOS encouter error
+ * Zhiping Shi
+ * @param: groupDataEvent : the error encouter when receive this group event and do the logic
+ * @param: errorMessage : the error need to send to PLC
+ * @return: N/A
+ * */
+function noticePLCFault(groupDataEvent, errorMessage ,liveDataTemplate ,liveDataTagSet , liveDataTagSetName)
+{
+    function handleNoticePLCFaultException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "noticePLCFault"
+        logError(MODULE_IM, "MES_INTEGRATION_MSG_ERROR-[noticePLCFault]:notice PLC fault failed,", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleNoticePLCFaultException)
+    
+    faultCode = getFaultCodeByMessageID(errorMessage)  //get falut code
+    logInfo(MODULE_IM, "groupName["+groupDataEvent.getSource().getName()+"],Error message ID is [" + errorMessage + "];Fault code is [" + faultCode + "]")
+    dynaBeanIn = getInitDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)
+    dynaBeanIn.put(liveDataTagSetName, faultCode)
+    result = writeDynaBeanToPlc(groupDataEvent, liveDataTemplate, liveDataTagSet, dynaBeanIn)
+    return result
+}
+
+/**
+ * Write request id to plc 
+ * Zhiping Shi
+ * @param: groupDataEvent : the error encouter when receive this group event and do the logic
+ * @param: errorMessage : the error need to send to PLC
+ * @return: N/A
+ * */
+function writeRequestIdToPlc(groupDataEvent, requestID ,liveDataTemplate ,liveDataTagSet , liveDataTagSetName)
+{
+    function handleWriteRequestIdToPlcException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "writeRequestIdToPlc"
+        logError(MODULE_IM, "write RequestId ToPlc  PLC fault failed,", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)   
+    }
+    catch(Exception, handleWriteRequestIdToPlcException)
+
+    dynaBeanIn = getInitDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)
+    dynaBeanIn.put(liveDataTagSetName,requestID)
+    result = writeDynaBeanToPlc(groupDataEvent, liveDataTemplate, liveDataTagSet, dynaBeanIn)
+    return result
+}
+
+/**
+ * Clear PLC data by liveDataTagSet
+ * Zhiping Shi
+ * @param: groupDataEvent : the error encouter when receive this group event and do the logic
+ * @param: errorMessage : the error need to send to PLC
+ * @return: N/A
+ * */
+function clearPlcDataByliveDataTagSet(groupDataEvent ,liveDataTemplate ,liveDataTagSet )
+{
+    function handleclearPlcDataByliveDataTagSetException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "clearPlcDataByliveDataTagSet"
+//         logSOSError(SOS_INTEGRATION_SUBROUTINES, exception.getMessage(), functionName)
+
+        logError(MODULE_IM, "write RequestId ToPlc  PLC fault failed,", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+        
+    }
+    catch(Exception, handleclearPlcDataByliveDataTagSetException)
+
+    dynaBeanIn = getInitDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)
+    result = writeDynaBeanToPlc(groupDataEvent, liveDataTemplate, liveDataTagSet, dynaBeanIn)
+    return result
+}
+
+/**
+ * Write command in to plc 
+ * Zhiping Shi
+ * @param: groupDataEvent : the error encouter when receive this group event and do the logic
+ * @param: errorMessage : the error need to send to PLC
+ * @return: N/A
+ * */
+function writeCommandInToPLC(groupDataEvent, commandInValue ,liveDataTemplate ,liveDataTagSet , liveDataTagSetName)
+{
+    function handleWriteCommandInToPLCException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "writeCommandInToPLC"
+//         logSOSError(SOS_INTEGRATION_SUBROUTINES, exception.getMessage(), functionName)
+
+        logError(MODULE_IM, "write RequestId ToPlc  PLC fault failed,", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+        
+    }
+    catch(Exception, handleWriteCommandInToPLCException)
+
+    dynaBeanIn = getInitDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)
+    dynaBeanIn.put(liveDataTagSetName,commandInValue)
+    result = writeDynaBeanToPlc(groupDataEvent, liveDataTemplate, liveDataTagSet, dynaBeanIn)
+    return result
+}
+
+/**
+ * Get error message code base on message id
+ * Zhiping Shi
+ * @param: messageID : message id 
+ * @return: code, message code will writed to plc
+ * */
+function getFaultCodeByMessageID(messageID)
+{
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getFaultCodeByMessageID"
+    function handleGetFaultCodeByMessageIDException(exception)
+    {   
+        logError(MODULE_IM, "MES_INTEGRATION_MSG_ERROR-[noticePLCFault]: get fault code by message id failed:" + exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+        return 0
+    }
+    catch(Exception, handleGetFaultCodeByMessageIDException)
+    faultCodeMap = getProperty("FAULT_CODE_MAP")
+    if(faultCodeMap == null)
+    {
+        initFaultCodeMap()
+        faultCodeMap = getProperty("FAULT_CODE_MAP")
+    }
+    code = faultCodeMap.get(messageID)
+    if(code == null)
+    {
+        logError(MODULE_IM, "Fault code[Message ID: " + messageID + "] hava NOT been configurated in List[OEM_INTEGRATION_ERROR_CODE]", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        code = 0
+    }
+    return code
+}
+
+function initFaultCodeMap()
+{
+    faultCodeMap = getProperty("FAULT_CODE_MAP")
+    if(faultCodeMap == null)
+    {
+        faultCodeMap = hashtable()
+        items = getList("OEM_INTEGRATION_ERROR_CODE").getItems()
+        for(item : items)
+        {
+            message = item.split(":")
+            code = class java.lang.Integer::parseInt(message[1])
+            faultCodeMap.put(message[0], code)
+        }
+        setProperty("FAULT_CODE_MAP", faultCodeMap)
+    }
+}
+
+ /**
+ * Get error message id base on fault code
+ * 
+ * @param: fault code : fault code
+ * @return: message id
+ * @author: Lin Hui @2014/07/10
+ * */
+function getMessageIDByFaultCode(faultCode)
+{
+    function handleGetMessageIDByFaultCodeException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getMessageIDByFaultCode"
+        logError(MODULE_IM, " get message id by fault code faild:" + exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+        
+    }
+    catch(Exception, handleGetMessageIDByFaultCodeException)
+    items = getList("OEM_INTEGRATION_ERROR_CODE").getItems()
+    
+    for(item : items)
+    {
+        message = item.split(":")
+        messageId = message[0]
+        code = message[1]
+        if(code == class java.lang.String::valueOf(faultCode))
+        {
+            return messageId
+        }
+    }
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getMessageIDByFaultCode"
+    logError(MODULE_IM, "Fault code[" + faultCode + "] hava NOT been configurated in List[OEM_INTEGRATION_ERROR_CODE]", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+    return null
+}
+
+/**
+ * When PLC encouter error, will call this function to do logic
+ * Zhiping Shi
+ * @param: groupDataEvent : the falut code have changed event
+ * @return: N/A
+ * */
+function dataChangeForFaultOut(groupDataEvent){
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "dataChangeForFaultOut"
+    
+    function handleDataChangeForFaultOutException(exception)
+    {
+    
+        logError(MODULE_IM, " data change for fault out faild:" + exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+
+    }
+    catch(Exception, handleDataChangeForFaultOutException)
+    
+    liveDataServer = groupDataEvent.getSource().getParent().getParent()
+    liveDataGroupCommand = groupDataEvent.getSource()
+    commandoutGroupName = liveDataGroupCommand.getName()
+    faultOutGroupName = PlcUtils::replaceString(commandoutGroupName,":","FaultOut")
+    commandoutGroupName = PlcUtils::replaceString(commandoutGroupName,":","CommandOut")
+    liveDataGroups = liveDataGroupCommand.getParent()
+    faultOutGroup = liveDataGroups.getGroup(faultOutGroupName)
+    faultDatas = readValuesFromPLC(liveDataServer, faultOutGroupName)
+    if(faultDatas.length < 1)
+    {
+        return
+    }
+    faultCode = faultDatas[0].getValue()
+    if(faultCode == 0)
+    {
+        return
+    }
+    
+    if(faultCode == null)
+    {
+        logError(MODULE_IM, "Can't get fault code from PLC, Group: " + faultOutGroup, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+
+        return
+    }
+    
+    //get outbound data
+    lineId = ""
+    stationNumer = ""
+    dataOutGroupName = PlcUtils::replaceString(commandoutGroupName,":","DataOut")
+    dataOutGroup = liveDataGroups.getGroup(dataOutGroupName)
+    dataOutItems = dataOutGroup.getItems().getItems()
+    dataOutValues = dataOutGroup.syncRead(class com.rockwell.livedata.LiveDataSource::OPCDevice, dataOutItems)
+    stationNumber = ""
+    for(i = 0; i< dataOutItems.length; i++)
+    {
+        if(dataOutItems[i].getFTLDItem().getName().contains("Line") == true)
+        {
+            lineId = dataOutValues[i].getValue()
+        }
+        else if(dataOutItems[i].getFTLDItem().getName().contains("Station") == true)
+        {
+            stationNumber = dataOutValues[i].getValue()
+        }
+    }
+    //get falutMessage
+    logError(MODULE_IM, "Receive fault code[ " + faultCode + " ] from PLC, Group: " + faultOutGroup, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+
+    faultMessage = getMessageIDByFaultCode(faultCode)
+    if(faultMessage != null)
+    {
+        errorMessage = getMessage("MES_INTEGRATION_MSG_ERROR", faultMessage)
+        logError(MODULE_IM, errorMessage, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+
+        //Insert the fault info to PLC_Fault_Log
+        saveFaultData(faultOutGroupName, faultCode, lineId, stationNumber, faultMessage)
+    }
+    else
+    {
+
+        logError(MODULE_IM, "Can't get fault message for fault code [  " + faultCode + " ].", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+    }
+}
+
+/**
+ * Clear the inbound command lowbyte to zero
+ * Zhiping Shi
+ * @param: liveDataServer : live data server
+ * @param: commandFromPLCTagvalue : currrent command value which the lowbyte is not zero
+ * @param: commandoutGroupName : outbound command group name
+ * @return: N/A
+ * */
+function clearCommandInDatas(liveDataServer, commandInGroupName)
+{
+    function handleclearCommandInDatasException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "clearCommandInDatas"
+        logError(MODULE_IM, " clear Command In Datas command faild:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleclearCommandInDatasException)
+    clearCommandInTagValue = OUT_FLAG_CLEAR
+    inboundCommandValues = createArray(1)
+    inboundCommandValues[0] = clearCommandInTagValue
+    writeValueToPLC(liveDataServer, commandInGroupName, inboundCommandValues)
+}
+
+/**
+ * Clear the BIW Data in command lowbyte to ""
+ * Zhiping Shi
+ * @param: liveDataServer : live data server
+ * @param: commandFromPLCTagvalue : 
+ * @param: commandoutGroupName : outbound command group name
+ * @return: N/A
+ * */
+function clearBIWDataIn(liveDataServer, itemDatas, dataIngroupName)
+{
+    function handleclearCommandInDatasException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "clearCommandInDatas"
+        logError(MODULE_IM, " clear Command In Datas command faild:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleclearCommandInDatasException)
+    
+    inboundDataValues = createArray(itemDatas.length)
+    inboundDataValues[0] = itemDatas[0].getValue()
+
+    for(i = 1 ;i < itemDatas.length; i++ )
+    {
+        inboundDataValues[i] = ""
+    }
+    writeValueToPLC(liveDataServer, dataIngroupName, inboundDataValues)
+}
+
+/**
+ * Read outbound timestamp
+ * Zhiping Shi
+ * @param: liveDataServer : live data server
+ * @param: commandoutGroupName : outbound command group name
+ * @return: tmeStamp: the timeStamp from PLC
+ * */
+function readOutboundTimestamp(liveDataServer, commandoutGroupName){
+    function handleReadOutboundTimestampException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "readOutboundTimestamp"
+        logError(MODULE_IM, " read Outbound Time stamp faild:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleReadOutboundTimestampException)
+    //Read timestamp
+    timeoutGroupName = PlcUtils::replaceString(commandoutGroupName,":","TimeOut")
+    liveDataTimeGroup = liveDataServer.getGroup(timeoutGroupName)
+    liveDataItems = liveDataTimeGroup.getItems().getItems()    
+    itemDatas = liveDataTimeGroup.syncRead(class com.rockwell.livedata.LiveDataSource::OPCDevice, liveDataItems)
+    
+    time0 = itemDatas[0].getValue()
+    time1 = itemDatas[1].getValue()
+     //Read timezone
+    timeZoneGroupName = "AS:TimeZone"
+    liveDataTimeGroup = liveDataServer.getGroup(timeZoneGroupName)
+    if(liveDataTimeGroup != null)
+    {
+        liveDataItems = liveDataTimeGroup.getItems().getItems()    
+        itemDatas = liveDataTimeGroup.syncRead(class com.rockwell.livedata.LiveDataSource::OPCDevice, liveDataItems)
+        timeZone = itemDatas[0].getValue()
+    }
+    else
+    {
+        timeZone = getDBTime().getTimeZone().toString()
+    }
+    tmeStamp = PlcUtils::makeTimeStamp(time0, time1, timeZone)
+    tmeStamp = getDBTime()
+    return tmeStamp
+}
+
+function getCommandOutGroupName(groupDataEvent){
+    function handleGetCommandOutGroupNameException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getCommandOutGroupName"
+        logError(MODULE_IM, " get CommandOut GroupName faild:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleGetCommandOutGroupNameException)
+    liveDataServer = groupDataEvent.getSource().getParent().getParent()
+    liveDataGroupCommand = groupDataEvent.getSource()
+    commandoutGroupName = liveDataGroupCommand.getName()
+    return commandoutGroupName
+}
+
+/**
+ * Set jms message controller security
+ * Zhiping Shi
+ * @param: esJMSMessage: the jms message controller
+ * @return: N/A
+ * */
+function setJMSControlSecurity(esJMSMessage){
+    function handleSetJMSControlSecurityException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "setJMSControlSecurity"
+        logError(MODULE_IM, " set JMS Control Security:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleSetJMSControlSecurityException)
+    //get username and password
+    hashMapUserAndPassword = getJMSMessageControlUserAndPassword()
+    user = hashMapUserAndPassword.get("SOS_INTEGRATION_USER")
+    password = hashMapUserAndPassword.get("SOS_INTEGRATION_PASSWORD")
+    //set security
+    if(user != null && password != null)
+    {
+        esJMSMessage.setSecurityPrincipal(user) //set user name
+        esJMSMessage.setSecurityCredentials(password)  //set password
+    }
+}
+
+/**
+ * get jms message controller user name and password from global property or get from application 
+ * Zhiping Shi
+ * @param: N/A
+ * @return: N/A
+ * */
+function getJMSMessageControlUserAndPassword(){
+    function handleGetJMSMessageControlUserAndPasswordException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "handleSetJMSControlSecurityException"
+        logError(MODULE_IM, " set JMS Control Security:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    hashMapUserAndPassword = class java.util.HashMap()
+    catch(Exception, handleGetJMSMessageControlUserAndPasswordException)
+    //Setp1.check grobal security property
+    user = getProperty("SOS_INTEGRATION_JMS_USER")
+    password = getProperty("SOS_INTEGRATION_JMS_PASSWORD")
+    //step2.if not get property from application
+    if(user == null || password == null)
+    {   
+        application = getApplication(CONFIGURATION_PROPERTIES_INTEGRATION)
+        configurationProperties = application.getConfigurationProperties()
+        if(configurationProperties != null)
+        {
+            for(configurationProperty : configurationProperties)
+            {
+                if(configurationProperty.getName() == SOS_JMS_SECURITY_USER_PROPERTY_USER)
+                {
+                    user = configurationProperty.getValue()
+                }
+                else if(configurationProperty.getName() == SOS_JMS_SECURITY_USER_PROPERTY_PASSWORD)
+                {
+                    password = configurationProperty.getValue()
+                }
+            }
+            //step3.if property is not null ,set security to jmscontrol and set global property. if null,set property,set blank hashmap to global propert
+            setProperty("SOS_INTEGRATION_JMS_USER", user)
+            setProperty("SOS_INTEGRATION_JMS_PASSWORD", password)
+        }
+    }
+    hashMapUserAndPassword.put("SOS_INTEGRATION_USER", user)
+    hashMapUserAndPassword.put("SOS_INTEGRATION_PASSWORD", password)
+    return hashMapUserAndPassword
+}
+
+// /**
+//  * set timer frequency from application property
+//  * Zhiping Shi
+//  * @param: propertyName
+//  * @param: estimer
+//  * @return: N/A
+//  * */
+// function setFrequencyForTimer(propertyName, esTimer)
+// {
+//     function handleSetFrequencyForTimerException(exception)
+//     {
+//         functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " :" + "setFrequencyForTimer"
+//         logError(MODULE_IM, " set Frequency For Timer:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+//         logException(MODULE_IM, exception)
+//     }
+//     catch(Exception, handleSetFrequencyForTimerException)
+//     functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "setFrequencyForTimer"
+//     frequency = getConfigurationPropertyValue(propertyName)
+//     if(frequency != null)
+//     {
+//         esTimer.setInterval(class java.lang.Integer::parseInt(frequency))
+//         esTimer.setEnabled(true)
+//     }
+//     else
+//     {
+//         logError(MODULE_IM, getMessage("MES_INTEGRATION_MSG_ERROR", "PROPERTY_IS_NOT_CONFIGURED") + ":" + propertyName , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+//    } 
+// }
+
+function getConfigurationPropertyValue(propertyName)
+{
+    value = null
+    application = getApplication(CONFIGURATION_PROPERTIES_INTEGRATION)
+    configurationProperties = application.getConfigurationProperties()
+    if(configurationProperties != null)
+    {
+        for(configurationProperty : configurationProperties)
+        {
+            if(configurationProperty.getName() == propertyName)
+            {
+                value = configurationProperty.getValue()
+            }
+        }
+     }
+     return value
+}
+
+/**
+ * set live data group create file path from application property
+ * Zhiping Shi
+ * @param: propertyName
+ * @param: createLiveDataGroupActivity
+ * @return: N/A
+ * */
+function setLiveDataGroupFilePath(propertyName, createLiveDataGroupActivity)
+{   
+    function handleSetLiveDataGroupFilePathException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "setLiveDataGroupFilePath"
+        
+        logError(MODULE_IM, " set Live DataGroup FilePath:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+
+    }
+    catch(Exception, handleSetLiveDataGroupFilePathException)
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "setLiveDataGroupFilePath"
+    filePath = getConfigurationPropertyValue(propertyName)
+    if(filePath != null)
+    {
+        createLiveDataGroupActivity.setConfigurationItem("Live Data group configure file path", filePath)
+    }
+    else
+    {
+        logError(MODULE_IM, getMessage("MES_INTEGRATION_MSG_ERROR", "PROPERTY_IS_NOT_CONFIGURED") + ":" + propertyName , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+    }
+}
+
+
+function getpropertyValueByObject(keyed,propertyName){
+    function handleGetpropertyValueByObjectException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getpropertyValueByObject"
+        logError(MODULE_IM, " get property Value By Object:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+        return null
+    }
+    catch(Exception, handleGetpropertyValueByObjectException)
+    propertyValue=""
+    application = getApplication(CONFIGURATION_PROPERTIES_INTEGRATION)
+    applicationItems = application.getApplicationItems()
+    for(groupItem : applicationItems)
+    {
+        groupApplicationItems = groupItem.getApplicationItems()
+        for(applicationItem : groupApplicationItems)
+        {
+            if(applicationItem.getName() == keyed.getName())
+            {
+                configurationProperties = applicationItem.getConfigurationProperties()
+                for(configurationProperty : configurationProperties)
+                {
+                    if(configurationProperty.getName() == propertyName)
+                    {
+                        propertyValue = configurationProperty.getValue()
+                    }
+                }
+            }
+        }
+     }
+    return propertyValue
+}
+
+
+/**
+ * get jms message controller user name and password from global property or get from application 
+ * Linger Zeng
+ * @param: shopName
+ * @return: type: display FTT type, such as shop FTT, line FTT, model FTT
+ * */
+function getResendJeeFilePath(){
+    function handleGetResendJeeFilePathException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getResendJeeFilePath"
+        logError(MODULE_IM, " get Resend Jee FilePath:" , getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+        return null
+    }
+    catch(Exception, handleGetResendJeeFilePathException)
+    application = getApplication(CONFIGURATION_PROPERTIES_INTEGRATION)
+    configurationProperties = application.getConfigurationProperties()
+    if(configurationProperties != null)
+    {
+        for(configurationProperty : configurationProperties)
+        {
+            if(configurationProperty.getName() == RESEND_SYNORDER_JEE_FILE_PATH)
+            {
+                filePath = configurationProperty.getValue()
+                return filePath
+            }
+        }
+     }
+     return null
+}
+
+
+/**
+ * Read the outbound datas from plc
+ * Zhiping Shi
+ * @param: groupDataEvent: main order download command group event
+ * @param: commandFromPLCTagvalue: main order download command value
+ * @return: N/A
+ * */
+function getDatasFromPlcByLDTagSetDef(groupDataEvent , liveDataTemplate ,liveDataTagSet)
+{
+    return getDynaBeanFromPLC(groupDataEvent, liveDataTemplate, liveDataTagSet)
+}
+
+
+
+function saveFaultData(falutOutGroup, falutCode, lineId, stationNumber, faultMessage){
+    function handleSaveFaultDataException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "saveFaultData"
+        logError(MODULE_IM, exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)        
+    }
+    
+    catch(Exception, handleSaveFaultDataException)
+    commandoutGroupName = PlcUtils::replaceString(falutOutGroup,":","CommandOut")
+    tagDefinitionAtDefinition = getATDefinition("AS_OM_TagDefinition")
+    atRowFilter = createATRowFilter("AS_OM_TagDefinition")
+    atRowFilter.forColumnNameEqualTo("ld_groupname", commandoutGroupName)
+    vectorRows = tagDefinitionAtDefinition.getATRowsByFilter(atRowFilter,false)
+    if(vectorRows != null && vectorRows.size() > 0)
+    {
+        tagDefinitionKey = vectorRows.get(0).getKey()
+        atDefinition = getATDefinition("AS_IM_Fault_Log")
+        atHandler = createATHandler("AS_IM_Fault_Log")
+    	atRow = atHandler.createATRow()
+    	atRow.setValue("fault_group_name", falutOutGroup)
+    	atRow.setValue("command_group_name", commandoutGroupName)
+    	atRow.setValue("fault_code", falutCode.toString())
+    	atRow.setValue("line_id", lineId)
+    	atRow.setValue("station_number", stationNumber)
+    	atRow.setValue("fault_message", faultMessage)
+    	atRow.setValue("clear_result", false)
+    	atRow.setValue("tagDefinition_key", tagDefinitionKey)
+    	response = atHandler.save()
+    	if(response.isError())
+    	{
+            throw (response.getFirstErrorMessage())
+    	}
+    } 
+    else
+    {
+        throw ("Cannot find PLC Tag Template Definition in AT table 'AS_OM_TagDefinition'")
+    }
+}
+
+
+/**
+ * Get unit form order buffer base on  number
+ * Zhiping Shi
+ * @param: orderBuffer: current order cache
+ * @param:  : unit's  number
+ * @param: shop : current Area
+ * @return: unit
+ * */
+function getUnitByUDAValue(orderBuffer, udaValue, shop, udaType)
+{
+    
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getUnitByUDAValue"
+    keyWord = "udaValue["+udaValue+"],shop["+shop+"],udaType["+udaType+"]"
+    logInfo(MODULE_IM,"#############_1 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+    function handleGetUnitByUDAValueException(exception)
+    {      
+        if(udaValue != null)
+        {
+            logError(MODULE_IM, exception.getMessage() +" bsn: " + udaValue, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        }
+        
+        logException(MODULE_IM, exception) 
+    }
+    catch(Exception, handleGetUnitByUDAValueException)
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getUnitByUDAValue"
+    unitTarget = null
+    orderService = getOrderService()
+    //Modify by zhiping 2014.10.13  MR-6
+    vectorUnits = orderBuffer.getCachedUnits()
+    if(vectorUnits != null && vectorUnits.size() > 0)
+    {
+        logInfo(MODULE_IM,"#############_2 keyWord<"+keyWord+">,vectorUnits.size[" + vectorUnits.size() + "]" ,getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+        position = 0
+        for(unit : vectorUnits)
+        {
+            position = position + 1
+            if(unit.getUDA(udaType) == udaValue && unit.getUDA("shop") == shop)
+            {
+                logInfo(MODULE_IM,"#############_3 keyWord<"+keyWord+">,position[" + position + "]",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+                unitTarget = unit
+                logInfo(MODULE_IM,"get unit from order buffer by bsn: "+udaValue,getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+
+//                 logInfo(MODULE_IM, "OrderBuffer data Size:" + orderBuffer.getCachedOrders().size())
+                return unit
+            }
+        }
+    }
+    
+    // Modified by Lin Hui @2014/07/09
+    if(unitTarget == null)
+    {
+        logInfo(MODULE_IM,"#############_4 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+        logInfo(MODULE_IM,"Can't find unit from order buffer by bsn :"+udaValue+", load it from database!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+        fltrUnit = createUnitFilter()
+        fltrUnit.forUdaEqualTo(class com.rockwell.autosuite.mes.constants.common.UnitUDAName::SHOP, shop)
+        fltrUnit.forUdaEqualTo(udaType, udaValue)
+        vectorUnits = fltrUnit.exec()
+        
+        if(vectorUnits.size() > 0)
+        {
+            logInfo(MODULE_IM,"#############_5 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+            unitTarget = vectorUnits.get(0)
+            
+            unitTarget = orderBuffer.getUnit(unitTarget.getKey())
+//             logInfo(MODULE_IM, "OrderBuffer data Size:" + orderBuffer.getCachedOrders().size())
+            if(unitTarget == null )
+            {
+                logInfo(MODULE_IM,"#############_6 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+                logInfo(MODULE_IM," Can't find unit from database by bsn:" + udaValue,getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+     
+//                 logInfo(MODULE_IM, "OrderBuffer data Size:" + orderBuffer.getCachedOrders().size())
+            }
+            return unitTarget
+        }
+        else
+        {
+            logInfo(MODULE_IM,"#############_7 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+            logError(MODULE_IM," Can't find unit from database by bsn:"+udaValue, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        }
+    }
+}
+
+/**
+ * Get unit form order buffer base on  number
+ * Linger Zeng
+ * @param: orderBuffer: current order cache
+ * @param: VIN : unit's vin number
+ * @param: shop : current Area
+ * @return: unit
+ * */
+function getUnitByVIN(orderBuffer, VIN, shop){
+    function handleGetUnitByVINException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getUnitByVIN"
+        if(udaValue != null)
+        {
+            logError(MODULE_IM, exception.getMessage() +" vin: " + VIN, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        }
+        
+        logException(MODULE_IM, exception) 
+    }
+    catch(Exception, handleGetUnitByVINException)
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getUnitByVIN"
+    unitTarget = null
+    keyWord = "VIN["+VIN+"],shop["+shop+"]"
+    logInfo(MODULE_IM,"#############_1 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+    orderService = getOrderService()
+       //Modify by zhiping 2014.10.13 MR-6
+    vectorUnits = orderBuffer.getCachedUnits()
+    
+   
+    if(vectorUnits != null && vectorUnits.size() > 0)
+    {
+        logInfo(MODULE_IM,"#############_2 keyWord<"+keyWord+">,vectorUnits.size[" + vectorUnits.size() + "]" ,getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+        position = 0
+        for(unit : vectorUnits)
+        {
+            position = position + 1
+            if(unit.getUDA(UnitUDAName::VIN) == VIN && unit.getUDA("shop") == shop)
+            {
+                logInfo(MODULE_IM,"#############_3 keyWord<"+keyWord+">,position[" + position + "]",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+                unitTarget = unit
+                logInfo(MODULE_IM,"get unit from order buffer by VIN: "+VIN ,getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+//                 logInfo(MODULE_IM, "OrderBuffer data Size:" + orderBuffer.getCachedOrders().size())
+                return unit
+            }
+        }
+    }
+    
+    // Modified by Lin Hui @2014/07/09
+    if(unitTarget == null)
+    {
+        logInfo(MODULE_IM,"#############_4 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+        logInfo(MODULE_IM, "Can't find unit from order buffer by VIN :" + VIN +", load it from database!")
+        fltrUnit = createUnitFilter()
+        fltrUnit.forUdaEqualTo(class com.rockwell.autosuite.mes.constants.common.UnitUDAName::SHOP, shop)
+        fltrUnit.forUdaEqualTo(UnitUDAName::VIN, VIN)
+        vectorUnits = fltrUnit.exec()
+        if(vectorUnits.size() > 0)
+        {
+            logInfo(MODULE_IM,"#############_5 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+            unitTarget = vectorUnits.get(0)
+            unitTarget = orderBuffer.getUnit(unitTarget.getKey())
+            if(unitTarget == null )
+            {
+                logInfo(MODULE_IM,"#############_6 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+                logInfo(MODULE_IM," Can't find unit from database by VIN:"+VIN,getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+//                 logInfo(MODULE_IM, "OrderBuffer data Size:" + orderBuffer.getCachedOrders().size())
+            }
+            
+            return unitTarget
+        }
+        else
+        {
+            logInfo(MODULE_IM,"#############_7 keyWord<"+keyWord+">",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+            logInfo(MODULE_IM," Can't find unit from database by VIN:"+VIN,getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+        }
+    }
+}
+/**
+ * Process the wip tracking logic
+ * Zhiping Shi
+ * @param: groupDataEvent : wip tracking group event
+ * @param: commandFromPLCTagvalue : the command value from plc wip tracking
+ * @param: orderBuffer : current shop order cache
+ * @param: shop : current Area
+ * @return: N/A
+ * */
+function processWipTracking(orderBuffer, shop, stationNumber, lineId, bsnOrVin, isBsn)
+{
+    function handleProcessWipTrackingException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "processWipTracking"
+        logError(MODULE_IM, exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)    
+        logException(MODULE_IM, exception)
+        return null
+    }
+    catch(Exception, handleProcessWipTrackingException)
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "processWipTracking"
+    
+    tmeStamp = getDBTime()
+    bsn = ""
+    VIN = ""
+    if(isBsn)
+    {
+        bsn = bsnOrVin
+    }
+    else
+    {
+        VIN = bsnOrVin
+    }
+
+    logInfo(MODULE_IM, "Data from PLC value bsnOrVin: " + bsnOrVin +",lineId:" +lineId +",stationNumber:" +stationNumber +",tmeStamp:" +tmeStamp,getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+
+    unit = null
+    //validate the privous order, start the order, complete the order at current step
+    if(bsn != null && bsn != PLC_SPARE && bsn.trim() != "")
+    {   
+        bsn = bsn.replaceAll("#","")
+        unit = getUnitByUDAValue(orderBuffer, bsn, shop, UnitUDAName::BSN)
+    }
+    //validate the privous order, start the order, complete the order at current step
+    if(VIN != null && VIN != PLC_SPARE && VIN.trim() != "")
+    {
+        VIN = VIN.replaceAll("#","")
+        unit = getUnitByVIN(orderBuffer, VIN, shop)
+    }
+    if(unit != null)
+    {
+        wipJee = createWipJee(orderBuffer, unit, lineId, stationNumber, tmeStamp)
+        return wipJee
+    }
+    else
+    {
+        errorMessage = getMessage("MES_INTEGRATION_MSG_ERROR", "CANNOT_FIND_UNIT")
+        logError(MODULE_IM, errorMessage, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        return null
+    }
+}
+
+
+/**
+ * Create wip trcking jee to application sos
+ * Zhiping Shi
+ * @param: bsn : unit's bsn number
+ * @param: lineId : productionLine which configure in PLC
+ * @param: stationNumber : workcenter which configure in PLC
+ * @param: tmeStamp : the time from plc
+ * @return: N/A
+ * */
+function createWipJee(orderBuffer, unit, lineId, stationNumber, tmeStamp){
+    function handleCreateWipJeeException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "createWipJee"
+        logError(MODULE_IM, exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+        return null
+    }
+     
+    catch(Exception, handleCreateWipJeeException)
+    productionLine = orderBuffer.getLineByLineId(lineId)
+    workCenter = orderBuffer.getWorkCenterByStationNumber(stationNumber)
+    jee = UserDefinedJee()
+    jee.setDefinedType(JeiTaskTypeConstantEx::TASK_TYPE_WIP_TRACKING)
+    jee.setLine(lineId)
+    jee.setStation(stationNumber)
+    jee.setTimestamp(tmeStamp)
+    jee.setUserValue("UNIT", unit)
+    jee.setUserValue("PRODUCTION_LINE", productionLine)
+    jee.setUserValue("WORK_CNETER", workCenter)
+    jee.setUserValue("TIME", tmeStamp)
+    return jee
+}
+
+/** 
+ * @desc : check the shop is biw shop or not
+ * @param : shop   Area 
+ * @return : flag   boolean
+ * @author : Zhiping Shi
+ * @date : 2017/01/06
+*/
+function checkBIWShop(shop)
+{
+    flag = false
+    if(shop != null)
+    {
+        shopMasterManager = class com.rockwell.autosuite.mes.utilities.common.ShopMasterManager::getInstance()
+        vectorBiwShops = shopMasterManager.getBIWShops()
+        if(vectorBiwShops != null && vectorBiwShops.size()>0)
+        {
+          for(i=0;i<vectorBiwShops.size();i++)
+          {
+            shopTemp = vectorBiwShops.get(i)
+            if(shopTemp != null && shopTemp.getName() == shop.getName())
+            {
+                flag = true
+                break
+            }
+          }
+        }
+    }
+    return flag
+}
+
+/** 
+ * @desc : check the shop is Paint shop or not
+ * @param : shop   Area 
+ * @return : flag   boolean
+ * @author : Zhiping Shi
+ * @date : 2017/01/06
+*/
+function checkPaintShop(shop)
+{
+    flag = false
+    if(shop != null)
+    {
+        shopMasterManager = class com.rockwell.autosuite.mes.utilities.common.ShopMasterManager::getInstance()
+        paintShop = shopMasterManager.getPaintShop()
+        if(paintShop != null && paintShop.getName() == shop.getName())
+        {
+            flag = true
+        }
+    }
+    return flag
+}
+
+
+/** 
+ * @desc : check the shop is TCF shop or not
+ * @param : shop   Area 
+ * @return : flag   boolean
+ * @author : Zhiping Shi
+ * @date : 2017/01/06
+*/
+function checkTCFShop(shop)
+{
+    flag = false
+    if(shop != null)
+    {
+        shopMasterManager = class com.rockwell.autosuite.mes.utilities.common.ShopMasterManager::getInstance()
+        TCFShop = shopMasterManager.getTCFShop()
+        if(TCFShop != null && TCFShop.getName() == shop.getName())
+        {
+            flag = true
+        }
+    }
+    return flag
+}
+
+
+
+/**
+ * Get order item base on order
+ * Zhiping Shi
+ * @param: order : work order
+ * @param: shop : Area
+ * @param: orderBuffer : order cached in shop integration sos
+ * @return: unit:current shop according unit
+ * */
+function getShopOrderitemByOrder(order, shop, orderBuffer){
+    function handleGetShopOrderitemByOrderException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getShopOrderitemByOrder"
+         logError(MODULE_IM, exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+        return null
+    }
+    catch(Exception, handleGetShopOrderitemByOrderException)
+    vectorOrderItems = order.getOrderItems()
+    vectorUnits = vector()
+    for(itemOrder : vectorOrderItems)
+    {
+        if(itemOrder.getUDA(OrderItemUDAName::SHOP) == shop && itemOrder.getCurrentStatus() == OrderStatus::CREATED)
+        {
+            vectorUnits.addAll(orderBuffer.getUnitsForOrderItem(itemOrder))
+        }   
+    }
+    if(vectorUnits != null && vectorUnits.size() > 0)
+    {
+        unit = vectorUnits.get(0)
+        return unit
+    }
+}
+
+function getJeiTasksFromOrderBuffer(obm, unit, lineId, stationId, lineSideId)
+{
+    jeiHelper = class com.rockwell.autosuite.mes.jei.JeiHelper()
+    jeiTasks = jeiHelper.getJeiTasks(obm, unit, lineId, stationId, lineSideId)
+     return jeiTasks
+}
+
+
+/**
+ * Get sub order  zone  base on order category
+ * Zhiping Shi
+ * @param: messageID : message id 
+ * @return: code, message code will writed to plc
+ * */
+function getSubOrderZoneByCategory(type)
+{
+    function handleGetSubOrderZoneByCategoryException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getSubOrderZoneByCategory"
+        
+        logError(MODULE_IM, "MES_INTEGRATION_MSG_ERROR-[noticePLCFault]: get sub order zone by order category failed:" + exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleGetSubOrderZoneByCategoryException)
+    zoneList = getList("generateSubOrderWorkCenterList").getItems()
+    for(zoneTypes : zoneList)
+    {
+        zoneType = zoneTypes.split(":")
+        typeid = zoneType[0]
+        zone = zoneType[1]
+        type = class java.lang.String::valueOf(type)
+        if(typeid == type)
+        {
+            return zone
+        }
+    }
+    
+    functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getSubOrderZoneByCategory"
+    logError(MODULE_IM, "Fault code[Message ID: " + type + "] hava NOT been configurated in List[generateSubOrderWorkCenterList]", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+    return null
+}
+
+/**
+ * Get DynaBean By cache
+ * Tim Liu
+ * @param: groupDataEvent
+ * @param: liveDataTemplate
+ * @param: liveDataTagSet
+ * @return: DynaBean
+ * */
+function getDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)
+{
+    function handlegetDynaBeanException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG", "FUNCTION") + " " + "getDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)"
+        logError(MODULE_IM, exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handlegetDynaBeanException)
+    
+    liveDataServer = groupDataEvent.getSource().getParent().getParent()
+    groupName = getGroupNameByTagSet(groupDataEvent, liveDataTagSet)
+    
+    dynaBeanMap =  getProperty("DYNA_BEAN_MAP")
+    dynaBean = dynaBeanMap.get(groupName)
+    if(dynaBean == null)
+    {
+        liveDataTagSetDefinition = getliveDataTagSetDefinitionName(liveDataTemplate, liveDataTagSet)
+        dynaBean = getPLCService().getDynaBean(liveDataTagSetDefinition)
+        dynaBeanMap.put(groupName, dynaBean)
+    }
+
+    return dynaBean
+}
+
+/**
+ * Get DynaBean By PLC
+ * Tim Liu
+ * @param: groupDataEvent
+ * @param: liveDataTemplate
+ * @param: liveDataTagSet
+ * @return: DynaBean
+ * */
+function getDynaBeanFromPLC(groupDataEvent, liveDataTemplate, liveDataTagSet)
+{
+    function handlegetDynaBeanFromPLCException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG", "FUNCTION") + " " + "getDynaBeanFromPLC(groupDataEvent, liveDataTemplate, liveDataTagSet)"
+        logError(MODULE_IM, exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handlegetDynaBeanFromPLCException)
+    
+    liveDataTagSetDefinition = getliveDataTagSetDefinitionName(liveDataTemplate, liveDataTagSet)
+    dynaBean = getDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)
+    itemDatas = getDatasFromPLC(groupDataEvent, liveDataTagSet)
+    getPLCService().setDynaBeanValueByItems(liveDataTagSetDefinition, dynaBean, itemDatas)
+    return dynaBean
+}
+
+/**
+ * Get DynaBean of Init
+ * Tim Liu
+ * @param: groupDataEvent
+ * @param: liveDataTemplate
+ * @param: liveDataTagSet
+ * @return: DynaBean
+ * */
+function getInitDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)
+{
+    function handlegetInitDynaBeanException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG", "FUNCTION") + " " + "getInitDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)"
+        logError(MODULE_IM, exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handlegetInitDynaBeanException)
+    
+    liveDataTagSetDefinition = getliveDataTagSetDefinitionName(liveDataTemplate, liveDataTagSet)
+    dynaBean = getDynaBean(groupDataEvent, liveDataTemplate, liveDataTagSet)
+    getPLCService().initDynaBeanValue(liveDataTagSetDefinition,dynaBean)
+    return dynaBean
+}
+
+/**
+ * Get itemData Form PLC
+ * Tim Liu
+ * @param: groupDataEvent
+ * @param: liveDataTagSet
+ * @return: itemDatas
+ * */
+function getDatasFromPLC(groupDataEvent, liveDataTagSet)
+{
+    function handlegetDatasFromPLCException(exception){
+        functionName = getMessage("MES_INTEGRATION_MSG", "FUNCTION") + " " + "getDatasFromPLC(groupDataEvent, liveDataTagSet)"
+        logError(MODULE_IM, exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handlegetDatasFromPLCException)
+    
+    liveDataServer = groupDataEvent.getSource().getParent().getParent()
+    groupName = getGroupNameByTagSet(groupDataEvent, liveDataTagSet)
+    
+    itemDatas = readValuesFromPLC(liveDataServer, groupName)
+    return itemDatas
+}
+
+/**
+ * write DynaBean To Plc
+ * Tim Liu
+ * @param: groupDataEvent
+ * @param: liveDataTemplate
+ * @param: liveDataTagSet
+ * @param: DynaBean
+ * @param: Boolean
+ * */
+function writeDynaBeanToPlc(groupDataEvent, liveDataTemplate, liveDataTagSet, dynaBean)
+{
+    function handlewriteDynaBeanToPlcException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "writeDynaBeanToPlc(groupDataEvent, liveDataTemplate, liveDataTagSet, dynaBean)"
+        logError(MODULE_IM, "write DynaBean To Plc failed,", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handlewriteDynaBeanToPlcException)
+    
+    liveDataServer = groupDataEvent.getSource().getParent().getParent()
+    groupName =  getGroupNameByTagSet(groupDataEvent, liveDataTagSet)
+    inboundDataValues = getDynaBeanValues(liveDataTemplate, liveDataTagSet, dynaBean)
+    
+    //Write the error to plc
+    result = writeValueToPLC(liveDataServer, groupName, inboundDataValues)
+    return result
+}
+
+/**
+ * get DynaBean values
+ * Tim Liu
+ * @param: groupDataEvent
+ * @param: liveDataTagSet
+ * @param: DynaBean
+ * @param: dataValues
+ * */
+function getDynaBeanValues(liveDataTemplate, liveDataTagSet, dynaBean)
+{
+    liveDataTagSetDefinition = getliveDataTagSetDefinitionName(liveDataTemplate, liveDataTagSet)
+    dataValues = ""
+    if(dynaBean !=null)
+    {
+    dataValues = getPLCService().getValuesByDynaBean(liveDataTagSetDefinition, dynaBean)
+    }
+    return dataValues
+}
+
+/**
+ * get liveDataTagSetDefinition Name
+ * Tim Liu
+ * @param: liveDataTemplate
+ * @param: liveDataTagSet
+ * @param: liveDataTagSetDefinitionName
+ * */
+function getliveDataTagSetDefinitionName(liveDataTemplate, liveDataTagSet)
+{
+    liveDataTagSetDefinition = liveDataTemplate + "_" + liveDataTagSet
+    return liveDataTagSetDefinition
+}
+
+/**
+ * get GroupName By TagSet
+ * Tim Liu
+ * @param: groupDataEvent
+ * @param: liveDataTagSet
+ * @param: groupName
+ * */
+function getGroupNameByTagSet(groupDataEvent, liveDataTagSet)
+{
+    liveDataServer = groupDataEvent.getSource().getParent().getParent()
+    liveDataGroupCommand = groupDataEvent.getSource()
+    commandoutGroupName = liveDataGroupCommand.getName()
+    groupName = PlcUtils::replaceString(commandoutGroupName, ":", liveDataTagSet)
+    return groupName
+}
+
+
+/**
+ * Create milestone data to AT_AS_IM_MilestoneData  
+ * zzw 20180724
+ * @param: station object
+ * @param: order object
+ * @param: tmeStamp : the time generating data
+ * @param:passType  wip or add  class com.rockwell.autosuite.mes.constants.common.MilestonePassPointType::WIP
+ * @param:sort    every station has a sort number for milestone
+ * @return: N/A
+ * */
+ 
+// function createMilestoneData( station, order, tmeStamp,passType)
+// {
+//     functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "createMilestoneData"
+//     function handleSendMilestoneJeeException(exception){
+//         
+//         logError(MODULE_IM, exception.getMessage(), getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+//         logException(MODULE_IM, exception)
+//     }
+//     catch(Exception, handleSendMilestoneJeeException)
+// 
+//     /******stationSortMap  站点 和 编号 的映射 关系，通过站点得到编号(顺序号) **********/
+//     
+//     stationSortMap = class java.util.HashMap()
+//     dsListA = getList("MILESTONE_ERP_NO_PRENO")
+//     //TODO  dsList非空校验 
+//     if(null == dsListA)
+//     {
+//         logError(MODULE_IM,"Not found list object MILESTONE_ERP_NO_PRENO", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+//         return null
+//     }
+//     itemList = dsListA.getItems()
+//     foreach str(itemList)
+//     {
+//     	strSplit = str.split(":")
+//     	if(strSplit.length < 5)
+//     	{
+//     		//continue;//抛出异常
+//     		logError(MODULE_IM,"Some items length of list object MILESTONE_ERP_NO_PRENO < 5 is incomplete   ", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+//             return null
+//     	}
+//     	stationSortMap.put(strSplit[4],strSplit[1]);
+//     }
+//    
+//     if(stationSortMap.size()>0)
+//     {
+//         dsList = getList("MILESTONE_BARCODES_NANE")
+//         //TODO 非空校验
+//         if(null == dsList)
+//         {
+//             logError(MODULE_IM,"Not found list object MILESTONE_BARCODES_NANE", getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+//             return null
+//         }
+//         responseMilestoneData = null
+//         sortStr = stationSortMap.get(station.getName())
+//         if(null != sortStr)
+//         {
+//             sort = class java.lang.Long::parseLong(sortStr)
+//             orderService = getOrderService()
+//             responseMilestoneData = orderService.generateMilestoneDataPnuts(station,order, tmeStamp, passType,sort,dsList)
+//         }
+//     }
+//     logInfo(MODULE_IM, "Create MilestoneData::START_MILESTONE" + order.getOrderNumber(),getDBTime(),SOS_INTEGRATION_SUBROUTINES ,functionName)
+//     return responseMilestoneData
+// }
+
+ /**      
+ * check section  uploading     
+ * fzg      
+ * @param: serialNo :serial No      
+ * @param: equipName : equipment name
+ * @param: cutLineSN : cut line serial No 
+ * @param: programID : program id
+ * @param: rollerSN : roller serial No
+ * @param: userName : user name
+ * @return: error message     
+ * */
+function checkSectionUpload(serialNo,equipName,cutLineSN,programID,rollerSN,userName)
+{
+    //check serial number and order
+    errorMessage = checkLotOrOrderIsLocked(serialNo)
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    }  
+    //check equipment
+    errorMessage = checkEquipIsLocked(equipName)
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    } 
+    //check user
+    errorMessage = checkUserIsLocked(userName)
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    }
+    //check program id
+//     jobNoFilter = class com.rockwell.discrete.mes.order.model.jobno.MESOMJobNoFilter()
+//     jobNoFilter.forJobnoEqualTo(class java.lang.Long::valueOf(programID))
+//     filteredObj = jobNoFilter.getFilteredObjects()
+//     if(!(jobNoFilter.getCount()>0))
+//     {    
+//         return "CANNOT_FIND_JOBNO"
+//     }
+//     if(filteredObj[0].getLockstatus() == LOCK_STATUS )
+//     {
+//         return "JOBNO_IS_LOCKED"
+//     }  
+    //校验主辊
+//     errorMessage = checkRoller(serialNo,rollerSN)
+//     if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+//     {
+//         return errorMessage
+//     } 
+    errorMessage = checkCutline(serialNo,cutLineSN)
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    }
+    //检查粘胶是否出料
+    errorMessage = checkOpComplete(serialNo,"viscose")
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    } 
+    //check appointed equipment
+    errorMessage = checkAppointedEquip(serialNo,equipName)
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    } 
+    //check appointed supplier
+    errorMessage = checkAppointedSupplier(serialNo,cutLineSN)
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    } 
+    return "FEEDBACK_DATA_IS_NORMAL"    
+}
+/**      
+ * check clean  uploading     
+ * fzg      
+ * @param: serialNo :serial No      
+ * @param: equipName : equipment name
+ * @param: userName : user name
+ * @return: error message     
+ * */
+function checkCleanUpload(serialNo,equipName,userName)
+{
+    //check serial number and order
+    errorMessage = checkLotOrOrderIsLocked(serialNo)
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    } 
+    lotObj = getLotByName(serialNo)
+    //check equipment
+    errorMessage = checkEquipIsLocked(equipName)
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    } 
+    //check user
+    errorMessage = checkUserIsLocked(userName)
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    }
+    //检查是否已经上料
+    errorMessage = checkOpStart(serialNo,"clean")
+    if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+    {
+        return errorMessage
+    }
+    //检查边皮是否录入
+    if(lotObj.getUDA("serial_type") == 10){
+        errorMessage = checkBPIsNull(serialNo)
+        if(!errorMessage.equals("FEEDBACK_DATA_IS_NORMAL"))
+        {
+            return errorMessage
+        }
+    }
+    
+    return "FEEDBACK_DATA_IS_NORMAL" 
+}
+/**      
+ * check serial number or order is locked or not     
+ * fzg      
+ * @param: serialNo :serial No  
+ * @return: error message     
+ * */
+function checkLotOrOrderIsLocked(serialNo)
+{
+    //check serial number
+//     lotObj = getLotByName(serialNo)
+    lotObj = getLotByStr(serialNo)
+    if(lotObj == null)
+    {    
+        return "CANNOT_FIND_SERIAL_NO"
+    }
+    //随工单解绑,临时使用错误代码
+    if(lotObj.getUDA("status") == LOT_STATUS_UNBOUND)
+    {
+        return "SERIAL_NO_IS_LOCKED"
+    }
+    if(lotObj.getUDA("lock_status") == LOCK_STATUS)
+    {
+        return "SERIAL_NO_IS_LOCKED"
+    }
+    //check order
+    orderObj = lotObj.getOrder()
+    orderItemName = lotObj.getOrderItem()
+    orderItemObj = orderObj.getOrderItem(orderItemName)
+    if(orderItemObj.getUDA("lock_status") == LOCK_STATUS)
+    {
+        return "ORDER_IS_LOCKED"
+    }
+    return "FEEDBACK_DATA_IS_NORMAL"
+}
+
+/**      
+ * check equipment is locked or not     
+ * fzg      
+ * @param: equipName :equipment name  
+ * @return: error message     
+ * */
+function checkEquipIsLocked(equipName)
+{
+    //check equipment
+    equipObj = getEquipmentByName(equipName)
+    if(equipObj == null)
+    {    
+        return "CANNOT_FIND_EQUIP"
+    }
+    if(equipObj.getUDA("lock_status") == LOCK_STATUS)
+    {    
+        return "EQUIP_IS_LOCKED"
+    }
+    return "FEEDBACK_DATA_IS_NORMAL"
+}
+
+/**      
+ * check user is locked or not     
+ * fzg      
+ * @param: userName :user name  
+ * @return: error message     
+ * */
+function checkUserIsLocked(userName)
+{
+    //check user
+    userObj = getUser(userName)
+    if(userObj == null)
+    {    
+        return "CANNOT_FIND_USER"
+    }
+     if(userObj.getUDA("lockstatus") == LOCK_STATUS)
+    {    
+        return "USER_IS_LOCKED"
+    }
+    return "FEEDBACK_DATA_IS_NORMAL"
+}
+
+/**      
+ * check appoint equip     
+ * fzg      
+ * @param: lotName
+ * @param: equipName
+ * @return: error message     
+ * */
+function checkAppointedEquip(lotName,equipName)
+{
+    lotObj = getLotByName(lotName)
+    equipment = getEquipmentByName(equipName)  
+    //check appointed equipment
+    orderObj = lotObj.getOrder()
+    orderKey = orderObj.getOrderKey()
+    orderItemName = lotObj.getOrderItem()
+    orderItemObj = orderObj.getOrderItem(orderItemName)
+    routeName = orderItemObj.getPlannedRoute()
+    wcName = equipment.getWorkCenterName()
+    stepObj = getRouteStep(routeName,wcName)
+    operation = stepObj.getOperation()
+    opKey = operation.getKey()
+    sql = "select am.equip_name_s from at_om_appointMachines am 
+        left join Equipment_Class_equip ece on am.equip_class_key_68 = ece.equip_class_key
+        left join Equipment e on ece.equip_key = e.equip_key where 1 = 1
+        and order_key_54 = "+orderKey+" and OP_key_32 = "+opKey
+    queryResult = querySql(sql)
+    if(null == queryResult || queryResult.size() ==0 )
+    {
+        //没有在该工序指定机台
+        return "FEEDBACK_DATA_IS_NORMAL"
+    }    
+    sql2 =sql +" and am.equip_name_s = '"+equipName+"'"     
+    queryResult = querySql(sql2)
+    if(queryResult.size() > 0)
+    {
+        //当前机台是指定机台
+        return "FEEDBACK_DATA_IS_NORMAL"
+    }else {
+        sql2 = sql +"and am.equip_name_s is null" 
+    }
+    queryResult = querySql(sql2)
+    if(queryResult.size() > 0)
+    {
+        //当前机台属于指定机型
+        return "FEEDBACK_DATA_IS_NORMAL"
+    }
+    //当前机台不是指定机台
+    return "EQUIP_IS_NOT_APPOINTED"
+}
+/**      
+ * check roller    
+ * fzg      
+ * @param: lotName
+ * @param: batchNo
+ * @return: error message     
+ * */
+function checkRoller(lotName,batchNo)
+{
+    lotObj = getLotByName(lotName)
+    //check roller
+    orderObj = lotObj.getOrder()
+//     orderKey = orderObj.getOrderKey()
+    orderItemName = lotObj.getOrderItem()
+    orderItemObj = orderObj.getOrderItem(orderItemName)
+    bomObj = orderItemObj.getBillOfMaterials()
+    if(bomObj == null)
+    {
+        return "ORDER_BOM_IS_NULL"
+    }
+    bomKey = bomObj.getBomKey()
+    sql = "select mr.roller_number_s from at_om_mainroller mr
+            left join bom_part_list bi on mr.part_number_s = bi.part_number
+            left join bom b on bi.bom_key = b.bom_key
+            where 1 = 1
+            and b.bom_key = "+bomKey+" and mr.roller_number_s = '"+batchNo+"'"      
+    queryResult = querySql(sql)
+    if(queryResult.size() > 0)
+    {
+        return "FEEDBACK_DATA_IS_NORMAL"
+    }
+    return "ROLLER_ERROR"
+}
+/**      
+ * check cut line    
+ * fzg      
+ * @param: lotName
+ * @param: batchNo
+ * @return: error message     
+ * */
+function checkCutline(lotName,batchNo)
+{
+    lotObj = getLotByName(lotName)
+    //check roller
+    orderObj = lotObj.getOrder()
+//     orderKey = orderObj.getOrderKey()
+    orderItemName = lotObj.getOrderItem()
+    orderItemObj = orderObj.getOrderItem(orderItemName)
+    bomObj = orderItemObj.getBillOfMaterials()
+    if(bomObj == null)
+    {
+        return "ORDER_BOM_IS_NULL"
+    }
+    bomKey = bomObj.getBomKey()
+//     sql = "select dl.spool_no_s from at_om_diamondline dl
+//             left join bom_part_list bi on dl.part_number_s = bi.part_number
+//             left join bom b on bi.bom_key = b.bom_key
+//             where 1 = 1
+//             and b.bom_key = "+bomKey+" and dl.spool_no_s = '"+batchNo+"'"  
+    sql = "select dl.spool_no_s from at_om_diamondline dl
+            where dl.spool_no_s = '"+batchNo+"'" 
+    queryResult = querySql(sql)
+    if(queryResult.size() > 0)
+    {
+        return "FEEDBACK_DATA_IS_NORMAL"
+    }
+    return "CUTLINE_ERROR"
+}
+
+/**      
+ * check appoint supplier    
+ * fzg      
+ * @param: lotName
+ * @param: batchNo
+ * @return: error message     
+ * */
+function checkAppointedSupplier(lotName,batchNo)
+{
+    lotObj = getLotByName(lotName)
+//     equipment = getEquipmentByName(equipName)  
+    //check appointed supplier
+    orderObj = lotObj.getOrder()
+    orderKey = orderObj.getOrderKey()
+    orderItemName = lotObj.getOrderItem()
+    orderItemObj = orderObj.getOrderItem(orderItemName)
+    bomObj = orderItemObj.getBillOfMaterials()
+    bomKey = bomObj.getBomKey()
+    sql = "select aps.suppliername_s from at_om_appointsupplier aps where 1 = 1
+           and order_key_54 = "+orderKey
+    queryResult = querySql(sql)
+    if(!(queryResult.size() > 0))
+    {
+        //当前未指定供应商
+        return "FEEDBACK_DATA_IS_NORMAL"
+    }
+    sql2 = "select aps.suppliername_s from at_om_appointsupplier aps
+                left join at_om_diamondline dl on aps.part_number_s = dl.part_number_s
+                where 1 = 1 and aps.suppliername_s = dl.supplier_name_s and dl.lot_id_s = '"
+                +batchNo+"'"
+    queryResult = querySql(sql2)
+    if(queryResult.size() > 0)
+    {
+        return "FEEDBACK_DATA_IS_NORMAL"
+    }
+    //当前供应商不是指定供应商
+    return "SUPPLIER_IS_NOT_APPOINTED"
+}
+/**      
+ * 检查边皮是否已录入     
+ * fzg      
+ * @param: equipName :equipment name  
+ * @return: error message     
+ * */
+function checkBPIsNull(lotName)
+{
+    //check lotName
+//     lotObj = getLotByName(lotName)
+//     if(lotObj == null)
+//     {    
+//         return "CANNOT_FIND_SERIAL_NO"
+//     }
+    sql = "select debris_weigh_f from At_OM_DEBRISWEIGH where fragment_number_s = 'S2' 
+            and debris_weigh_f is not null and serial_number_s = '"+lotName+"'" 
+    result = querySql(sql)
+    if(result.size() > 0)
+    {
+        return "FEEDBACK_DATA_IS_NORMAL"
+    }
+    return "BP_IS_NULL"
+}
+/**      
+ * 检查工序是否已经上料    
+ * fzg      
+ * @param: lotName
+ * @param: opName
+ * @return: error message     
+ * */
+function checkOpStart(lotName,opName)
+{
+    
+    sql = "select start_time_t from at_om_lothistory where op_name_s = '"+opName+"' and serial_number_s = '"+lotName+"' and start_time_t is not null"
+    resultVector = querySql(sql)
+    if(resultVector.size() > 0)
+    {
+        //已经上料
+        return "THIS_OP_IS_STARTED"
+    }
+    //未上料
+    return "FEEDBACK_DATA_IS_NORMAL" 
+}
+
+/**      
+ * 检查工序是否下料    
+ * fzg      
+ * @param: lotName
+ * @param: opName
+ * @return: error message     
+ * */
+function checkOpComplete(lotName,opName)
+{
+    
+    sql = "select complete_time_t from at_om_lothistory where op_name_s = '"+opName+"' and serial_number_s = '"+lotName+"' and complete_time_t is not null"
+    resultVector = querySql(sql)
+    if(resultVector.size() > 0)
+    {
+        return "FEEDBACK_DATA_IS_NORMAL"
+    }
+    //未下料,临时用此错误代码
+    return "REQUEST_TYPE_ERROR" 
+}
+//通过地址key值,attr1Key,attr2Key获取ERP接口配置信息
+/**      
+ * get erp interface conf info   
+ * fzg      
+ * @param: addressKey
+ * @param: attr1Key
+ * @param:attr2Key
+ * @return: response    
+ * */
+function getErpInterfaceConf(addressKey,attr1Key,attr2Key)
+{
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "getErpInterfaceConf"
+    response = createResponseObject(null)
+    function handleGetInterfaceConfException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[getErpInterfaceConf]: get erp interface conf info failed", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleGetInterfaceConfException)
+    quHashMap = class java.util.HashMap()
+    //获取接口授权配置信息
+    application = getApplication(CONFIGURATION_PROPERTIES_INTEGRATION)
+     //接口地址（测试环境）material
+    address = application.getConfigurationProperty(addressKey).getValue()
+    userName = application.getConfigurationProperty(INTERFACE_USER_KEY).getValue()
+    passWord = application.getConfigurationProperty(INTERFACE_PWD_KEY).getValue()
+    attr1 = ""
+    attr2 = ""
+    if(!isEmptyStr(attr1Key)){
+        attr1 = application.getConfigurationProperty(attr1Key).getValue()//此参数用于区别业务
+    }
+     if(!isEmptyStr(attr2Key)){
+        attr2 = application.getConfigurationProperty(attr2Key).getValue()//此参数用于权限过滤
+    }
+    quHashMap.put("wsdl", address)
+    quHashMap.put("userName", userName)
+    quHashMap.put("passWord", passWord)
+    quHashMap.put("attr1", attr1)
+    quHashMap.put("attr2", attr2)
+    response.setResult(quHashMap)
+    return response
+}
+/**      
+ * send order to ERP    
+ * fzg      
+ * @param: orderItem
+ * @param:sendTime
+ * @return: response 
+ * */
+function sendOrderToErp(orderItemName,sendTime)
+{
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendOrderToErp"
+    response = createResponseObject(null)
+    function handleSendOrderToErpException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[sendOrderToErp]: send order to erp failed", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleSendOrderToErpException)
+    orderObj = getWorkOrder(orderItemName)
+    if(isNullOrEmpty(orderObj))
+    {
+        throw("order is null")
+    }
+    orderItem = orderObj.getOrderItem(orderItemName)
+//     if(!(orderItem instanceof class com.datasweep.compatibility.client.OrderItem))
+//     {
+//         throw("IT's not OrderItem object")
+//     }
+    //获取
+    resp = getErpInterfaceConf(ADDRESS_KEY_ORDERCREATE,ATTR1_KEY_ORDERCREATE,ATTR2_KEY_ORDERCREATE)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    quHashMap = resp.getResult()
+    
+    areaName = orderItem.getUDA("shop")
+    areaObj = getAreaByName(areaName)
+    if(isNullOrEmpty(areaObj))
+    {
+        throw("Can not get shop by orderItem:"+orderItem.getName())
+    }
+    site = areaObj.getSites().get(0)
+    plineName = orderItem.getPlannedProductionLine()
+    orderItemKey = orderItem.getOrderItemKey()
+    orgCode = site.getUDA("org_code")
+    orderMessages = vector()
+    msgOrder = class com.rockwell.discrete.mes.integration.ws.send.ManufactureSB.common.APPSCUX_COM_2EBS_WS_X1266505X1X8()
+    msgOrder.setCELL1(orgCode)        // Cell1	OrganizationCode	库存组织代码 必填  
+    msgOrder.setCELL2(orderItem.getName())  // Cell2	WipEntityName	工单号必填
+    orderType = orderItem.getUDA("order_type")
+    resp = getOderCode(orderType)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    orderCode = resp.getResult()
+    jobType = "3"
+    if("L".equals(orderCode))
+    {
+        jobType = "1"
+    }
+    msgOrder.setCELL3(jobType)         // Cell3	JobType	工单类型必填   1-标准工单，3-非标工单
+    if(orderItem.getUDA("order_status") == 20)
+    {
+        msgOrder.setCELL4("3")         // Cell4	StatusType	工单状态必填  1-未发放，3-已发放,7-已取消，4-完成
+        msgOrder.setCELL5("1")         // Cell5	LondType	工单操作类型必填 1创建3修改?
+    }else if(orderItem.getUDA("order_status") == 50)
+    {
+        msgOrder.setCELL4("4")         // Cell4	StatusType	工单状态必填  1-未发放，3-已发放,7-已取消，4-完成
+        msgOrder.setCELL5("3")         // Cell5	LondType	工单操作类型必填 1创建3修改
+    }
+    
+    
+    msgOrder.setCELL6(orderItem.getPartNumber()) // Cell6	Assembly	装配件代码必填   成品物料号
+    msgOrder.setCELL11(orderItem.getUDA("alternative"))//
+    if(orderItem.getUDA("gap") != null)
+    {
+        msgOrder.setCELL23(orderItem.getUDA("gap")+"")// Cell23	Attribute7 	槽距/热场尺寸/栅线宽度 
+    }
+    msgOrder.setCELL19(orderItem.getUDA("project_id"))// Cell19	Attribute3 	项目号
+    msgOrder.setCELL14(orderItem.getUDA("tech_alternative"))// Cell14	AlternateRoutingDesignator	工艺路线替代项
+    respClassifyId = getOderClassifyId(orderType,plineName)
+    if(respClassifyId.isError())
+    {
+        response.addResponse(respClassifyId)
+        return response
+    }
+    msgOrder.setCELL7(respClassifyId.getResult())    // Cell7	ClassCode	工单分类必填
+    msgOrder.setCELL8(orderItem.getQuantityOrdered()+"")         // Cell8	StartQuantity	数量必填
+    if(isNullOrEmpty(sendTime))
+    {
+        sendTime = getDBTime()
+    }
+    timeStr = class com.ftpc.common.utilities.TimeHelper::timeToString(sendTime,"yyyy-MM-dd HH:mm:ss")
+    msgOrder.setCELL9(timeStr)    // Cell9	ScheduledStartDate	起始日期必填
+    msgOrder.setSOURCELINEID(orderItemKey+"")                     // SourceLineId	SourceLineId	来源系统行Id必填 
+    msgOrder.setSOURCESYSTEM(SOURCE_SYS_MES)               // SourceSystem	SourceSystem	来源系统必填
+    msgOrder.setIFACECODE(IFACECODE_ORDERCREATE)               // IfaceCode	IfaceCode	接口编码必填 MES001WIPCT
+    msgOrder.setIFACEMEAN(IFACEMEAN_ORDERCREATE)                 // IfaceMean	IfaceMean	接口说明 MES工单创建
+    orderMessages.add(msgOrder)
+    
+    quHashMap.put("requestMessage", orderMessages)
+    sendTrager = class com.rockwell.discrete.mes.integration.send.SendCommon()
+//     resp =  sendTrager.sendOrderMsg(quHashMap)
+    resultList =  sendTrager.sendOrderMsg(quHashMap)
+    
+//     requestTime = response.getREQUESTTIME()
+//     returnStatus = resp.getRETURNSTATUS()//E错误,S成功,W警告
+    if(resultList == null)
+    {
+        throw("接口无返回信息")
+    }
+    returnStatus = resultList.get(0).getRETURNSTATUS()
+    if(SEND_STATUS_S.equals(returnStatus))
+    {
+        orderItem.setUDA(20L,"send_status")
+        orderObj.save()
+        logInfo(MODULE_IM, "Send order:"+orderItem.getName()+" to erp succeeded!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendOrderToErp")
+        response.setResult(SEND_STATUS_S)
+        return response
+    }else
+    {
+//         response.addResponse(resp)
+//         throw(resp.getRETURNMSG())
+        throw(resultList.get(1)[0].getERRORMESSAGE())
+    }
+}
+
+/**      
+ * send Milestone to ERP    
+ * fzg      
+ * @param: serialNo
+ * @param:sendTime
+ * @return: response 
+ * */
+function sendMilestoneToErp(serialNo,sendTime)
+{
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendOrderToErp"
+    response = createResponseObject(null)
+    function handleSendMilestoneToErpException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[sendMilestoneToErp]: send milestone to erp failed", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleSendMilestoneToErpException)
+    lotObj = getLotByName(serialNo)
+    if(isNullOrEmpty(lotObj))
+    {
+        throw("lot is null")
+    }
+    respConf = getErpInterfaceConf(ADDRESS_KEY_MILESTONE,ATTR1_KEY_MILESTONE,ATTR2_KEY_MILESTONE)
+    if(respConf.isError())
+    {
+        response.addResponse(respConf)
+        return response
+    }
+    //获取A级品数量
+    reportQty_A = getReportQtyByGrade(serialNo,GRADE_A_NAME).getResult()
+    reportQty_A = stringToInt(reportQty_A+"")
+    if(reportQty_A > 0){
+        respData = createMileStoneData(lotObj,TRAN_TYPE_MILESTONE,GRADE_A_NAME,reportQty_A)
+        if(respData.isOk())
+        {
+            msgMilestone = respData.getResult()
+            orderMessages = vector()
+            orderMessages.add(msgMilestone)
+            quHashMap = class java.util.HashMap()
+            quHashMap = respConf.getResult()    
+            quHashMap.put("requestMessage", orderMessages)
+            resp = sendDataToErp(quHashMap)
+            response.addResponse(resp)
+        }else{
+            throw(respData.getFirstErrorMessage())
+        }   
+    }
+    //获取A-1级品熟练
+    reportQty_A1 = getReportQtyByGrade(serialNo,GRADE_A_1_NAME).getResult()
+    reportQty_A1 = stringToInt(reportQty_A1+"")
+    if(reportQty_A1 > 0)
+    {
+        respData = createMileStoneData(lotObj,TRAN_TYPE_MILESTONE,GRADE_A_1_NAME,reportQty_A1)
+        if(respData.isOk())
+        {
+            msgMilestone = respData.getResult()
+            orderMessages = vector()
+            orderMessages.add(msgMilestone)
+            quHashMap = class java.util.HashMap()
+            quHashMap = respConf.getResult()    
+            quHashMap.put("requestMessage", orderMessages)
+            resp = sendDataToErp(quHashMap)
+            response.addResponse(resp)
+        }else{
+            throw(respData.getFirstErrorMessage())
+        }  
+    }
+    //获取B级品数量
+    reportQty_B = getReportQtyByGrade(serialNo,GRADE_B_NAME).getResult()
+    reportQty_B = stringToInt(reportQty_B+"")
+    if(reportQty_B > 0)
+    {
+        respData = createMileStoneData(lotObj,TRAN_TYPE_MILESTONE,GRADE_B_NAME,reportQty_B)
+        if(respData.isOk())
+        {
+            msgMilestone = respData.getResult()
+            orderMessages = vector()
+            orderMessages.add(msgMilestone)
+            quHashMap = class java.util.HashMap()
+            quHashMap = respConf.getResult()    
+            quHashMap.put("requestMessage", orderMessages)
+            resp = sendDataToErp(quHashMap)
+            response.addResponse(resp)
+        }else{
+            throw(respData.getFirstErrorMessage())
+        }  
+    }
+    //获取C级品数量
+    reportQty_C = getReportQtyByGrade(serialNo,GRADE_C_NAME).getResult()
+    reportQty_C = stringToInt(reportQty_C+"")
+    if(reportQty_C > 0)
+    {
+        respData = createMileStoneData(lotObj,TRAN_TYPE_MILESTONE,GRADE_C_NAME,reportQty_C)
+        if(respData.isOk())
+        {
+            msgMilestone = respData.getResult()
+            orderMessages = vector()
+            orderMessages.add(msgMilestone)
+            quHashMap = class java.util.HashMap()
+            quHashMap = respConf.getResult()    
+            quHashMap.put("requestMessage", orderMessages)
+            resp = sendDataToErp(quHashMap)
+            response.addResponse(resp)
+        }else{
+            throw(respData.getFirstErrorMessage())
+        }
+    }
+    lotObj.setUDA(20L,"report_status")
+    lotObj.save()
+    return response                                                                                                                                                                                  
+}
+/**      
+ * create Milestone data    
+ * fzg      
+ * @param:lot object
+ * @param:transaction type
+ * @param:grade name
+ * @param:quantity
+ * @return: response 
+ * */
+function createMileStoneData(lotObj,tranType,gradeName,qty)
+{
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "createMileStoneData"
+    response = createResponseObject(null)
+    function handleSendMilestoneToErpException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[createMileStoneData]: create milestone data failed", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleSendMilestoneToErpException)
+    
+    //判断是否为返工随工单
+    if(lotObj.getUDA("serial_type") == 20)
+    {
+    
+    }
+    orderObj = lotObj.getOrder() 
+    orderItemName = lotObj.getOrderItem()
+    orderItem = orderObj.getOrderItem(orderItemName)
+    part = lotObj.getPart()
+    areaName = orderItem.getUDA("shop")
+    areaObj = getAreaByName(areaName)
+    if(isNullOrEmpty(areaObj))
+    {
+        throw("Can not get shop by orderItem:"+orderItemName)
+    }
+    //获取组织代码
+    site = areaObj.getSites().get(0)
+    orgCode = site.getUDA("org_code")
+     //获取子库
+//     plineName = orderItem.getPlannedProductionLine()
+    plineName = lotObj.getProductionLineName()
+    plineObj = getProductionLineByName(plineName)
+    subInvCode = plineObj.getUDA("subinventory_code")
+    //获取货位代码
+    if(GRADE_A_NAME.equals(gradeName))
+    {
+        locatorCode = plineObj.getUDA("locator_code_a")
+    }else if(GRADE_B_NAME.equals(gradeName)){
+        locatorCode = plineObj.getUDA("locator_code_b")
+    }else if(GRADE_A_1_NAME.equals(gradeName)){
+        locatorCode = plineObj.getUDA("locator_code_a1")
+    }else if(GRADE_C_NAME.equals(gradeName)){
+        locatorCode = plineObj.getUDA("locator_code_c")
+    }else{
+        throw("no such grade:"+gradeName)
+    }
+    msgMilestone = class com.rockwell.discrete.mes.integration.ws.send.ManufactureSB.common.APPSCUX_COM_2EBS_WS_X1266505X1X8()
+    msgMilestone.setCELL1(orgCode) //OrganizationCode	库存组织 
+    otOrderNo = orderItem.getUDA("overtime_order_no")//月结工单
+    if(!isEmptyStr(otOrderNo))
+    {
+        orderItemName = otOrderNo
+    }
+    msgMilestone.setCELL2(orderItemName) //  WipEntityName	工单号                                                
+    msgMilestone.setCELL3(tranType) //TransactionType	事务处理类型                                                         
+    msgMilestone.setCELL4(subInvCode) //SubinventoryCode	子库  SubinventoryCode                                                      
+    msgMilestone.setCELL5(part.getPartNumber())  //物料编码 part number                                                       
+    msgMilestone.setCELL6(part.getUnitOfMeasure())   //UomCode	单位                                                      
+//     msgOrder.setCELL7("62LCB")  //货位                                                     
+//     msgMilestone.setCELL8(lotObj.getName())   //LotNumber	批次代码  
+    //完工时间
+    finishTime = lotObj.getFinishedTime()
+    if(finishTime == null)
+    {
+        finishTime = getDBTime()
+        lotObj.finish(finishTime,"随工单完工","")
+        lotObj.save()
+    }
+    //
+//     dateStr = class com.ftpc.common.utilities.TimeHelper::timeToString(getDBTime(),"yyMMdd")
+    dateStr = class com.ftpc.common.utilities.TimeHelper::timeToString(finishTime,"yyMMdd")
+    prefix = orderItemName.substring(1,2)
+    msgMilestone.setCELL8(prefix+dateStr)   //LotNumber	批次代码 
+//     msgMilestone.setSOURCELINEID(SOURCE_LINEID_MES)                                                       
+    msgMilestone.setSOURCESYSTEM(SOURCE_SYS_MES)                                                        
+    msgMilestone.setIFACECODE(IFACECODE_MILESTONE)                                                       
+    msgMilestone.setIFACEMEAN(IFACEMEAN_MILESTONE)
+    msgMilestone.setCELL9(qty+"")  //Quantity	数量
+    msgMilestone.setCELL7(locatorCode) //LocatorCode	货位代码
+    msgMilestone.setSOURCELINEID(lotObj.getName()+"_"+gradeName)
+    response.setResult(msgMilestone)
+    return response
+}
+/**      
+ * send requisition to erp   
+ * fzg      
+ * @param:requisition number
+ * @param:send time
+ * @return: response 
+ * */
+function sendRequisitionPlanToErp(requisition,sendTime){
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendRequisitionPlanToErp"
+    response = createResponseObject(null)
+    function handleRequisitionToErpException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[sendRequisitionPlanToErp]: send requisition to erp failed", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleRequisitionToErpException)
+    //获取
+    resp = getErpInterfaceConf(ADDRESS_KEY_REQUISITIONPLAN,ATTR1_KEY_ACQUISITIONPLAN,ATTR2_KEY_ACQUISITIONPLAN)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    quHashMap = resp.getResult()
+    
+    sentTrager = class com.rockwell.discrete.mes.integration.send.sendAcquisitionPlanToErp()
+    materialNeedFilter = class com.rockwell.discrete.mes.order.model.MaterialNeedInfo.MESOMMaterialNeedInfoFilter()
+    materialNeedFilter.forRequisitionnoEqualTo(requisition)
+    materialNeedObjs = materialNeedFilter.getFilteredObjects()
+    materialNeedObj = null
+//     materialNeedFilter.forReceivestatusEqualTo(REQUISITION_STATUS_CONFIRED)
+    if(materialNeedFilter.getCount() > 0)
+    {
+        materialNeedObj = materialNeedObjs.get(0)
+    }else{
+//         throw("Can not find material need info by requisition:"+requisition)
+        throw("找不到该领料单:"+requisition)
+    }
+    receiveStatus = materialNeedObj.getReceivestatus()
+    if(receiveStatus != REQUISITION_STATUS_CONFIRMED)
+    {
+//         throw("The material need info is not confirmed status")
+        throw("该领料单不是确认状态:"+requisition)
+    }
+    materialNo = materialNeedObj.getMaterialno()
+//     tranType = materialNeedObj.getReceivetype()//领料方式
+    sourceSubvin = getSourceSubvin(materialNo)
+    uom = materialNeedObj.getUom()
+    plineName = materialNeedObj.getPlinename()
+    pline = getProductionLineByName(plineName)
+    toSubvin = pline.getUDA("xb_subvin")
+    qty = materialNeedObj.getQuantity()
+    orderNo = materialNeedObj.getOrderno()
+    orderObj = getWorkOrder(orderNo)
+    orderItem = orderObj.getOrderItem(orderNo)
+    areaName = orderItem.getUDA("shop")
+    area = getAreaByName(areaName)
+    site = area.getSites().get(0)
+    orgCode = site.getUDA("org_code")
+    timeStr = class com.ftpc.common.utilities.TimeHelper::timeToString(sendTime,"yyyy-MM-dd")
+//     org_code = application.getConfigurationProperty("orgCode").getValue()   
+    plans = vector()
+    //将要处理的物料信息装进APPSCUX_WARE_HOUSE_DX1134112X1X8[]中，在hashmap中key为"material"
+    sendMaterialNeedPlan  = class com.rockwell.discrete.mes.integration.ws.send.sp.MesWriteBackMoveOrderSoapBiz.APPSCUX_ESB_MOVEORDEX1269365X1X8()
+    sendMaterialNeedPlan.setORGANIZATION_CODE(orgCode)//库存组织名称
+//     sendMaterialNeedPlan.setTRANSACTION_TYPE_NAME(tranType)// 交易类型名称
+    sendMaterialNeedPlan.setTRANSACTION_TYPE_NAME(TRAN_TYPE_REQUISITIONPLAN)// 交易类型名称
+    sendMaterialNeedPlan.setFROM_SUBINVENTORY_CODE(sourceSubvin)  // 从子库
+    sendMaterialNeedPlan.setTO_SUBINVENTORY_CODE(toSubvin) // 至子库
+    sendMaterialNeedPlan.setINVENTORY_ITEM_CODE(materialNo)// 物料编码
+    sendMaterialNeedPlan.setUOM_CODE(uom)// 单位
+    sendMaterialNeedPlan.setQUANTITY(stringToBigDecimal(class java.lang.String::valueOf(qty)))// 数量
+//     sendMaterialNeedPlan.setFROM_LOCATOR_NAME("0")// 从货位名称
+//     sendMaterialNeedPlan.setTO_LOCATORNAME("0")// 至货位名称
+//     sendMaterialNeedPlan.setLOT_NUMBER("0")// 批次
+
+    sendMaterialNeedPlan.setTRANSACTION_DATE(timeStr)// 交易日期
+//     sendMaterialNeedPlan.setCREATED_BY_EMPNUM("132213")// 建档人工号
+    sendMaterialNeedPlan.setSOURCE_REFERENCE(requisition)// 来源编码
+//     sendMaterialNeedPlan.setSOURCE_LINEID(requisition)// 来源行ID  
+    sendMaterialNeedPlan.setSOURCE_SYSTEM(SOURCE_SYS_MES)// 来源系统           
+    plans.add(sendMaterialNeedPlan) 
+    quHashMap.put("planAcquisitions", plans)
+    resp =  sentTrager.sendAcquisitionPlan(quHashMap)
+//     requestTime = response.getREQUESTTIME()
+    returnStatus = resp.getRETURNSTATUS()//E错误,S成功,W警告
+    if(SEND_STATUS_S.equals(returnStatus))
+    {
+        logInfo(MODULE_IM, "Send requisition:"+requisition+" to erp succeeded!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendRequisitionPlanToErp")
+        materialNeedObj.setReceivestatus(40L)
+        materialNeedObj.save(null,null,null)
+        response.setResult(SEND_STATUS_S)
+        return response
+    }else
+    {
+//         response.addResponse(resp)
+        throw(resp.getRETURNMSG())
+    }
+}
+
+
+/**      
+ * send data to ERP    
+ * fzg      
+ * @param: quHashMap
+ * @return: response 
+ * */
+function sendDataToErp(quHashMap)
+{
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendDataToErp"
+    response = createResponseObject(null)
+    function handleSendDataToErpException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[sendDataToErp]: send data to erp failed", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleSendDataToErpException)
+    sendTrager = class com.rockwell.discrete.mes.integration.send.SendCommon()
+//     resp =  sendTrager.sendOrderMsg(quHashMap)
+    listResult =  sendTrager.sendOrderMsg(quHashMap)
+//     requestTime = response.getREQUESTTIME()
+    if(listResult == null)
+    {
+        throw("接口无返回信息")
+    }
+    returnStatus = listResult.get(0).getRETURNSTATUS()
+//     returnStatus = resp.getRETURNSTATUS()//E错误,S成功,W警告
+    
+    if(SEND_STATUS_S.equals(returnStatus))
+    {
+        logInfo(MODULE_IM, "Send date to erp succeeded!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendDataToErp")
+        response.setResult(SEND_STATUS_S)
+        return response
+    }else{
+//         response.addResponse(resp)
+//         throw(resp.getRETURNMSG())
+        throw(listResult.get(1)[0].getERRORMESSAGE())
+    }
+}
+
+
+
+
+//调拨   退料   成品入库
+function sendTransterInfo(billNo,billType,sendTime){
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendTransterInfo"
+    response = createResponseObject(null)
+    function handleSendTransterInfoException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[sendTransterInfo]: send transfer info to erp failed", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleSendTransterInfoException)
+    resp = getErpInterfaceConf(ADDRESS_KEY_WAREHOUSE,ATTR1_KEY_ACQUISITIONPLAN,ATTR2_KEY_ACQUISITIONPLAN)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    quHashMap = resp.getResult()
+    site = getSiteByName(SITE_NAME)
+    if(site == null)
+    {
+        throw("Get site is null by site name:"+SITE_NAME)
+    }
+    orgCode = site.getUDA("org_code")
+    sentTrager =SendMesDeliverWareHouseTxnSoapToErp()
+//     org_code = application.getConfigurationProperty("orgCode").getValue()   
+    materials = vector()
+    //将要处理的物料信息装进APPSCUX_WARE_HOUSE_DX1134112X1X8[]中，在hashmap中key为"material"
+    sendMSG  = APPSCUX_WARE_HOUSE_DX1134112X1X8()
+    if(billType == TRAN_CODE_PRODUCTINCOMING)//入库
+    {
+        trayFilter = class com.rockwell.discrete.mes.order.model.packprinttray.MESOMPackPrintTrayFilter()
+        trayFilter.forTraycodeEqualTo(billNo)
+        trayFilter.forStorageflagEqualTo(20L)
+        trayFilter.forErpflagNotEqualTo(20L)
+        filteredObj = trayFilter.getFilteredObjects()
+        if(!(returnNoFilter.getCount()>0))
+        {    
+            throw("Can not find  storaged and not send to erp stray by stray no:"+billNo)
+        }
+        strayObj = filteredObj.get(0)
+        materialNo = strayObj.getPartNumber()
+        uom = strayObj.getUom()
+        qty = strayObj.getQty()
+//         sourceLocation = returnObj.getSourcelocationno()
+        tranType = TRAN_TYPE_MATERIALRETURN
+        batchNo = strayObj.getTraycode()
+        sendMSG.setITEMNUMBER(materialNo)//物料编码
+        sendMSG.setUNITOFMEASURE(uom)//单位
+        sendMSG.setQUANTITY(qty)//数量
+        sendMSG.setTRANSACTIONTYPE(TRAN_TYPE_PRODUCTINCOMING)//事务类型：退料、成品入库、物料消耗、物料调拨             工单发料(WIP Issue) 工单退料(WIP Return)
+//         sendMSG.setSOURCESUBINV(sourceLocation)//来源仓库
+        sendMSG.setLOTNUMBER(batchNo)//大批次
+        strayObj.setErpflag(20L)
+        strayObj.save(null,null,null)
+    }else if(billType == TRAN_CODE_MATERIALRETURN){//
+        returnNoFilter = class com.rockwell.discrete.mes.order.model.materialreturninfo.MESOMMaterialReturnInfoFilter()
+        returnNoFilter.forReturnnoEqualTo(billNo)
+        returnNoFilter.forStatusEqualTo(RETURN_STATUS_CONFIRMED)
+        filteredObj = returnNoFilter.getFilteredObjects()
+        if(!(returnNoFilter.getCount()>0))
+        {    
+            throw("Can not find return no or the stutus is not confirmed by return no:"+billNo)
+        }
+        returnObj = filteredObj.get(0)
+        materialNo = returnObj.getMaterialno()
+        uom = returnObj.getUom()
+        qty = returnObj.getQuantity()
+        sourceLocation = returnObj.getSourcelocationno()
+        tranType = TRAN_TYPE_MATERIALRETURN
+        batchNo = returnObj.getBatchno()
+        sendMSG.setITEMNUMBER(materialNo)//物料编码
+        sendMSG.setUNITOFMEASURE(uom)//单位
+        sendMSG.setQUANTITY(qty)//数量
+        sendMSG.setTRANSACTIONTYPE(TRAN_TYPE_MATERIALRETURN)//事务类型：退料、成品入库、物料消耗、物料调拨             工单发料(WIP Issue) 工单退料(WIP Return)
+        sendMSG.setSOURCESUBINV(sourceLocation)//来源仓库
+        sendMSG.setLOTNUMBER(batchNo)//大批次
+    }else if(billType == TRAN_CODE_MATERIALMOVE){//
+        atHandler = createATHandler("WM_SublotOperationLog")
+        atFilter = createATRowFilter("WM_SublotOperationLog")
+        atFilter.forColumnNameEqualTo("id",billNo) 
+        atFilter.forColumnNameNotEqualTo("send_status",20L)
+        atRowVec = atHandler.getATRowsByFilter(atFilter,true)
+        atRow = null
+        if(atRowVec.size() > 0)
+        {
+            atRow = atRowVec.get(0)
+//             foreach row ( atRowVec )
+//             {
+//                 row.setValue("flag1",20L)
+//             }
+        }else{
+            throw("Can not find allocation no or the stutus is sent by allocation no:"+billNo)
+        }
+        materialNo = atRow.getValue("material_no")
+        part = getPart("materialNo")
+        uom = part.getUnitOfMeasure()
+        qty = atRow.getValue("new_quantity")
+        sourceLocation = atRow.getValue("old_storage_area_no")
+        tranType = TRAN_CODE_MATERIALMOVE
+        batchNo = atRow.getValue("bar_code")
+        sendMSG.setITEMNUMBER(materialNo)//物料编码
+        sendMSG.setUNITOFMEASURE(uom)//单位
+        sendMSG.setQUANTITY(qty)//数量
+        sendMSG.setTRANSACTIONTYPE(TRAN_CODE_MATERIALMOVE)//事务类型：退料、成品入库、物料消耗、物料调拨             工单发料(WIP Issue) 工单退料(WIP Return)
+        sendMSG.setSOURCESUBINV(sourceLocation)//来源仓库
+        sendMSG.setLOTNUMBER(batchNo)//大批次
+        row.setValue("send_status",20L)
+        atHandler.save()
+    }else if(billType == TRAN_CODE_WIPISSUE){//工单发料
+        requisition = billNo
+        materialNeedFilter = class com.rockwell.discrete.mes.order.model.MaterialNeedInfo.MESOMMaterialNeedInfoFilter()
+        materialNeedFilter.forRequisitionnoEqualTo(requisition)
+        materialNeedObjs = materialNeedFilter.getFilteredObjects()
+        materialNeedObj = null
+    //     materialNeedFilter.forReceivestatusEqualTo(REQUISITION_STATUS_CONFIRED)
+        if(materialNeedFilter.getCount() > 0)
+        {
+            materialNeedObj = materialNeedObjs.get(0)
+        }else{
+//             throw("Can not find material need info by requisition:"+requisition)
+            throw("找不到该领料单:"+requisition)
+        }
+        receiveStatus = materialNeedObj.getReceivestatus()
+//         if(receiveStatus != REQUISITION_STATUS_RECEIVE)
+//         {
+// //             throw("The material need info is not confirmed status")
+//             throw("该领料单未确认接收:"+requisition)
+//         }
+        materialNo = materialNeedObj.getMaterialno()
+        sourceSubvin = getSourceSubvin(materialNo)
+        sourceLocator = getSourceLocator(materialNo)
+        uom = materialNeedObj.getUom()
+        orderNo = materialNeedObj.getOrderno()
+        plineName = materialNeedObj.getPlinename()
+        pline = getProductionLineByName(plineName)
+        destSubinv = pline.getUDA("xb_subvin")
+        objFilter = class com.rockwell.discrete.mes.order.model.MaterialReqTray.MESOMMaterialReqTaryFilter()
+        objFilter.forRequisitionnoEqualTo(requisition)
+//         objFilter.forTraycodeEqualTo(trayId)
+        vectorObj = objFilter.getFilteredObjects()
+        for(reqTary:vectorObj)
+        {
+            trayCode = reqTary.getTraycode()
+            qty = getQtyByTrayCode(trayCode)
+            qty = 10.0f
+            sendMSG.setITEMNUMBER(materialNo)//物料编码
+            sendMSG.setUNITOFMEASURE(uom)//单位
+//             sendMSG.setUNITOFMEASURE("MM")
+//             sendMSG.setQUANTITY(qty)//数量
+            
+            sendMSG.setQUANTITY(stringToBigDecimal(class java.lang.String::valueOf(qty)))//数量
+            sendMSG.setTRANSACTIONTYPE(TRAN_TYPE_WIPISSUE)//事务类型：退料、成品入库、物料消耗、物料调拨             工单发料(WIP Issue) 工单退料(WIP Return)
+//             sendMSG.setSOURCESUBINV(sourceSubvin)//来源仓库
+            sendMSG.setSOURCESUBINV("XB线边2A")
+//             sendMSG.setSOURCELOCATOR(sourceLocator)//来源货位
+            sendMSG.setLOTNUMBER(trayCode)//大批次
+            //获取
+        //    material = APPSCUX_WARE_HOUSE_DX1134112X1X8()
+            sendMSG.setORGCODE(orgCode)//库存组织  
+            
+            sendMSG.setDESTSUBINV(destSubinv)//目标仓库   非库存转移时可以为空 
+        //     sendMSG.setDESTLOCATOR("123")//目标货位
+            
+            timeStr = class com.ftpc.common.utilities.TimeHelper::timeToString(sendTime,"yyyy-MM-dd HH:mm:ss")
+        //     sendMSG.setTRANSACTIONDATE("2019-10-10 10:00:00:000")//yyyy-MM-dd HH:mm:ss:SSS 格式化成这种日期字符串
+            sendMSG.setTRANSACTIONDATE(timeStr)
+            sendMSG.setWIPENTITYNAME(orderNo)//erp工单编号
+        //     sendMSG.setOPERATIONSEQ(class java.math.BigDecimal("10"))//工序   工单发料类型时可以留空
+            sendMSG.setTXNSOURCENUM(billNo)//来源单号
+        //     sendMSG.setSOURCEREFENCE("adfadf")//来源系统参考
+            sendMSG.setSOURCELINEID(trayCode)//来源系统id
+            sendMSG.setSOURCESYSTEM(SOURCE_SYS_MES)//来源系统
+            sendMSG.setIFACECODE(IFACECODE_TRANINFO)//接口编号
+        //     sendMSG.setIFACEMEAN("adfafdafads")//接口说明
+            materials.add(sendMSG) 
+            quHashMap.put("material", materials)
+            resp =  sentTrager.sendWareHouseTxnSoap(quHashMap)
+        //     requestTime = response.getREQUESTTIME()
+            returnStatus = resp.getRETURNSTATUS()//E错误,S成功,W警告
+            if(SEND_STATUS_S.equals(returnStatus))
+            {
+                logInfo(MODULE_IM, "Send transfer info:"+billNo+" to erp succeeded!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendTransterInfo")
+                response.setResult(SEND_STATUS_S)
+            }else
+            {
+                throw(resp.getRETURNMSG())
+            }
+        } 
+        return response
+    }else{
+        throw("Unknow bill type:"+billType)
+    }
+    //获取
+   
+//    material = APPSCUX_WARE_HOUSE_DX1134112X1X8()
+    sendMSG.setORGCODE(orgCode)//库存组织
+    
+//     sendMSG.setSOURCELOCATOR("001")//来源货位
+//     sendMSG.setDESTSUBINV("123")//目标仓库   非库存转移时可以为空 
+//     sendMSG.setDESTLOCATOR("123")//目标货位
+    
+    timeStr = class com.ftpc.common.utilities.TimeHelper::timeToString(sendTime,"yyyy-MM-dd HH:mm:ss")
+//     sendMSG.setTRANSACTIONDATE("2019-10-10 10:00:00:000")//yyyy-MM-dd HH:mm:ss:SSS 格式化成这种日期字符串
+    sendMSG.setTRANSACTIONDATE(timeStr)
+//     sendMSG.setWIPENTITYNAME("123123")//erp工单编号
+//     sendMSG.setOPERATIONSEQ(class java.math.BigDecimal("10"))//工序   工单发料类型时可以留空
+    sendMSG.setTXNSOURCENUM(billNo)//来源单号
+//     sendMSG.setSOURCEREFENCE("adfadf")//来源系统参考
+    sendMSG.setSOURCELINEID("id123")//来源系统id//SOURCE_LINEID_MES
+    sendMSG.setSOURCESYSTEM(SOURCE_SYS_MES)//来源系统
+    sendMSG.setIFACECODE(IFACECODE_TRANINFO)//接口编号
+//     sendMSG.setIFACEMEAN("adfafdafads")//接口说明
+    materials.add(sendMSG) 
+    quHashMap.put("material", materials)
+    resp =  sentTrager.sendWareHouseTxnSoap(quHashMap)
+//     requestTime = response.getREQUESTTIME()
+    returnStatus = resp.getRETURNSTATUS()//E错误,S成功,W警告
+    if(SEND_STATUS_S.equals(returnStatus))
+    {
+        logInfo(MODULE_IM, "Send transfer info:"+billNo+" to erp succeeded!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendTransterInfo")
+        response.setResult(SEND_STATUS_S)
+        return response
+    }else
+    {
+//         response.addResponse(resp)
+        throw(resp.getRETURNMSG())
+    }
+
+}
+
+
+//调拨   退料   成品入库()
+function sendWareHouseTxnToErp(billNo,materialNo,sourceSubvin,sourceLocator,destSubinv,destLocator,tranType,sourceId,uom,qty,orderNo,trayCode,sendTime){
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendWareHouseTxnToErp"
+    response = createResponseObject(null)
+    function handleSendWareHouseTxnToErpException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[sendWareHouseTxnToErp]:发送仓库处理信息给ERP失败", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleSendWareHouseTxnToErpException)
+    resp = getErpInterfaceConf(ADDRESS_KEY_WAREHOUSE,ATTR1_KEY_ACQUISITIONPLAN,ATTR2_KEY_ACQUISITIONPLAN)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    quHashMap = resp.getResult()
+    site = getSiteByName(SITE_NAME)
+    if(site == null)
+    {
+        throw("获取工厂为空:"+SITE_NAME)
+    }
+    orgCode = site.getUDA("org_code")
+    sentTrager =SendMesDeliverWareHouseTxnSoapToErp()
+//     org_code = application.getConfigurationProperty("orgCode").getValue()   
+    materials = vector()
+    //将要处理的物料信息装进APPSCUX_WARE_HOUSE_DX1134112X1X8[]中，在hashmap中key为"material"
+    sendMSG  = APPSCUX_WARE_HOUSE_DX1134112X1X8()   
+    sendMSG.setITEMNUMBER(materialNo)//物料编码
+    sendMSG.setUNITOFMEASURE(uom)//单位 
+//     qtyStr = class java.lang.String::valueOf(qty)
+//     qtyI = stringToInt(qty+"")
+    sendMSG.setQUANTITY(stringToBigDecimal(qty+""))//数量
+    sendMSG.setTRANSACTIONTYPE(tranType)//事务类型：退料、成品入库、物料消耗、物料调拨             工单发料(WIP Issue) 工单退料(WIP Return)
+    sendMSG.setSOURCESUBINV(sourceSubvin)//来源仓库
+    sendMSG.setSOURCELOCATOR(sourceLocator)//来源货位
+    sendMSG.setLOTNUMBER(trayCode)//大批次
+    //获取
+//     material = APPSCUX_WARE_HOUSE_DX1134112X1X8()
+    sendMSG.setORGCODE(orgCode)//库存组织  
+    sendMSG.setDESTSUBINV(destSubinv)//目标仓库   非库存转移时可以为空 
+    sendMSG.setDESTLOCATOR(destLocator)//目标货位
+    timeStr = class com.ftpc.common.utilities.TimeHelper::timeToString(sendTime,"yyyy-MM-dd HH:mm:ss")
+//     sendMSG.setTRANSACTIONDATE("2019-10-10 10:00:00:000")//yyyy-MM-dd HH:mm:ss:SSS 格式化成这种日期字符串
+    sendMSG.setTRANSACTIONDATE(timeStr)
+    sendMSG.setWIPENTITYNAME(orderNo)//erp工单编号
+//     sendMSG.setOPERATIONSEQ(class java.math.BigDecimal("10"))//工序   工单发料类型时可以留空
+    sendMSG.setTXNSOURCENUM(billNo)//来源单号
+//     sendMSG.setSOURCEREFENCE("adfadf")//来源系统参考
+//     sendMSG.setSOURCELINEID(trayCode)//来源系统id
+    sendMSG.setSOURCELINEID(sourceId)//来源系统id
+    sendMSG.setSOURCESYSTEM(SOURCE_SYS_MES)//来源系统
+    sendMSG.setIFACECODE(IFACECODE_TRANINFO)//接口编号
+//     sendMSG.setIFACEMEAN("adfafdafads")//接口说明
+    materials.add(sendMSG) 
+    quHashMap.put("material", materials)
+    resp =  sentTrager.sendWareHouseTxnSoap(quHashMap)
+//     requestTime = response.getREQUESTTIME()
+    returnStatus = resp.getRETURNSTATUS()//E错误,S成功,W警告
+    if(SEND_STATUS_S.equals(returnStatus))
+    {
+//         logInfo(MODULE_IM, "Send transfer info:"+billNo+" to erp succeeded!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendTransterInfo")
+        logInfo(MODULE_IM, "发送仓库事务处理信息:"+billNo+" 到ERP成功!",getDBTime(),"MES_Common_Integration" ,"sendWareHouseTxnToErp")
+        response.setResult(SEND_STATUS_S)
+        return response
+    }else
+    {
+        throw(resp.getRETURNMSG())
+    }
+}
+
+
+//========================================sos发送erp方式
+
+/**
+ * 发送工单创建 到erp
+ * */
+function sendOrderMsgToErp(){
+response = createResponseObject(null)
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendOrderMsgToErp"
+//       function handleSendOrderToErpException(exception)
+//     {
+//         logError(MODULE_IM, "MES_Common_Integration-[sendOrderToErp]: send order to erp failed", getDBTime(), "MES_Common_Integration", functionName)
+//         logException(MODULE_IM, exception)
+//         
+//     }
+//     catch(Exception, handleSendOrderToErpException)
+    //获取发送状态为 10 未发送的数据
+    transferOrderFltr = class com.rockwell.discrete.mes.integration.object.transfertable.order.MESIMTransferOrderCommonFilter()
+    transferOrderFltr.forSendstatusEqualTo(10L)
+    transferOrderFltr.forIfacecodeEqualTo("MES001WIPCT")
+    transferOrderFltr.forTransactiontypeEqualTo(null)
+    vectorOrders = transferOrderFltr.getFilteredObjects()
+    
+    resp = getErpInterfaceConf(ADDRESS_KEY_ORDERCREATE,ATTR1_KEY_ORDERCREATE,ATTR2_KEY_ORDERCREATE)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    
+    quHashMap = resp.getResult()
+    orderMessages = vector()
+    foreach transOrder (vectorOrders){
+        msgOrder = class com.rockwell.discrete.mes.integration.ws.send.ManufactureSB.common.APPSCUX_COM_2EBS_WS_X1266505X1X8()     
+        orderType = transOrder.getOrdertype()
+        resp = getOderCode(orderType)
+        if(resp.isError())
+        {
+            response.addResponse(resp)
+            return response
+        }
+        orderCode = resp.getResult()
+        jobType = "3"
+        if("L".equals(orderCode))
+        {
+            jobType = "1"
+        }
+        msgOrder.setCELL3(jobType)         // Cell3	JobType	工单类型必填   1-标准工单，3-非标工单
+        if("20".equals(transOrder.getOrderstatus()))
+        {
+            msgOrder.setCELL4("3")         // Cell4	StatusType	工单状态必填  1-未发放，3-已发放,7-已取消，4-完成
+            msgOrder.setCELL5("1")         // Cell5	LondType	工单操作类型必填 1创建3修改?
+        }else if("50".equals(transOrder.getOrderstatus()))
+        {
+            msgOrder.setCELL4("4")         // Cell4	StatusType	工单状态必填  1-未发放，3-已发放,7-已取消，4-完成
+            msgOrder.setCELL5("3")         // Cell5	LondType	工单操作类型必填 1创建3修改
+        }
+        msgOrder.setCELL6(transOrder.getProductnumber()) // Cell6	Assembly	装配件代码必填   成品物料号
+        if(transOrder.getAlternative() != null){
+            msgOrder.setCELL11(transOrder.getAlternative())
+        }
+
+        if(transOrder.getSlotpitch() != null ){
+            msgOrder.setCELL23(transOrder.getSlotpitch())
+        }
+        if(transOrder.getProjectno() != null){
+            msgOrder.setCELL19(transOrder.getProjectno())
+        }
+        if(transOrder.getTechalternative() != null){
+            msgOrder.setCELL14(transOrder.getTechalternative())
+        }
+        //areaname
+        plineName = transOrder.getPlinename()
+        areaName = transOrder.getAreaname()
+        areaObj = getAreaByName(areaName)
+        site = areaObj.getSites().get(0)
+        orgCode = site.getUDA("org_code")
+        msgOrder.setCELL1(orgCode)
+        msgOrder.setCELL2(transOrder.getOrdernumber())
+        msgOrder.setCELL7(transOrder.getClasscode()) 
+        msgOrder.setCELL8(transOrder.getQuantity())
+        sendTime = transOrder.getStartdate()
+        msgOrder.setCELL9(sendTime)    // Cell9	ScheduledStartDate	起始日期必填
+        
+        msgOrder.setSOURCELINEID(transOrder.getOrdernumber())                     // SourceLineId	SourceLineId	来源系统行Id必填 
+        msgOrder.setSOURCESYSTEM(SOURCE_SYS_MES)               // SourceSystem	SourceSystem	来源  系统必填
+        msgOrder.setIFACECODE(transOrder.getIfacecode())               // IfaceCode	IfaceCode	接口编码必填 MES001WIPCT  IFACECODE_ORDERCREATE
+        msgOrder.setIFACEMEAN(transOrder.getIfacemean())                 // IfaceMean	IfaceMean	接口说明 MES工单创建  IFACEMEAN_ORDERCREATE
+        orderMessages.add(msgOrder)
+      
+    }
+        if(orderMessages  == null || orderMessages.size() <= 0){
+        logInfo(MODULE_IM, "未查询到需要发送的工单信息，方法结束",getDBTime(),"MES_Common_Integration" ,"sendWareHouseTxnToErp")
+        return;
+    }
+        quHashMap.put("requestMessage", orderMessages)
+        sendTrager = class com.rockwell.discrete.mes.integration.send.SendCommon()
+//         resp =  sendTrager.sendOrderMsg(quHashMap)
+        listResult = sendTrager.sendOrderMsg(quHashMap)
+        if(listResult == null)
+        {
+            throw("接口无返回信息")
+        }
+        returnStatus = listResult.get(0).getRETURNSTATUS()
+    //     requestTime = response.getREQUESTTIME()
+//         returnStatus = resp.getRETURNSTATUS()//E错误,S成功,W警告
+        if(SEND_STATUS_S.equals(returnStatus))
+        {
+            foreach transOrder (vectorOrders){
+                transOrder.setSendstatus(20L)
+                if(transOrder.getSendcount() == null){
+                    transOrder.setSendcount(0L)
+                }
+                sendCount = transOrder.getSendcount()+1L
+                transOrder.setSendcount(sendCount.longValue())
+                transOrder.setReason("成功")
+                transOrder.setSendtime(createTime())
+                transOrder.save(null,null,null)
+                logInfo(MODULE_IM, "Send order:"+transOrder.getOrdernumber()+" to erp succeeded!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendOrderMsgToErp")
+            }
+            
+        }else{
+            foreach transOrder (vectorOrders){
+                transOrder.setSendstatus(30L)
+                if(transOrder.getSendcount() == null){
+                    transOrder.setSendcount(0L)
+                }
+                sendCount = transOrder.getSendcount()+1L
+                transOrder.setSendcount(sendCount.longValue())
+                transOrder.setReason(listResult.get(1)[0].getERRORMESSAGE())
+//                 transOrder.setReason(resp.getRETURNMSG())
+                transOrder.setSendtime(createTime())
+                respp = transOrder.save(null,null,null)
+                logInfo(MODULE_IM, "Send order:"+transOrder.getOrdernumber()+" to erp failed!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendOrderMsgToErp")
+            }
+            
+        }
+}
+//工单创建下发到erp
+function saveOrderMsg(batchNO,classCode,ifaceCode,ifaceMean,londType,orderNo,orderStatus,orderType,plineName,productNumber,qty,slotPitch,startDate,areaName,alternative,projectNo,techalternative){
+         responses = createResponseObject(null)
+         function handleSendOrderToErpException(exception)
+        {   
+            responses.addError(Error(exception,environment.getServer()))
+            logError(MODULE_IM, "MES_Common_Integration-[saveOrderMsg]: save order transferTable  failed", getDBTime(), "MES_Common_Integration", "saveOrderMsg")
+            logException(MODULE_IM, exception)
+            return  responses
+        }
+        catch(Exception, handleSendOrderToErpException)
+        
+        transferOrder = class com.rockwell.discrete.mes.integration.object.transfertable.order.MESIMTransferOrderCommon()
+      
+        if(isEmptyStr(classCode)){
+            throw("classCode is null")
+        }
+        if(isEmptyStr(ifaceCode)){
+            throw("ifaceCode is null")
+        }
+        if(isEmptyStr(ifaceMean)){
+            throw("ifaceMean is null")
+        }
+        if(isEmptyStr(orderNo)){
+            throw("orderNo is null")
+        }
+        if(isEmptyStr(orderStatus)){
+            throw("orderStatus is null")
+        }
+        if(isEmptyStr(orderType)){
+            throw("orderType is null")
+        }
+        if(isEmptyStr(plineName)){
+            throw("plineName is null")
+        }
+        if(isEmptyStr(areaName)){
+            throw("areaName is null")
+        }
+        if(isEmptyStr(qty)){
+            throw("qty is null")
+        }
+     
+        transferOrder.setBatchnumber(batchNO)
+        transferOrder.setClasscode(classCode)
+        transferOrder.setIfacecode(ifaceCode)
+        transferOrder.setIfacemean(ifaceMean)
+        transferOrder.setLondtype(londType)
+        transferOrder.setOrdernumber(orderNo)
+        transferOrder.setOrderstatus(orderStatus)
+        transferOrder.setOrdertype(orderType)
+        transferOrder.setPlinename(plineName)
+        transferOrder.setAreaname(areaName)
+        transferOrder.setProductnumber(productNumber)
+        transferOrder.setQuantity(qty)
+        transferOrder.setSendstatus(10L)
+      
+        transferOrder.setSendcount(0L)
+        transferOrder.setSlotpitch(slotPitch)
+        transferOrder.setStartdate(startDate)
+        transferOrder.setAlternative(alternative)
+        transferOrder.setProjectno(projectNo)
+        transferOrder.setTechalternative(techalternative)
+        userinfo = getCurrentUser()
+        transferOrder.setSenduser(userinfo.getName())
+        response = transferOrder.save(null,null,null)
+         //save Location
+        if(response.isOk())
+        {    
+             logInfo(MODULE_IM, "保存工单信息至中间表：保存成功 ",getDBTime(),"MES_Common_Integration" ,"saveOrderMsg")
+//             handleInfo("保存成功", null, null, HANDLER_OPTION_DEFAULT, null)
+        } else{
+            //保存失败提示
+//             handleInfo("保存失败", null, null, HANDLER_OPTION_DEFAULT, null)
+            logErrorToDB(MODULE_IM, "保存工单信息到中间表失败,失败信息:"+response.getFirstErrorMessage(), getDBTime(), "MES_Common_Integration", " saveOrderMsg")
+          
+        }
+         responses.addResponse(response)
+         return responses
+}
+
+
+
+/**
+ *sos 发送物料退料，消耗，成品入库等事务到erp
+ * */
+function sendWareHouseMsgErp(){
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendWareHouseTxnToErp"
+    response = createResponseObject(null)
+    function handleSendWareHouseTxnToErpException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[sendWareHouseTxnToErp]:发送仓库处理信息给ERP失败", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleSendWareHouseTxnToErpException)
+    resp = getErpInterfaceConf(ADDRESS_KEY_WAREHOUSE,ATTR1_KEY_ACQUISITIONPLAN,ATTR2_KEY_ACQUISITIONPLAN)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    fltrwareHouseMsg = class com.rockwell.discrete.mes.integration.object.transfertable.warehouse.MESIMTransterWareHouseFilter()
+    fltrwareHouseMsg.forSendstatusEqualTo(10L)
+    //临时测试代码
+//     fltrwareHouseMsg.forCreatedTimeLessThan(getDBTime().addDays(-1))
+    vectorWareHouse = fltrwareHouseMsg.getFilteredObjects()
+    
+    
+    quHashMap = resp.getResult()
+    
+    sentTrager =SendMesDeliverWareHouseTxnSoapToErp()
+    site = getSiteByName(SITE_NAME)
+    if(site == null)
+    {
+        throw("获取工厂为空:"+SITE_NAME)
+    }
+    orgCode = site.getUDA("org_code")
+//     org_code = application.getConfigurationProperty("orgCode").getValue()   
+    materials = vector()
+    foreach wareHouseMsg(vectorWareHouse){
+         //将要处理的物料信息装进APPSCUX_WARE_HOUSE_DX1134112X1X8[]中，在hashmap中key为"material"
+    sendMSG  = APPSCUX_WARE_HOUSE_DX1134112X1X8()   
+    sendMSG.setITEMNUMBER(wareHouseMsg.getPartnumber())//物料编码
+    sendMSG.setUNITOFMEASURE(wareHouseMsg.getUom())//单位   
+    sendMSG.setQUANTITY(stringToBigDecimal(wareHouseMsg.getQuantity()))//数量
+    sendMSG.setTRANSACTIONTYPE(wareHouseMsg.getTransactiontype())//事务类型：退料、成品入库、物料消耗、物料调拨             工单发料(WIP Issue) 工单退料(WIP Return)
+    sendMSG.setSOURCESUBINV(wareHouseMsg.getSourcesubinv())//来源仓库
+    if(!isEmptyStr(wareHouseMsg.getSourcelocator())){
+        sendMSG.setSOURCELOCATOR(wareHouseMsg.getSourcelocator())//来源货位
+    }
+    sendMSG.setLOTNUMBER(wareHouseMsg.getBatchnumber())//大批次
+    //获取
+//     material = APPSCUX_WARE_HOUSE_DX1134112X1X8()
+    sendMSG.setORGCODE(orgCode)//库存组织  
+    sendMSG.setDESTSUBINV(wareHouseMsg.getDestsubinv())//目标仓库   非库存转移时可以为空 
+     if(!isEmptyStr(wareHouseMsg.getDestlocator())){
+        sendMSG.setDESTLOCATOR(wareHouseMsg.getDestlocator())//来源货位
+    }
+ 
+//     sendMSG.setTRANSACTIONDATE("2019-10-10 10:00:00:000")//yyyy-MM-dd HH:mm:ss:SSS 格式化成这种日期字符串
+    sendMSG.setTRANSACTIONDATE(wareHouseMsg.getTransactiondate())
+    sendMSG.setWIPENTITYNAME(wareHouseMsg.getOrdernumber())//erp工单编号
+//     sendMSG.setOPERATIONSEQ(class java.math.BigDecimal("10"))//工序   工单发料类型时可以留空
+    sendMSG.setTXNSOURCENUM(wareHouseMsg.getSourcenum())//来源单号
+//     sendMSG.setSOURCEREFENCE("adfadf")//来源系统参考
+//     sendMSG.setSOURCELINEID(trayCode)//来源系统id
+    sendMSG.setSOURCELINEID(wareHouseMsg.getSourceid())//来源系统id
+    sendMSG.setSOURCESYSTEM(SOURCE_SYS_MES)//来源系统
+    sendMSG.setIFACECODE(wareHouseMsg.getIfacecode())//接口编号
+//     sendMSG.setIFACEMEAN("adfafdafads")//接口说明
+    materials.add(sendMSG) 
+   
+    }
+    if(materials  == null || materials.size() <= 0){
+        logInfo(MODULE_IM, "未查询到需要发送的仓库事务信息，方法结束",getDBTime(),"MES_Common_Integration" ,"sendWareHouseTxnToErp")
+        return;
+    }
+    quHashMap.put("material", materials)
+    resp =  sentTrager.sendWareHouseTxnSoap(quHashMap)
+//     requestTime = response.getREQUESTTIME()
+    returnStatus = resp.getRETURNSTATUS()//E错误,S成功,W警告
+    if(SEND_STATUS_S.equals(returnStatus))
+    {   
+        foreach wareHouseMsg(vectorWareHouse){
+            wareHouseMsg.setSendstatus(20L)
+            wareHouseMsg.setSendtime(createTime())
+            wareHouseMsg.setReason(resp.getRETURNMSG())
+            sendCount = wareHouseMsg.getSendcount() + 1L
+            wareHouseMsg.setSendcount(sendCount.longValue())
+            wareHouseMsg.save(null,null,null)
+        }
+//         logInfo(MODULE_IM, "Send transfer info:"+billNo+" to erp succeeded!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendTransterInfo")
+        logInfo(MODULE_IM, "发送仓库事务处理信息: 到ERP成功! ",getDBTime(),"MES_Common_Integration" ,"sendWareHouseTxnToErp")
+        response.setResult(SEND_STATUS_S)
+        
+    }else
+    {
+        foreach wareHouseMsg(vectorWareHouse){
+            wareHouseMsg.setSendstatus(30L)
+            wareHouseMsg.setSendtime(createTime())
+            wareHouseMsg.setReason(resp.getRETURNMSG())
+            sendCount = wareHouseMsg.getSendcount() + 1L
+            wareHouseMsg.setSendcount(sendCount.longValue())
+            wareHouseMsg.save(null,null,null)
+        }
+        throw(resp.getRETURNMSG())
+    }
+}
+
+
+/**
+ * 保存
+ * */
+ function saveWareHouseMsg(billNo,materialNo,sourceSubvin,sourceLocator,destSubinv,destLocator,tranType,sourceId,uom,qty,orderNo,trayCode,sendTime,orgCode,ifaceCode){
+         functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "saveWareHouseMsg"
+        responses = createResponseObject(null)
+        function handleSendWareHouseTxnToErpException(exception)
+        {
+            responses.addError(Error(exception,environment.getServer()))
+            logError(MODULE_IM, "MES_Common_Integration-[saveWareHouseMsg]:保存仓库事务", getDBTime(), "MES_Common_Integration", functionName)
+            logException(MODULE_IM, exception)
+            return  responses
+        }
+        catch(Exception, handleSendWareHouseTxnToErpException)
+         site = getSiteByName(SITE_NAME)
+        if(site == null)
+        {
+            throw("获取工厂为空:"+SITE_NAME)
+        }
+       wareHouseMsg = class com.rockwell.discrete.mes.integration.object.transfertable.warehouse.MESIMTransterWareHouse()
+        wareHouseMsg.setPartnumber(materialNo)
+        
+        wareHouseMsg.setUom(uom)
+        wareHouseMsg.setQuantity(qty)
+        wareHouseMsg.setTransactiontype(tranType)
+        wareHouseMsg.setSourcesubinv(sourceSubvin)
+        wareHouseMsg.setSourcelocator(sourceLocator)
+        wareHouseMsg.setBatchnumber(trayCode)
+        wareHouseMsg.setOrgcode(orgCode)
+        wareHouseMsg.setDestsubinv(destSubinv)
+        wareHouseMsg.setDestlocator(destLocator)
+        timeStr = class com.ftpc.common.utilities.TimeHelper::timeToString(sendTime,"yyyy-MM-dd HH:mm:ss")
+        wareHouseMsg.setTransactiondate(timeStr)
+        wareHouseMsg.setOrdernumber(orderNo)
+        wareHouseMsg.setSourcenum(billNo)
+        wareHouseMsg.setSourceid(sourceId)
+        wareHouseMsg.setIfacecode(ifaceCode)
+        wareHouseMsg.setSendcount(0L)
+        wareHouseMsg.setSendstatus(10L)
+        userInfo = getCurrentUser()
+        wareHouseMsg.setSenduser(userInfo.getName())
+        response = wareHouseMsg.save(null,null,null)
+        
+      //save Location
+        if(response.isOk())
+        {
+           
+//             handleInfo("保存成功", null, null, HANDLER_OPTION_DEFAULT, null)
+               logInfo(MODULE_IM, "save material message to transferTable,materialNo:"+materialNo,getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"saveWareHouseMsg")
+
+//             logInfoToDB(MODULE_WM, supplierMObj.getSupplierName()+" save succefully", createTime(), "MES_OM_Material_CycleRule_Add", "Save MES_OM_Material_CycleRule_Add")
+   
+            
+        } else{
+            logErrorToDB(MODULE_IM, "保存仓库事务信息到中间表失败,失败信息:"+response.getFirstErrorMessage(), getDBTime(), "MES_Common_Integration", " saveWareHouseMsg")
+//             handleInfo("保存失败", null, null, HANDLER_OPTION_DEFAULT, null)
+//             logErrorToDB(MODULE_WM, response.getFirstErrorMessage(), getDBTime(), "MES_OM_Material_CycleRule_Add", "save MES_OM_Material_CycleRule_Add")
+           
+        } 
+        responses.addResponse(response)
+        return responses
+    }
+//工单发料(硅棒)
+function orderConsumeSilicon(serialNo)
+{
+    lotObj = getLotByName(serialNo)
+    if(lotObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderConsumeSilicon]:硅棒发料无法获取随工单----"+serialNo, getDBTime(), "MES_Common_Integration", "orderConsumeSilicon")
+        return
+    }
+    sourceId = serialNo+":"+TRAN_TYPE_WIPISSUE
+    wareHouseFilter = class com.rockwell.discrete.mes.integration.object.transfertable.warehouse.MESIMTransterWareHouseFilter()
+    wareHouseFilter.forSourceidEqualTo(sourceId)
+    filteredObj = wareHouseFilter.getFilteredObjects()
+    if(filteredObj.size()>0)
+    {    
+        return
+    }
+    billNo = sourceId //来源单号
+    rodsNo = lotObj.getUDA("rods_num")//晶编
+    materialNo = lotObj.getUDA("rods_part_number")//物料号
+    if(isEmptyStr(materialNo))
+    {
+        sql = "select part_number_s from at_om_siliconrod where rods_num_s = '"+rodsNo+"'"
+        resultVector = querySql(sql)
+        if(resultVector.size() > 0)
+        {
+            materialNo = resultVector.get(0)[0]
+        } 
+    }
+    partObj = getPart(materialNo)
+    if(partObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderConsumeSilicon]:硅棒发料无法获取硅棒物料号----"+rodsNo, getDBTime(), "MES_Common_Integration", "orderConsumeSilicon")
+        return
+    } 
+    sourceSubvin = getSourceSubvin(materialNo)
+    sourceLocator = getSourceLocator(materialNo)
+    destSubinv = ""
+    destLocator = ""
+    tranType = TRAN_TYPE_WIPISSUE //事务类型
+    uom = partObj.getUDA("primary_unit_of_measure")
+    qty = lotObj.getUDA("joint_length")+""
+    orderNo = lotObj.getOrderNumber()
+    orderObj = getWorkOrder(orderNo)
+    orderItem = orderObj.getOrderItem(orderNo)
+    otOrderNo = orderItem.getUDA("overtime_order_no")//月结工单
+    if(!isEmptyStr(otOrderNo))
+    {
+        orderNo = otOrderNo
+    }
+    trayCode = rodsNo.substring(0,1)
+    sendTime = getDBTime()
+    site = getSiteByName(SITE_NAME)
+    orgCode = site.getUDA("org_code")
+    ifaceCode = IFACECODE_TRANINFO  //接口编码
+    saveWareHouseMsg(billNo,materialNo,sourceSubvin,sourceLocator,destSubinv,destLocator,tranType,sourceId,uom,qty,orderNo,trayCode,sendTime,orgCode,ifaceCode)
+}
+
+//工单退料(硅棒)
+function orderRemoveSilicon(serialNo)
+{
+    lotObj = getLotByName(serialNo)
+    if(lotObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderConsumeSilicon]:硅棒发料无法获取随工单----"+serialNo, getDBTime(), "MES_Common_Integration", "orderConsumeSilicon")
+        return
+    }
+    //确认是否已经发料
+    conSourceId = serialNo+":"+TRAN_TYPE_WIPISSUE
+//     conSql = "select source_id_s from at_IM_Transter_WareHouse where source_id_s like '%"+conSourceId+"%' and send_status_i = 20"
+    conSql = "select source_id_s from at_IM_Transter_WareHouse where source_id_s like '%"+conSourceId+"%' and send_status_i in(10,20)"
+    conResultVector = querySql(conSql)
+    if(!(conResultVector.size() > 0))
+    {
+        return
+    } 
+    
+    sourceId = serialNo+":"+TRAN_TYPE_MATERIALRETURN
+    wareHouseFilter = class com.rockwell.discrete.mes.integration.object.transfertable.warehouse.MESIMTransterWareHouseFilter()
+    wareHouseFilter.forSourceidEqualTo(sourceId)
+    filteredObj = wareHouseFilter.getFilteredObjects()
+    if(filteredObj.size()>0)
+    {    
+        return
+    }
+    billNo = sourceId //来源单号
+    rodsNo = lotObj.getUDA("rods_num")//晶编
+    materialNo = lotObj.getUDA("rods_part_number")//物料号
+    if(isEmptyStr(materialNo))
+    {
+        sql = "select part_number_s from at_om_siliconrod where rods_num_s = '"+rodsNo+"'"
+        resultVector = querySql(sql)
+        if(resultVector.size() > 0)
+        {
+            materialNo = resultVector.get(0)[0]
+        } 
+    }
+    partObj = getPart(materialNo)
+    if(partObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderConsumeSilicon]:硅棒发料无法获取硅棒物料号----"+rodsNo, getDBTime(), "MES_Common_Integration", "orderConsumeSilicon")
+        return
+    } 
+    sourceSubvin = getSourceSubvin(materialNo)
+    sourceLocator = getSourceLocator(materialNo)
+    destSubinv = ""
+    destLocator = ""
+    tranType = TRAN_TYPE_MATERIALRETURN //事务类型
+    uom = partObj.getUDA("primary_unit_of_measure")
+    qty = lotObj.getUDA("joint_length")+""
+    orderNo = lotObj.getOrderNumber()
+    orderObj = getWorkOrder(orderNo)
+    orderItem = orderObj.getOrderItem(orderNo)
+    otOrderNo = orderItem.getUDA("overtime_order_no")//月结工单
+    if(!isEmptyStr(otOrderNo))
+    {
+        orderNo = otOrderNo
+    }
+    trayCode = rodsNo.substring(0,1)
+    sendTime = getDBTime()
+    site = getSiteByName(SITE_NAME)
+    orgCode = site.getUDA("org_code")
+    ifaceCode = IFACECODE_TRANINFO  //接口编码
+    saveWareHouseMsg(billNo,materialNo,sourceSubvin,sourceLocator,destSubinv,destLocator,tranType,sourceId,uom,qty,orderNo,trayCode,sendTime,orgCode,ifaceCode)
+}
+//工单负组件(碎片)
+function orderFragment(orderNumber,qty)
+{
+    orderObj = getWorkOrder(orderNumber)
+    orderItemObj = orderObj.getOrderItem(orderNumber)
+    if(orderItemObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderFragment]:负组件发放无法获取工单----"+orderNumber, getDBTime(), "MES_Common_Integration", "orderFragment")
+        return
+    }
+    sendTime = getDBTime()
+    sendTimeStr = formatTimeByDateFormat(sendTime,"yyyy-MM-dd HH:mm:ss")
+    sourceId = sendTimeStr+":"+TRAN_TYPE_NEGATIVEISSUE
+    billNo = sourceId //来源单号
+    materialNo = orderItemObj.getPartNumber()//物料号
+    partObj = orderItemObj.getPart()
+    if(partObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderFragment]:负组件发料无法获取物料号----"+orderNumber, getDBTime(), "MES_Common_Integration", "orderFragment")
+        return
+    }
+    plineName = orderItemObj.getPlannedProductionLine()
+    plineObj = getProductionLineByName(plineName)
+    if(plineObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderFragment]:负组件发料无法获取片区----"+orderNumber, getDBTime(), "MES_Common_Integration", "orderFragment")
+        return    
+    }
+    sourceSubvin = plineObj.getUDA("xb_subvin")
+//     if(isEmptyStr(plineName))
+    sourceLocator = ""
+    destSubinv = ""
+    destLocator = ""
+    tranType = TRAN_TYPE_NEGATIVEISSUE //事务类型
+    uom = "KG"
+//     qty = lotObj.getUDA("joint_length")+""
+    orderNo = orderNumber
+    orderObj = getWorkOrder(orderNo)
+    orderItem = orderObj.getOrderItem(orderNo)
+    otOrderNo = orderItem.getUDA("overtime_order_no")//月结工单
+    if(!isEmptyStr(otOrderNo))
+    {
+        orderNo = otOrderNo
+    }
+    trayCode = "S"
+    
+    site = getSiteByName(SITE_NAME)
+    orgCode = site.getUDA("org_code")
+    ifaceCode = IFACECODE_TRANINFO  //接口编码
+    saveWareHouseMsg(billNo,materialNo,"","",sourceSubvin,"",tranType,sourceId,uom,qty+"",orderNo,trayCode,sendTime,orgCode,ifaceCode)
+}
+//工单负组件(碎片)
+function orderFragment(orderNumber,qty,materialNo)
+{
+    orderObj = getWorkOrder(orderNumber)
+    orderItemObj = orderObj.getOrderItem(orderNumber)
+    if(orderItemObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderFragment]:负组件发放无法获取工单----"+orderNumber, getDBTime(), "MES_Common_Integration", "orderFragment")
+        return
+    }
+    sendTime = getDBTime()
+    sendTimeStr = formatTimeByDateFormat(sendTime,"yyyy-MM-dd HH:mm:ss")
+    sourceId = sendTimeStr+":"+TRAN_TYPE_NEGATIVEISSUE
+    billNo = sourceId //来源单号
+//     materialNo = orderItemObj.getPartNumber()//物料号
+    
+//     partObj = orderItemObj.getPart()
+//     partObj = getPartClassByName(materialNo)
+    partObj = getPart(materialNo)
+    if(partObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderFragment]:负组件发料无法获取物料号----"+materialNo, getDBTime(), "MES_Common_Integration", "orderFragment")
+        return
+    }
+    plineName = orderItemObj.getPlannedProductionLine()
+    plineObj = getProductionLineByName(plineName)
+    if(plineObj == null)
+    {
+        logError(MODULE_IM, "MES_Common_Integration-[orderFragment]:负组件发料无法获取片区----"+orderNumber, getDBTime(), "MES_Common_Integration", "orderFragment")
+        return    
+    }
+    sourceSubvin = plineObj.getUDA("xb_subvin")
+//     if(isEmptyStr(plineName))
+    sourceLocator = ""
+    destSubinv = ""
+    destLocator = ""
+    tranType = TRAN_TYPE_NEGATIVEISSUE //事务类型
+    uom = "KG"
+//     qty = lotObj.getUDA("joint_length")+""
+    orderNo = orderNumber
+    orderObj = getWorkOrder(orderNo)
+    orderItem = orderObj.getOrderItem(orderNo)
+    otOrderNo = orderItem.getUDA("overtime_order_no")//月结工单
+    if(!isEmptyStr(otOrderNo))
+    {
+        orderNo = otOrderNo
+    }
+    trayCode = "S"
+    
+    site = getSiteByName(SITE_NAME)
+    orgCode = site.getUDA("org_code")
+    ifaceCode = IFACECODE_TRANINFO  //接口编码
+    saveWareHouseMsg(billNo,materialNo,sourceSubvin,"","","",tranType,sourceId,uom,qty+"",orderNo,trayCode,sendTime,orgCode,ifaceCode)
+}
+//入库(硅片)
+function saveInStorageInfo()
+{ 
+    sql = "select ppt.tray_code_s,ppt.part_number_s,ppt.grade1_s,it.pline_name_s,ppt.qty_s,ppt.atr_key,it.finished_area_s,it.storage_area_s from at_OM_PackPrinttray ppt
+            left join at_OM_InboundTaskDetail itd on ppt.tray_code_s = itd.tray_code_s 
+            left join at_OM_InboundTask it on itd.parent_key = it.atr_key
+            where ppt.storage_flag_i = 20 and (ppt.erp_flag_i = 10 or ppt.erp_flag_i is null) and rownum <= 100"
+            
+//     sql = "select ppt.tray_code_s,ppt.part_number_s,ppt.grade1_s,it.pline_name_s,ppt.qty_s,ppt.atr_key,it.finished_area_s,it.storage_area_s from at_OM_PackPrinttray ppt
+//             left join at_OM_InboundTaskDetail itd on ppt.tray_code_s = itd.tray_code_s 
+//             left join at_OM_InboundTask it on itd.parent_key = it.atr_key where ppt.tray_code_s = 'C191011004'"
+    resultVector = querySql(sql)
+    for(result:resultVector)
+    {
+        billNo = result[0] //托号
+        materialNo = result[1] //物料号
+        if(isEmptyStr(materialNo))
+        {
+            logError(MODULE_IM, "MES_Common_Integration-[saveInStorageInfo]:成品入库失败,物料号为空,托号----"+result[0], getDBTime(), "MES_Common_Integration", "saveInStorageInfo")
+            return
+        }
+        uom = "片"
+//         partObj = getPart(materialNo)
+//         uom = partObj.getUDA("primary_unit_of_measure")
+        grade = result[2] //等级
+        plineName = result[3] //片区
+        sourceSubvin = getPlineSubvin(plineName)//源库位
+        sourceLocator = getPlineLocator(plineName,grade)//源货位
+        destSubinv = getProductStorage(grade)//目标库位
+        destLocator = "" //目标货位
+//         tranType = TRAN_TYPE_PRODUCTINCOMING  //事务类型
+        tranType = TRAN_TYPE_MATERIALMOVE  //事务类型
+        sourceId = result[0]+":"+TRAN_TYPE_MATERIALMOVE //来源系统ID
+        qty = result[4] //数量
+        orderNo = ""
+        trayCode = result[0]//批号
+        sendTime = getDBTime()
+        site = getSiteByName(SITE_NAME)
+        orgCode = site.getUDA("org_code")
+        ifaceCode = IFACECODE_TRANINFO  //接口编码
+        atrKey = class java.lang.Long::valueOf(result[5]) 
+        response = saveWareHouseMsg(billNo,materialNo,sourceSubvin,sourceLocator,destSubinv,destLocator,tranType,sourceId,uom,qty,orderNo,trayCode,sendTime,orgCode,ifaceCode)
+        if(response.isOk())
+        {
+            atHandler = createATHandler("OM_PackPrintTray")
+            atRow =atHandler.getATRowByKey(atrKey,true)
+            atRow.setValue("erp_flag",20L)
+            atHandler.save() 
+        }else{
+            logError(MODULE_IM, "MES_Common_Integration-[saveInStorageInfo]:成品入库失败,托号----"+result[0]+response.getFirstErrorMessage(), getDBTime(), "MES_Common_Integration", "saveInStorageInfo")
+        }  
+    }
+    
+}
+
+
+//退库(硅片)
+function saveCancelStorage()
+{ 
+    sql = "select cs.tray_code_s,ppt.part_number_s,ppt.grade1_s,cs.storage_area_s,cs.qty_f,cs.finished_area_s,cs.atr_key,ppt.atr_key from at_OM_CancelStock cs
+            left join at_OM_PackPrinttray ppt on cs.tray_code_s = ppt.tray_code_s
+            where cs.erp_flag_i = 10 and ppt.erp_flag_i = 20 and rownum <= 100"
+//     sql = "select cs.tray_code_s,ppt.part_number_s,ppt.grade1_s,cs.storage_area_s,cs.qty_f,cs.finished_area_s,cs.atr_key,ppt.atr_key from at_OM_CancelStock cs
+//             left join at_OM_PackPrinttray ppt on cs.tray_code_s = ppt.tray_code_s where cs.tray_code_s = 'C190924009'"
+    resultVector = querySql(sql)
+    for(result:resultVector)
+    {
+        billNo = result[0] //托号
+        materialNo = result[1] //物料号
+        if(isEmptyStr(materialNo))
+        {
+            logError(MODULE_IM, "MES_Common_Integration-[saveCancelStorage]:成品退库失败,物料号为空,托号----"+result[0], getDBTime(), "MES_Common_Integration", "saveCancelStorage")
+            return
+        }
+        uom = "片"
+//         partObj = getPart(materialNo)
+//         uom = partObj.getUDA("primary_unit_of_measure")
+        grade = result[2] //等级
+        sourceSubvin = result[5]//源库位
+        sourceLocator = ""//源货位
+        destSubinv = result[3]//目标库位
+        destLocator = "" //目标货位
+        tranType = TRAN_TYPE_MATERIALMOVE  //事务类型
+        sourceId = result[0]+":"+TRAN_TYPE_MATERIALMOVE //来源系统ID
+        qty = result[4] //数量
+        orderNo = ""
+        trayCode = result[0]//批号
+        sendTime = getDBTime()
+        site = getSiteByName(SITE_NAME)
+        orgCode = site.getUDA("org_code")
+        ifaceCode = IFACECODE_TRANINFO  //接口编码
+        cancelAtrKey = class java.lang.Long::valueOf(result[6]) //退库信息
+        trayAtrKey = class java.lang.Long::valueOf(result[7]) //托号信息
+        response = saveWareHouseMsg(billNo,materialNo,sourceSubvin,sourceLocator,destSubinv,destLocator,tranType,sourceId,uom,qty,orderNo,trayCode,sendTime,orgCode,ifaceCode)
+        if(response.isOk())
+        {
+            atHandler = createATHandler("OM_CancelStock")
+            atRow =atHandler.getATRowByKey(cancelAtrKey,true)
+            atRow.setValue("erp_flag",20L)
+            atHandler.save()
+            //托号信息处理
+            atHandler2 = createATHandler("OM_PackPrintTray")
+            atRow2 =atHandler2.getATRowByKey(trayAtrKey,true)
+            atRow2.setValue("erp_flag",10L)
+            atRow2.setValue("storage_flag",10L)
+            atHandler2.save() 
+        }else{
+            logError(MODULE_IM, "MES_Common_Integration-[saveInStorageInfo]:成品退库失败,托号----"+result[0]+response.getFirstErrorMessage(), getDBTime(), "MES_Common_Integration", "saveInStorageInfo")
+        }  
+    }
+    
+}
+//完工退回(随工单)
+// function finishReturn(serialNo,qty,grade)
+// {
+//     functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "finishReturn"
+//     response = createResponseObject(null)
+//     function handleFinishReturnException(exception)
+//     {
+//         response.addError(Error(exception,environment.getServer()))
+//         logError(MODULE_IM, "MES_Common_Integration-[finishReturn]:完工退回失败", getDBTime(), "MES_Common_Integration", functionName)
+//         logException(MODULE_IM, exception)
+//         return  response
+//     }
+//     catch(Exception, handleFinishReturnException)
+//     lotObj = getLotByName(serialNo)
+//     if(lotObj == null)
+//     {
+//         throw("完工退回失败,随工单有误----"+serialNo)
+//     }
+//     orderObj = lotObj.getOrder() 
+//     orderItemName = lotObj.getOrderItem()
+//     orderItem = orderObj.getOrderItem(orderItemName)
+//     part = lotObj.getPart()
+//     partNumber = part.getPartNumber()
+//     uom = part.getUDA("primary_unit_of_measure")
+//     areaName = orderItem.getUDA("shop")
+//     areaObj = getAreaByName(areaName)
+//     if(isNullOrEmpty(areaObj))
+//     {
+//         throw("Can not get shop by orderItem:"+orderItemName)
+//     }
+//     //获取组织代码
+//     site = areaObj.getSites().get(0)
+//     orgCode = site.getUDA("org_code")
+//      //获取子库
+// //     plineName = orderItem.getPlannedProductionLine()
+//     plineName = lotObj.getProductionLineName()
+//     plineObj = getProductionLineByName(plineName)
+//     subInvCode = plineObj.getUDA("subinventory_code")
+//     //获取货位代码
+//     if(GRADE_A_NAME.equals(gradeName))
+//     {
+//         locatorCode = plineObj.getUDA("locator_code_a")
+//     }else if(GRADE_B_NAME.equals(gradeName)){
+//         locatorCode = plineObj.getUDA("locator_code_b")
+//     }else if(GRADE_A_1_NAME.equals(gradeName)){
+//         locatorCode = plineObj.getUDA("locator_code_a1")
+//     }else if(GRADE_C_NAME.equals(gradeName)){
+//         locatorCode = plineObj.getUDA("locator_code_c")
+//     }else{
+//         throw("无此等级:"+gradeName)
+//     }
+//     finishTime = lotObj.getFinishedTime()
+//     dateStr = class com.ftpc.common.utilities.TimeHelper::timeToString(finishTime,"yyMMdd")
+//     prefix = orderItemName.substring(1,2)
+//     batchNO = prefix+dateStr
+// //     ifaceCode = IFACECODE_MILESTONE
+//     sendTime = getDBTime()
+//     ifaceCode = IFACECODE_TRANINFO  //接口编码
+//     sourceId = serialNo+":"+TRAN_TYPE_COMPLETERETURN+":"+GRADE_A_NAME
+//     billNo = sourceId
+//     otOrderNo = orderItem.getUDA("overtime_order_no")//月结工单
+//     if(!isEmptyStr(otOrderNo))
+//     {
+//         orderItemName = otOrderNo
+//     }
+//     saveWareHouseMsg(billNo,partNumber,locatorCode,"",subInvCode,"",TRAN_TYPE_COMPLETERETURN,sourceId,uom,qty+"",orderItemName,batchNO,sendTime,orgCode,ifaceCode)
+// }
+
+//完工退回(工单)
+function finishReturn(orderNo,qty,gradeName)
+{
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "finishReturn"
+    response = createResponseObject(null)
+    function handleFinishReturnException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[finishReturn]:完工退回失败", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleFinishReturnException)
+//     lotObj = getLotByName(serialNo)
+//     if(lotObj == null)
+//     {
+//         throw("完工退回失败,随工单有误----"+serialNo)
+//     }
+//     orderObj = lotObj.getOrder() 
+    orderObj = getWorkOrder(orderNo)
+    if(orderObj == null)
+    {
+        throw("完工退回失败,工单有误----"+orderNo)
+    }
+    orderItemName = orderNo
+    orderItem = orderObj.getOrderItem(orderItemName)
+//     part = lotObj.getPart()
+    part = orderItem.getPart()
+    partNumber = part.getPartNumber()
+    uom = part.getUDA("primary_unit_of_measure")
+    areaName = orderItem.getUDA("shop")
+    areaObj = getAreaByName(areaName)
+    if(isNullOrEmpty(areaObj))
+    {
+        throw("Can not get shop by orderItem:"+orderItemName)
+    }
+    //获取组织代码
+    site = areaObj.getSites().get(0)
+    orgCode = site.getUDA("org_code")
+     //获取子库
+    plineName = orderItem.getPlannedProductionLine()
+//     plineName = lotObj.getProductionLineName()
+    plineObj = getProductionLineByName(plineName)
+    subInvCode = plineObj.getUDA("subinventory_code")
+    //获取货位代码
+    if(GRADE_A_NAME.equals(gradeName))
+    {
+        locatorCode = plineObj.getUDA("locator_code_a")
+    }else if(GRADE_B_NAME.equals(gradeName)){
+        locatorCode = plineObj.getUDA("locator_code_b")
+    }else if(GRADE_A_1_NAME.equals(gradeName)){
+        locatorCode = plineObj.getUDA("locator_code_a1")
+    }else if(GRADE_C_NAME.equals(gradeName)){
+        locatorCode = plineObj.getUDA("locator_code_c")
+    }else{
+        throw("无此等级:"+gradeName)
+    }
+//     finishTime = lotObj.getFinishedTime()
+    
+    dateStr = class com.ftpc.common.utilities.TimeHelper::timeToString(getDBTime(),"yyMMdd")
+    prefix = orderItemName.substring(1,2)
+    batchNO = prefix+dateStr
+//     ifaceCode = IFACECODE_MILESTONE
+    sendTime = getDBTime()
+    ifaceCode = IFACECODE_TRANINFO  //接口编码
+//     sourceId = serialNo+":"+TRAN_TYPE_COMPLETERETURN+":"+GRADE_A_NAME
+    sourceId = orderItemName+":"+TRAN_TYPE_COMPLETERETURN+":"+GRADE_A_NAME
+    billNo = sourceId
+    otOrderNo = orderItem.getUDA("overtime_order_no")//月结工单
+    if(!isEmptyStr(otOrderNo))
+    {
+        orderItemName = otOrderNo
+    }
+    saveWareHouseMsg(billNo,partNumber,subInvCode,locatorCode,"","",TRAN_TYPE_COMPLETERETURN,sourceId,uom,qty+"",orderItemName,batchNO,sendTime,orgCode,ifaceCode)
+}
+//月结工单创建并保存到工单创建中间表
+function createOverTimeOrder(){
+    SQL = "select 
+    wo.order_number 
+    FROM work_order wo
+    left join work_order_items woi on wo.order_key = woi.order_key
+    left join uda_orderitem uoi on woi.order_item_key = uoi.object_key
+    where 
+    uoi.order_status_i in (20,30) 
+    and uoi.overtime_order_no_s is null
+    "
+    
+    
+    fltrSettle = class com.rockwell.discrete.mes.order.model.settledate.MESOMSettleDateFilter()
+    
+    tmeNow = createTime()
+    year = tmeNow.getYear()
+    month = tmeNow.getMonth()
+    tmeMon = createTime(year,month,1)
+    
+    fltrSettle.forSettlemonEqualTo(tmeMon)
+    fltrSettle.forSettledateLessThan(tmeNow)
+    vectorRule = fltrSettle.getFilteredObjects()
+    if(vectorRule == null || vectorRule.size() <= 0){
+        print("当月月结时间没到")
+    }else{
+        print("已过月结时间")
+        vectorOrderNums = querySql(SQL)
+        //查询月结时间果过后仍未完成，关闭 的工单，并生成月结工单号
+        //saveOrderMsgFinish("00123","testNo221","101A","2201000010","20","QP2A-A","A01","片","工单完工(WIP Completion)","ZZ切片2A",IFACECODE_MILESTONE,TRAN_TYPE_MILESTONE)
+        
+        for(i =0;i<vectorOrderNums.size();i++){
+            orderNum = vectorOrderNums.get(i)[0]
+            orderObj = getWorkOrder(orderNum)
+            orderItem = orderObj.getOrderItems().get(0)
+            if(orderItem == null){
+                continue
+            }
+            orderItem.setUDA(orderNum+"K","overtime_order_no")
+            orderObj.save()
+            saveOrderToCreateErp(orderNum,createTime())
+        }
+  
+    }
+}
+
+//保存工单创建任务到中间表
+//生成月结工单发往erp
+function saveOrderToCreateErp(orderItemName,sendTime)
+{
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendOrderToErp"
+    response = createResponseObject(null)
+    function handleSendOrderToErpException(exception)
+    {
+        response.addError(Error(exception,environment.getServer()))
+        logError(MODULE_IM, "MES_Common_Integration-[sendOrderToErp]: send order to erp failed", getDBTime(), "MES_Common_Integration", functionName)
+        logException(MODULE_IM, exception)
+        return  response
+    }
+    catch(Exception, handleSendOrderToErpException)
+    orderObj = getWorkOrder(orderItemName)
+    if(isNullOrEmpty(orderObj))
+    {
+        throw("order is null")
+    }
+    orderItem = orderObj.getOrderItem(orderItemName)
+//     if(!(orderItem instanceof class com.datasweep.compatibility.client.OrderItem))
+//     {
+//         throw("IT's not OrderItem object")
+//     }
+    //获取
+    resp = getErpInterfaceConf(ADDRESS_KEY_ORDERCREATE,ATTR1_KEY_ORDERCREATE,ATTR2_KEY_ORDERCREATE)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    quHashMap = resp.getResult()
+    
+    areaName = orderItem.getUDA("shop")
+    areaObj = getAreaByName(areaName)
+    if(isNullOrEmpty(areaObj))
+    {
+        throw("Can not get shop by orderItem:"+orderItem.getName())
+    }
+    site = areaObj.getSites().get(0)
+    plineName = orderItem.getPlannedProductionLine()
+    orderItemKey = orderItem.getOrderItemKey()
+    orgCode = site.getUDA("org_code")
+    orderMessages = vector()
+    msgOrder = class com.rockwell.discrete.mes.integration.ws.send.ManufactureSB.common.APPSCUX_COM_2EBS_WS_X1266505X1X8()
+   orderType = orderItem.getUDA("order_type")
+    resp = getOderCode(orderType)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    orderCode = resp.getResult()
+
+   respClassifyId = getOderClassifyId(orderType,plineName)
+    if(respClassifyId.isError())
+    {
+        response.addResponse(respClassifyId)
+        return response
+    }
+   if(isNullOrEmpty(sendTime))
+    {
+        sendTime = getDBTime()
+    }
+    timeStr = class com.ftpc.common.utilities.TimeHelper::timeToString(sendTime,"yyyy-MM-dd HH:mm:ss")
+ 
+    saveOrderMsg(null,respClassifyId.getResult(),IFACECODE_ORDERCREATE,
+    IFACEMEAN_ORDERCREATE,null,orderItem.getUDA("overtime_order_no"),
+    orderItem.getUDA("order_status")+"",orderType,plineName,orderItem.getPartNumber(),
+    orderItem.getQuantityOrdered()+"",orderItem.getUDA("gap")+"",timeStr,areaName,orderItem.getUDA("alternative")
+    ,orderItem.getUDA("project_id"),orderItem.getUDA("tech_alternative"))
+   
+}
+
+//工单完成 存中间表待下发
+function saveOrderMsgFinish(batchNO,orderNo,plineName,productNumber,qty,locatorCode,areaName,uom,transactionType,subinventoryCode,ifaceCode,ifaceMean){
+         responses = createResponseObject(null)
+         function handleSendOrderToErpException(exception)
+        {   
+            responses.addError(Error(exception,environment.getServer()))
+            logError(MODULE_IM, "MES_Common_Integration-[saveOrderMsg]: save order transferTable  failed", getDBTime(), "MES_Common_Integration", "saveOrderMsg")
+            logException(MODULE_IM, exception)
+            return  responses
+        }
+        catch(Exception, handleSendOrderToErpException)
+        
+        transferOrder = class com.rockwell.discrete.mes.integration.object.transfertable.order.MESIMTransferOrderCommon()
+        if(isEmptyStr(batchNO)){
+           
+            throw("batchNO is null")
+        }
+        if(isEmptyStr(orderNo)){
+            throw("orderNo is null")
+        }
+        if(isEmptyStr(plineName)){
+            throw("plineName is null")
+        }
+        if(isEmptyStr(productNumber)){
+            throw("productNumber is null")
+        }
+        if(isEmptyStr(qty)){
+            throw("qty is null")
+        }
+        if(isEmptyStr(locatorCode)){
+            throw("locatorCOde is null")
+        }
+        if(isEmptyStr(areaName)){
+            throw("areaName is null")
+        }
+        if(isEmptyStr(uom)){
+            throw("uom is null")
+        }
+        if(isEmptyStr(transactionType)){
+            throw("transactionType is null")
+        }
+         if(isEmptyStr(ifaceCode)){
+            throw("ifaceCode is null")
+        }
+         if(isEmptyStr(ifaceMean)){
+            throw("ifaceMean is null")
+        }
+        if(isEmptyStr(subinventoryCode)){
+            throw("subinventoryCode is null")
+        }
+        transferOrder.setBatchnumber(batchNO)
+        transferOrder.setIfacecode(ifaceCode)
+        transferOrder.setIfacemean(ifaceMean)
+        transferOrder.setOrdernumber(orderNo)
+        transferOrder.setPlinename(plineName)
+        transferOrder.setAreaname(areaName)
+        transferOrder.setProductnumber(productNumber)
+        transferOrder.setSubinventorycode(subinventoryCode)
+        transferOrder.setQuantity(qty)
+        transferOrder.setSendstatus(10L)
+        transferOrder.setTransactiontype(transactionType)
+        transferOrder.setUom(uom)
+        transferOrder.setClasscode(locatorCode)
+       
+        transferOrder.setSendcount(0L)
+       
+        userinfo = getCurrentUser()
+        transferOrder.setSenduser(userinfo.getName())
+        response = transferOrder.save(null,null,null)
+         //save Location
+        if(response.isOk())
+        {  
+        } else{
+          
+            logErrorToDB(MODULE_IM, response.getFirstErrorMessage(), getDBTime(), "IM_Integration", "save saveOrderMsg")
+          
+        }
+         responses.addResponse(response)
+         return responses
+}
+
+//从中间表发送完成工单到erp
+
+function sendOrderMsgFinishToErp(){
+    functionName = getMessage("MES_OM_MSG_TRX", "FUNCTION") + " " + "sendOrderMsgToErp"
+//       function handleSendOrderToErpException(exception)
+//     {
+//         logError(MODULE_IM, "MES_Common_Integration-[sendOrderToErp]: send order to erp failed", getDBTime(), "MES_Common_Integration", functionName)
+//         logException(MODULE_IM, exception)
+//         
+//     }
+//     catch(Exception, handleSendOrderToErpException)
+    //获取发送状态为 10 未发送的数据
+    fltrTransferOrder = class com.rockwell.discrete.mes.integration.object.transfertable.order.MESIMTransferOrderCommonFilter()
+    fltrTransferOrder.forSendstatusEqualTo(10L)
+    fltrTransferOrder.forTransactiontypeNotEqualTo(null)
+    vectorOrders = fltrTransferOrder.getFilteredObjects()
+    
+    resp = getErpInterfaceConf(ADDRESS_KEY_ORDERCREATE,ATTR1_KEY_MILESTONE,ATTR2_KEY_MILESTONE)
+    if(resp.isError())
+    {
+        response.addResponse(resp)
+        return response
+    }
+    
+    quHashMap = resp.getResult()
+    orderMessages = vector()
+    foreach transOrder (vectorOrders){
+        msgOrder = class com.rockwell.discrete.mes.integration.ws.send.ManufactureSB.common.APPSCUX_COM_2EBS_WS_X1266505X1X8()     
+        
+        msgOrder.setCELL6(transOrder.getProductnumber()) // Cell6	Assembly	装配件代码必填   成品物料号
+     
+        plineName = transOrder.getPlinename()
+        areaName = transOrder.getAreaname()
+        areaObj = getAreaByName(areaName)
+        site = areaObj.getSites().get(0)
+        orgCode = site.getUDA("org_code")
+        msgOrder.setCELL1(orgCode)
+        msgOrder.setCELL2(transOrder.getOrdernumber())
+        msgOrder.setCELL3(transOrder.getTransactiontype())
+        msgOrder.setCELL4(transOrder.getSubinventorycode())
+        msgOrder.setCELL5(transOrder.getProductnumber())
+        msgOrder.setCELL6(transOrder.getUom())
+        msgOrder.setCELL7(transOrder.getClasscode()) 
+        msgOrder.setCELL8(transOrder.getBatchnumber())
+        msgOrder.setCELL9(transOrder.getQuantity())    
+        
+        msgOrder.setSOURCELINEID(transOrder.getOrdernumber())                     // SourceLineId	SourceLineId	来源系统行Id必填 
+        msgOrder.setSOURCESYSTEM(SOURCE_SYS_MES)               // SourceSystem	SourceSystem	来源  系统必填
+        msgOrder.setIFACECODE(transOrder.getIfacecode())               // IfaceCode	IfaceCode	接口编码必填 MES001WIPCT  IFACECODE_ORDERCREATE
+        msgOrder.setIFACEMEAN(transOrder.getIfacemean())                 // IfaceMean	IfaceMean	接口说明 MES工单创建  IFACEMEAN_ORDERCREATE
+        orderMessages.add(msgOrder)
+      
+    }
+        quHashMap.put("requestMessage", orderMessages)
+        sendTrager = class com.rockwell.discrete.mes.integration.send.SendCommon()
+//         resp =  sendTrager.sendOrderMsg(quHashMap)
+        listResult = sendTrager.sendOrderMsg(quHashMap)
+        if(listResult == null)
+        {
+            throw("接口无返回信息")
+        }
+        returnStatus = listResult.get(0).getRETURNSTATUS()
+    //     requestTime = response.getREQUESTTIME()
+//         returnStatus = resp.getRETURNSTATUS()//E错误,S成功,W警告
+        if(SEND_STATUS_S.equals(returnStatus))
+        {
+            foreach transOrder (vectorOrders){
+                transOrder.setSendstatus(20L)
+                if(transOrder.getSendcount() == null){
+                    transOrder.setSendcount(0L)
+                }
+                sendCount = transOrder.getSendcount()+1L
+                transOrder.setSendcount(sendCount.longValue())
+                transOrder.setReason("成功")
+                transOrder.setSendtime(createTime())
+                transOrder.save(null,null,null)
+                logInfo(MODULE_IM, "Send order:"+transOrder.getOrdernumber()+" to erp succeeded!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendOrderMsgToErp")
+            }
+            
+        }else{
+            foreach transOrder (vectorOrders){
+                transOrder.setSendstatus(30L)
+                if(transOrder.getSendcount() == null){
+                    transOrder.setSendcount(0L)
+                }
+                sendCount = transOrder.getSendcount()+1L
+                transOrder.setSendcount(sendCount.longValue())
+                transOrder.setReason(listResult.get(1)[0].getERRORMESSAGE())
+//                 transOrder.setReason(resp.getRETURNMSG())
+                transOrder.setSendtime(createTime())
+                respp = transOrder.save(null,null,null)
+                logInfo(MODULE_IM, "Send order:"+transOrder.getOrdernumber()+" to erp failed!",getDBTime(),SOS_INTEGRATION_SUBROUTINES ,"sendOrderMsgToErp")
+            }
+            
+        }
+}

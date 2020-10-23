@@ -1,0 +1,66 @@
+import("com.ftpc.common.utilities.DataSourceUtility")
+import("com.ftpc.common.utilities.JdbcUtility")
+
+function querySql(sqlStr) {
+    vectorStr = getArrayDataFromActive(sqlStr)
+    return vectorStr
+}
+
+/**
+ * Description:执行DML命令SQL语句
+ * Parameter:sqlStrArr  String[]---->
+ *                      使用方法：sqlStrArr = createArray(n)  sqlStrArr[0] = sql0  sqlStrArr[1] = sql1
+ * returnValue:int[]
+ * Author: 王磊
+ * */
+function executeSql(sqlStrArr) {
+    return executeStatements(sqlStrArr)
+}
+
+
+function insertRecord(atDefName, objVector) {
+    atDefinition = getATDefinition(atDefName) //必须与自建表的名称一致
+    atRow = atDefinition.createATRow_()
+    for(i = 0; i < objVector.size(); i++) {
+        //若调用该方法，需按照setValue方法的参数要求，自行生成objVector数组，数组包含两个元素，第一个元素为ATDefinition中定义的字段名，第二个参数为对应的字段值。
+        atRow.setValue(objVector.elementAt(i)[0], objVector.elementAt(i)[1])
+    }
+    response = atRow.save(null, null, null)
+    return response
+}
+
+function deleteRecord(tableName, whereClause) {
+    sqlStr = " delete from " + tableName + whereClause
+    retVal = executeSql([sqlStr])
+    return retVal
+}
+
+function isExistsInSystem(sqlStr) {
+    num = Integer::parseInt(querySql(sqlStr).elementAt(0)[0])
+    if(num > 0) {
+        return true
+    }else {
+        return false
+    }
+}
+
+/**
+ * @在其他数据库上执行查询
+ * @param: dsName   String  数据源名称
+ *         sql      String  SQL语句
+ * @return: vectorResult    vector
+ * */
+function executeQueryOnOtherDB(dsName, sql) {
+    dataSource = DataSourceUtility::getInstance().getDataSource(dsName)
+    vectorResult = JdbcUtility::executeQuery(dataSource, sql)
+    return vectorResult
+}
+
+/**
+ * 在其他数据库上执行增删改
+ * */
+function executeUpdateOnOtherDB(dsName, sql) {
+    dataSource = DataSourceUtility::getInstance().getDataSource(dsName)
+    response = JdbcUtility::executeUpdatePnuts(dataSource, sql)
+    return response.isOk()
+}

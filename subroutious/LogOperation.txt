@@ -1,0 +1,49 @@
+/**
+ *
+ * import from Longi xian MES systen.
+ * 2019.07.03
+ * @Deprecated method.
+ */
+
+import ("com.rockwell.ftpc.framework.operationlog.service.SysOperationLogService")
+
+BusinessType_Login = "登录"
+BusinessType_Logout = "登出"
+BusinessType_Add = "添加"
+BusinessType_Save = "保存"
+BusinessType_Download = "下发"
+BusinessType_Update = "更新"
+BusinessType_Delete = "删除"
+BusinessType_Import = "导入"
+BusinessType_Confirm = "确认"
+BusinessType_Cancel = "取消"
+BusinessType_Close = "关闭"
+BusinessType_Start = "启动"
+BusinessType_Stop = "停止"
+
+sysOperationLogService = class com.rockwell.ftpc.framework.operationlog.service.SysOperationLogService(getContext())
+
+function logOperation(businessType, businessNumber, content)
+{
+    sysOperationLogService.saveOperationLog(businessType, businessNumber, content)
+}
+
+function getBusinessTypes()
+{
+    businessTypes = vector()
+    businessTypes.add("")
+    businessTypes.add(BusinessType_Login)
+    businessTypes.add(BusinessType_Logout)
+    businessTypes.add(BusinessType_Add)
+    businessTypes.add(BusinessType_Save)
+    businessTypes.add(BusinessType_Download)
+    businessTypes.add(BusinessType_Update)
+    businessTypes.add(BusinessType_Delete)
+    businessTypes.add(BusinessType_Import)
+    businessTypes.add(BusinessType_Confirm)
+    businessTypes.add(BusinessType_Cancel)
+    businessTypes.add(BusinessType_Close)
+    businessTypes.add(BusinessType_Start)
+    businessTypes.add(BusinessType_Stop)
+    return businessTypes
+}

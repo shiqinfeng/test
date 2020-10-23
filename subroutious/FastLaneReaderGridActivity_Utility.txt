@@ -1,0 +1,145 @@
+
+  Description 提供FastLaneReaderGridActivity控件的公用方法
+  
+  Author Lin Hui
+  Date 20190730
+  Revision 1.0
+  
+ 
+
+
+
+  根据表格设定的绑定类型，获取表格选中的行对象，该对象是一个数组
+  
+  @param acGrid 是FastLaneReaderGridActivity控件对象
+  
+  @return 表格选定行绑定的对象，是一个数组
+ 
+function getSelectedArrayData(acGrid)
+{
+    vectorArrayData = acGrid.getSelectedArrayData()
+    if(vectorArrayData.size()  0)
+    {
+        arrayData = vectorArrayData.get(0)
+        return arrayData
+    }
+}
+
+
+
+  根据表格设定的绑定类型，获取表格选中的对象
+  
+  @param acGrid 是FastLaneReaderGridActivity控件对象
+  
+  @return 表格选定行绑定的对象，类型是表格设定的绑定类的类型
+ 
+function getSelectedObject(acGrid)
+{
+    return getSelectedObject(acGrid, )
+}
+
+
+  根据指定的类型，获取表格选中的对象
+  
+  @param acGrid 是FastLaneReaderGridActivity控件对象
+  @param beanName 是指定的绑定类全类名
+  
+  @return 表格选定行绑定的对象，类型是表格设定的绑定类的类型
+  
+ 
+function getSelectedObject(acGrid, beanName)
+{
+    className = acGrid.getBoundClassName()
+    if(beanName != null && !beanName.trim().equals())
+    {
+        className = beanName
+    }
+    
+    beanClass = class com.rockwell.mes.commons.base.ifc.utility.MesClassUtilitygetBeanClass(className)
+    categoricalClass = class com.rockwell.mes.commons.base.ifc.utility.MesClassUtilitygetBeanClass(com.datasweep.compatibility.client.Categorical)
+    dependentClass = class com.rockwell.mes.commons.base.ifc.utility.MesClassUtilitygetBeanClass(com.datasweep.compatibility.client.Dependent)
+    MESATObjectClass = class com.rockwell.mes.commons.base.ifc.utility.MesClassUtilitygetBeanClass(com.rockwell.mes.commons.base.ifc.objects.MESATObject)
+    longClass = class com.rockwell.mes.commons.base.ifc.utility.MesClassUtilitygetBeanClass(java.lang.Long)
+    
+    if(categoricalClass.isAssignableFrom(beanClass))
+    {
+        return acGrid.getSelectedRowObject()
+    }
+    else if(dependentClass.isAssignableFrom(beanClass))
+    {
+        return acGrid.getSelectedRowObject()
+    }
+    else if(MESATObjectClass.isAssignableFrom(beanClass))
+    {
+        key = acGrid.getKeyOfSelectedRowObject()
+        if(key != null && key != -1)
+        {
+            return class com.rockwell.mes.commons.base.ifc.objects.MESATObjectManagergetInstance(beanClass, key)
+        }
+    }
+    
+    return null
+}
+
+
+
+  增加表格一行，并选中
+  
+  @param acGrid 是FastLaneReaderGridActivity控件对象
+  @param object 是增加显示的对象（MESATObject, Categorical, Dependent 对象的子类）
+  
+ 
+function addObjectToGrid(acGrid, object)
+{
+    sql = acGrid.getSQL()
+    sql +=  where  + acGrid.getKeyName() + = + object.getKey()
+    
+    vectorArrayData = acGrid.fetchData(sql)
+    if(vectorArrayData.size()  0)
+    {
+        arrayData = vectorArrayData.get(0)
+        acGrid.addObject(arrayData)
+        grid = acGrid.getGrid()
+        grid.setSelectedRow(grid.getNumberOfRows() - 1)
+    }
+}
+
+
+
+  刷新表格的一行
+  通过匹配Key Column的方式来刷新相应的行
+  
+  @param acGrid 是FastLaneReaderGridActivity控件对象
+  @param object 是需要刷新的对象（MESATObject, Categorical, Dependent 对象的子类）
+ 
+function refreshObject(acGrid, object)
+{
+    sql = acGrid.getSQL()
+    sql +=  where  + acGrid.getKeyName() + = + object.getKey()
+    
+    vectorNewArrayData = acGrid.fetchData(sql)
+    if(vectorNewArrayData.size()  0)
+    {
+        arrayDataNew = vectorNewArrayData.get(0)
+        vectorOldArrayData = acGrid.getObjects()
+        for(i = 0; i  vectorOldArrayData.size(); i++)
+        {
+            arrayDataOld = vectorOldArrayData.get(i)
+            if(LongparseLong(arrayDataOld[0]) == object.getKey())
+            {
+                vectorOldArrayData.set(i, arrayDataNew)
+                acGrid.setObjects(vectorOldArrayData)
+                acGrid.setSelectedRow(i)
+                break
+            }
+        }
+    }
+}
+
+function buildSelectClause(activityGrid)
+{
+    colDescs = activityGrid.getColumnDescriptors()
+    reader = class com.rockwell.mes.commons.base.ifc.sql.FastLaneReader()
+    return reader.buildStatement(colDescs, true, )
+}
+

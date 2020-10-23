@@ -1,0 +1,462 @@
+importSubroutine("MES_Common_InitCombobox")
+OM_SHIFT_MORINING = "morning"      
+OM_SHIFT_NOON = "noon"      
+OM_SHIFT_NIGHT = "night" 
+OM_SHIFT_WORK = "WorkStart"
+OM_SHIFT_WORKEND = "WorkEnd"
+OM_SHIFT_RESTSTART = "RestStart"
+OM_SHIFT_RESTEND = "RestEnd"
+ /**
+ * get work shift
+ * Minglou Shi/2014/01/02
+ * */
+function getWorkShiftByCalendar(combobox, target, type,category, workDayYYYYMMDD, isNullItem)
+{
+    //TODO
+    regex = "^\\d{8}$"
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem("")
+    }
+    
+    if(workDayYYYYMMDD.matches(regex))
+    {
+        if(!isEmptyStr(workDayYYYYMMDD))
+        {
+            workDay = Long(workDayYYYYMMDD)
+          
+//             target = combobox.getText()
+            type = class com.rockwell.autosuite.mes.constants.sm.WorkCalendarTargetType::SHOP
+            
+            // create filter
+            calendarFilter = MESASSMCalendarFilter()
+            // add condition
+            calendarFilter.forTargetEqualTo(target)
+            calendarFilter.forTargettypeEqualTo(type)
+            calendarFilter.forCategoryEqualTo("QM")
+            calendarFilter.forWorkdayEqualTo(workDay)
+            calendarVector = calendarFilter.getFilteredObjects()
+            
+            if(calendarVector.size()>0)
+            {
+                foreach calendar(calendarVector)
+                {
+                    shift = calendar.getShift().getName()
+                    comboboxWorkShift.addItem(shift)
+                }
+            }
+         }
+    }
+}
+
+/** initcombobox for shift type
+ * 
+ *  yhc/2017/08/07
+ * 
+ * */
+function initComboboxShifType(combobox,isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    combobox.addItem(OM_SHIFT_WORK)
+    combobox.addItem(OM_SHIFT_WORKEND)
+    combobox.addItem(OM_SHIFT_RESTSTART)
+    combobox.addItem(OM_SHIFT_RESTEND)
+}
+
+/** initcombobox for BDC area
+ * 
+ *  Tim Liu /2018/11/20
+ * 
+ * */
+function initComboboxBDCArea(combobox, isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    workCenterNameList = class com.rockwell.autosuite.mes.constants.om.BDCAreaName::getBdcAreaNameList()
+    for(i = 0; i < workCenterNameList.size(); i++)
+    {
+        combobox.addItem(workCenterNameList.get(i))   
+    }
+}
+
+/** initcombobox for Operation Type
+ * 
+ *  chenji/2018/11/08
+ * 
+ * */
+function initComboboxBDCInOutType(combobox, isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    areaNameList = class com.rockwell.autosuite.mes.constants.om.BDCInOutType::getBdcInOutTypeList()
+    for(i = 0; i < areaNameList.size(); i++)
+    {
+        combobox.addItem(areaNameList.get(i))   
+    }
+}
+
+/** initcombobox for Operation Type
+ * 
+ *  Tim Liu /2018/11/20
+ * 
+ * */
+function initComboboxReworkArea(combobox, isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    workCenterNameList = class com.rockwell.autosuite.mes.constants.om.ReworkAreaName::getReworkAreaNameList()
+    for(i = 0; i < workCenterNameList.size(); i++)
+    {
+        combobox.addItem(workCenterNameList.get(i))   
+    }
+}
+
+/** initcombobox for ModelYearDesc
+ * 
+ *  yhc/2017/07/20
+ * 
+ * */
+function initComboboxModelYearDesc(combobox, isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    sql = "select distinct model_year_desc_s from  uda_order
+        where model_year_desc_s is not null
+        order by model_year_desc_s desc"
+    vectorData = getArrayDataFromActive(sql)
+    for(i=0; i<vectorData.size(); i++)
+    {
+        if(vectorData.elementAt(i) != null)
+        {
+            combobox.addItem(vectorData.elementAt(i)[0]) 
+        }    
+    }
+}
+
+/** initcombobox for oilFill Type(QM Hold Code Conf)
+ * 
+ *   yhc/2017/5/17
+ * 
+ * */
+function initComboboxOilFillType(combobox, isNullItem)
+{  
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    oilFillTypeList = class com.rockwell.autosuite.mes.constants.qm.HoldCodeType::getOilFillingList()
+    foreach oilFillType(oilFillTypeList)
+    {
+        combobox.addItem(oilFillType)
+    }
+}
+
+/** initcombobox for Test Type(QM Hold Code Conf)
+ * 
+ *   yhc/2017/5/17
+ * 
+ * */
+function initComboxTestType(combobox, isNullItem)
+{  
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    testLineList = class com.rockwell.autosuite.mes.constants.qm.HoldCodeType::getTestLineList()
+    foreach testLine(testLineList)
+    {
+        combobox.addItem(testLine)
+    }
+
+}
+
+function initComboboxActionClassName(combobox,isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    packagePath = "com.rockwell.autosuite.mes.model.sm.queuetaskmanagementEx."
+    
+    classNameList = class com.rockwell.autosuite.mes.helper.CommonHelper::getClassNames(class com.rockwell.autosuite.mes.model.sm.queuetaskmanagementEx.PrintReportTaskAction::getClassLoader(), packagePath)
+    foreach className(classNameList)
+    {
+        combobox.addItem(className)  
+    }
+}
+
+function initComboboxDefectLevel(combobox)
+{
+    combobox.removeAll()
+    filter = class com.rockwell.autosuite.mes.model.qm.severitylevel.MESASQMSeverityLevelFilter()
+    //short(1) 代表正序排序 short(2) 代表反序
+    filter.addOrderATColumnBy("level_name",short(1))
+    vectorDefectLevel = filter.getFilteredObjects()
+    combobox.addItem("")
+    foreach defectlevelObj(vectorDefectLevel)
+    {
+        combobox.addItem(defectlevelObj.getLevelname())
+    }
+}
+
+function initComboboxProductionLineName(combobox, isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    
+    proLineFilter = createProductionLineFilter()
+    proLineFilter.addOrderBy(short(3),short(3))
+    proLineVector = proLineFilter.exec()  
+    foreach proLine(proLineVector)
+    {
+        booleanDefaultLine = false
+        description = proLine.getDescription()
+        if(description != null && description != "")
+        {
+            booleanDefaultLine =  description.equals(DEFAULT_LINE)
+        }
+        else
+        {
+            booleanDefaultLine = false
+        }
+        
+        if(booleanDefaultLine == false)
+        {
+            combobox.addItem(proLine.getName())
+        }
+    }
+}
+
+function initComboboxStationNameByTypeList(combobox, stationTypeList,isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    stationTypeFilter = class com.rockwell.autosuite.mes.model.sm.stationtype.MESASSMStationTypeFilter()
+    foreach stationType(stationTypeList)
+    {
+        stationTypeFilter.forTypeEqualTo(stationType)
+    }
+    stationTypeList = stationTypeFilter.getFilteredObjects()
+    
+    stationVector = getDistinctStationList(stationTypeList)
+    foreach station(stationVector)
+    {
+        combobox.addItem(station.getName())
+    } 
+}
+
+function initComboboxHoldCode(combobox)
+{
+    holdCodeConfFilter = class com.rockwell.autosuite.mes.model.qm.holdcodeconf.MESASQMHoldCodeConfFilter()   
+    combobox.addItem("")
+    holdCodeConfFilter.forIsactivityEqualTo(true)
+    holdCodeConfFilter.forIsinitEqualTo(false)
+    holdCodeConfFilter.addOrderBy(short(3),short(3))
+    holdCodeConfList = holdCodeConfFilter.getFilteredObjects()
+    foreach holdCodeConf(holdCodeConfList)
+    {
+        combobox.addItem(holdCodeConf.getHoldcode())
+    }
+}
+
+/* 
+ * init Defect Status
+ * ZhiPing Shi/2013/10/21
+ * @param: combobox :need init cobobox
+ */
+function initDefectStatus(combobox,isNullItem)
+{
+    combobox.removeAll() 
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    combobox.addItem(DEFECT_STATUS_OPEN)
+    combobox.addItem(DEFECT_STATUS_CLOSE)
+    combobox.addItem(DEFECT_STATUS_DIVERT)
+    combobox.addItem(DEFECT_STATUS_REPAIRED)
+}
+
+ /* *
+ * init DefectType combobox
+ * wbj 2017/04/01
+ * @param: combobox : need init combobox
+ * */
+function initComboboxDefectType(combobox,isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    objFilter = class com.rockwell.autosuite.mes.model.qm.defecttype.MESASQMDefectTypeFilter()
+    objFilter.addOrderBy(short(3),short(1))
+    vectorObj = objFilter.getFilteredObjects()
+    foreach object(vectorObj)
+    {
+        combobox.addItem(object)
+    } 
+}
+
+/** initcombobox for ModelYear
+ *  notice: modelyeae is from uda_order not attribute
+ *  zzw/2019/08/27
+ *  user use model year not model year desc
+ * */
+function initComboboxModelYear(combobox, isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    sql = "select distinct model_year_s from  uda_order
+        where model_year_s is not null
+        order by model_year_s desc"
+    vectorData = getArrayDataFromActive(sql)
+    for(i=0; i<vectorData.size(); i++)
+    {
+        if(vectorData.elementAt(i) != null)
+        {
+            combobox.addItem(vectorData.elementAt(i)[0]) 
+        }    
+    }
+}
+
+function initComboboxRwareaByStation(combobox, station,isNullItem)
+{
+    combobox.removeAll()
+    objects = vector()
+    if(isNullItem==true)
+    {
+        objects.add(null)
+    }    
+
+    responseRWAreaRouteList  = getQualityService().getRWAreaRouteListByStationPnuts(station)
+    if(responseRWAreaRouteList.isOk())
+    {
+        rwareaRouteList = responseRWAreaRouteList.getResult()
+        foreach rwareaRoute(rwareaRouteList)
+        {
+            rwarea = rwareaRoute.getRwareaObj()
+            objects.add(rwarea)
+        }
+    }
+    combobox.setItems(objects.toArray())
+}
+
+function initComboboxRwarea(combobox,isNullItem)
+{
+    combobox.removeAll()
+    objects = vector()
+    if(isNullItem==true)
+    {
+        objects.add(null)
+    }    
+
+    filter = class com.rockwell.autosuite.mes.model.qm.rwarea.MESASQMRWAreaFilter()
+	objects.addAll(filter.getFilteredObjects())
+    combobox.setItems(objects.toArray())
+}
+
+function initComboboxRwareaDeduct(combobox, rwareaDeduct, isNullItem)
+{
+    combobox.removeAll()
+    objects = vector()
+    if(isNullItem==true)
+    {
+        objects.add(null)
+    }   
+
+    filter = class com.rockwell.autosuite.mes.model.qm.rwarea.MESASQMRWAreaFilter()
+	rwareaList = filter.getFilteredObjects()
+    foreach rwarea(rwareaList)
+    {
+        if(rwarea.getKey() != rwareaDeduct.getKey())
+        {
+            objects.add(rwarea)
+        }
+    }
+    combobox.setItems(objects.toArray())
+}
+function initComboboxFTTStationType(combobox, isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    fttSationTypeObjs = class com.rockwell.autosuite.mes.constants.qm.FTTSationType::getFTTStationTypeList()
+    for(i = 0; i < fttSationTypeObjs.size(); i++)
+    {
+        combobox.addItem(fttSationTypeObjs.get(i))    
+    }
+}
+// hmy 2019-12-27
+function initComboboxDPUStationType(combobox, isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    dpuSationTypeObjs = class com.rockwell.autosuite.mes.constants.qm.DPUSationType::getDPUStationTypeList()
+    for(i = 0; i < dpuSationTypeObjs.size(); i++)
+    {
+        combobox.addItem(dpuSationTypeObjs.get(i))    
+    }
+}
+
+function initComboboxShift(combobox,isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    shiftFilter = createShiftFilter()
+    shiftFilter.addOrderBy(short(3),short(3))
+    shiftVector = shiftFilter.exec()
+    foreach shift(shiftVector)
+    {
+        combobox.addItem(shift)
+    }
+}
+function initCalendarCategory(combobox, isNullItem)
+{
+    combobox.removeAll()
+    if(isNullItem==true)
+    {
+        combobox.addItem(null)
+    }
+    OM = class com.rockwell.autosuite.mes.constants.sm.WorkCalendarCategory::OM
+    QM = class com.rockwell.autosuite.mes.constants.sm.WorkCalendarCategory::QM
+    combobox.addItem(OM)
+    combobox.addItem(QM)
+}

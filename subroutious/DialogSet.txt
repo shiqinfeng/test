@@ -1,0 +1,390 @@
+/**====================================================
+ * Description: provide common Dialog UI
+ * 
+ * Author: Bruce Liu
+ * Date: 2013/08/30
+ * Revision: 1.0
+ * 
+ ====================================================**/
+
+function setFormFactor(formFactor)
+{
+    if(formFactor == null)
+    {
+    
+    }
+    else
+    {
+        setGlobalFontSize(24, 30, 18)
+    }
+}
+
+function setGlobalFontSize(charWidth, charHeigh, fontSize)
+{
+    if( charWidth == null || charHeigh == null || fontSize == null)
+    {
+        fontSize = 12
+        charWidth = 12
+        charHeigh = 15
+    }
+    
+    setProperty("AS_GLOBAL_FONT_SIZE", fontSize)  
+    setProperty("AS_GLOBAL_FONT_WIDTH", charWidth)  
+    setProperty("AS_GLOBAL_FONT_HEIGH", charHeigh)  
+}
+
+function DialogOk(title,content)
+{
+    form = getForm("MES_DialogOk")
+    form.setText(title)
+    totalRow = 0
+    addwidth = 0
+    contentNew = ""
+    //新宋体中文字符的长度和宽度
+        
+    contentArray = content.split("\n")
+    for (i=0;i<contentArray.length;i++)
+    {
+        lineStr = contentArray[i]
+        textSize = getEngLength(lineStr)
+        if (textSize > 0)
+        {
+            totalRow = totalRow + (textSize / 40) + 1
+            contentNew = contentNew + lineStr
+            if (i < contentArray.length - 1)
+                contentNew = contentNew + "\n"
+        }
+    }
+    if (totalRow < 2) totalRow = 2
+    if (totalRow > 12) 
+    {
+        totalRow = 12 
+        addwidth = 36
+    }
+     
+    fontSize = getProperty("AS_GLOBAL_FONT_SIZE") 
+    charWidth = getProperty("AS_GLOBAL_FONT_WIDTH")  
+    charHeigh = getProperty("AS_GLOBAL_FONT_HEIGH")  
+    if( charHeigh == null || charWidth == null || charHeigh == null)
+    {
+        fontSize = 12
+        charWidth = 12
+        charHeigh = 15
+    }
+    
+    editMsg = form.findNamedControl("editMessage")    
+    font = editMsg.getJComponent().getFont()
+    fontNew = class java.awt.Font( font.getFamily(), font.getStyle(), fontSize)
+    editMsg.setFont(fontNew)     
+    editMsg.setPreferredSize(class java.awt.Dimension(240+addwidth, 50 + totalRow*charHeigh))    
+    editMsg.setText(contentNew)
+    
+    if(fontSize < 18)
+    {
+        form.findNamedControl("OkButton").setLocation(105 + addwidth/2, 85 + totalRow*charHeigh)
+        form.setPreferredSize(class java.awt.Dimension(310 + addwidth, 120 + totalRow*charHeigh))
+    }
+    else
+    {
+        button  = form.findNamedControl("OkButton")
+        dimension = button.getPreferredSize()        
+        button.setPreferredSize(class java.awt.Dimension ( int(dimension.getWidth() * 1.2), int(dimension.getHeight() * 2) ))
+        button.setLocation(105 + addwidth/2, int (85 + totalRow*charHeigh *1.2))
+        
+        form.setPreferredSize(class java.awt.Dimension(310 + addwidth, 140 + totalRow*charHeigh))
+    }
+    form.invalidate()
+    showAsDialog(form)
+}
+
+function DialogError(content)
+{
+    form = getForm("MES_DialogError")
+    totalRow = 0
+    addwidth = 0
+    contentNew = ""
+    //新宋体中文字符的长度和宽度
+   
+    fontSize = getProperty("AS_GLOBAL_FONT_SIZE") 
+    charWidth = getProperty("AS_GLOBAL_FONT_WIDTH")  
+    charHeigh = getProperty("AS_GLOBAL_FONT_HEIGH")  
+    if( charHeigh == null || charWidth == null || charHeigh == null)
+    {
+        fontSize = 12
+        charWidth = 12
+        charHeigh = 15
+    }
+    
+    contentArray = content.split("\n")
+    for (i=0;i<contentArray.length;i++)
+    {
+        lineStr = contentArray[i]
+        textSize = getEngLength(lineStr)
+        if (textSize > 0)
+        {
+            totalRow = totalRow + (textSize / 40) + 1
+            contentNew = contentNew + lineStr
+            if (i < contentArray.length - 1)
+                contentNew = contentNew + "\n"
+        }
+    }
+    if (totalRow < 2) totalRow = 2
+    if (totalRow > 12) 
+    {
+        totalRow = 12 
+        addwidth = 36
+    }
+    
+    editMsg = form.findNamedControl("editMessage")    
+    font = editMsg.getJComponent().getFont()
+    fontNew = class java.awt.Font( font.getFamily(), font.getStyle(), fontSize)
+    editMsg.setFont(fontNew)  
+    editMsg.setPreferredSize(class java.awt.Dimension(240+addwidth, 50 + totalRow*charHeigh))
+    editMsg.setText(contentNew)
+     
+    if(fontSize < 18)
+    {
+        form.findNamedControl("OkButton").setLocation(105 + addwidth/2, 85 + totalRow*charHeigh)
+        form.setPreferredSize(class java.awt.Dimension(310 + addwidth, 120 + totalRow*charHeigh))
+    }
+    else
+    {
+        button  = form.findNamedControl("OkButton")
+        dimension = button.getPreferredSize()        
+        button.setPreferredSize(class java.awt.Dimension (int(dimension.getWidth()*1.2), int(dimension.getHeight()*2) ))
+        button.setLocation(105 + addwidth/2, int (85 + totalRow*charHeigh * 1.2 ))
+        
+        form.setPreferredSize(class java.awt.Dimension(310 + addwidth, 140 + totalRow*charHeigh))
+    }
+    
+    form.invalidate()
+    showAsDialog(form)
+    form.dispose()
+}
+
+function DialogOkCancel(title, content)
+{
+    form = getForm("MES_DialogOkCancel")
+    form.setText(title)
+
+    totalRow = 0
+    addwidth = 0
+    contentNew = ""
+    //新宋体中文字符的长度和宽度
+    fontSize = getProperty("AS_GLOBAL_FONT_SIZE") 
+    charWidth = getProperty("AS_GLOBAL_FONT_WIDTH")  
+    charHeigh = getProperty("AS_GLOBAL_FONT_HEIGH")  
+    if( charHeigh == null || charWidth == null || charHeigh == null)
+    {
+        fontSize = 12
+        charWidth = 12
+        charHeigh = 15
+    }
+    
+    contentArray = content.split("\n")
+    for (i=0;i<contentArray.length;i++)
+    {
+        lineStr = contentArray[i]
+        textSize = getEngLength(lineStr)
+        if (textSize > 0)
+        {
+            totalRow = totalRow + (textSize / 40) + 1
+            contentNew = contentNew + lineStr
+            if (i < contentArray.length - 1)
+                contentNew = contentNew + "\n"
+        }
+    }
+    if (totalRow < 2) totalRow = 2
+    if (totalRow > 12) 
+    {
+        totalRow = 12 
+        addwidth = 36
+    }
+    
+    editMsg = form.findNamedControl("editMessage")    
+    font = editMsg.getJComponent().getFont()
+    fontNew = class java.awt.Font(  font.getFamily(), font.getStyle(), fontSize)
+    editMsg.setFont(fontNew)   
+    editMsg.setText(contentNew)
+    editMsg.setPreferredSize(class java.awt.Dimension(240+addwidth, 50 + totalRow*charHeigh))
+         
+    if(fontSize < 18)
+    {
+        form.findNamedControl("OkButton").setLocation(25+addwidth/2, 85 + totalRow*charHeigh)
+        form.findNamedControl("CancelButton").setLocation(150+addwidth/2, 85 + totalRow*charHeigh)
+        form.setPreferredSize(class java.awt.Dimension(310 + addwidth, 120 + totalRow*charHeigh))
+    }
+    else
+    {
+        button  = form.findNamedControl("OkButton")
+        dimension = button.getPreferredSize()        
+        button.setPreferredSize(class java.awt.Dimension (int(dimension.getWidth() * 1.2), int(dimension.getHeight() * 2) ))
+        button.setLocation(45 + addwidth/2, int (85 + totalRow*charHeigh * 1.2))
+        
+        button  = form.findNamedControl("CancelButton")
+        dimension = button.getPreferredSize()        
+        button.setPreferredSize(class java.awt.Dimension (int(dimension.getWidth() * 1.2), int(dimension.getHeight() * 2) ))
+        button.setLocation(125 + addwidth/2, int (85 + totalRow*charHeigh * 1.2))
+    
+        form.setPreferredSize(class java.awt.Dimension(310 + addwidth, 140 + totalRow*charHeigh))
+    }
+    
+    form.invalidate()
+    showAsDialog(form)
+    return stringToInt(form.findNamedControl("selectedValue").getText())
+}
+
+function DialogYesNo(title, content)
+{
+    form = getForm("MES_DialogYesNo")
+    form.setText(title)
+
+    totalRow = 0
+    addwidth = 0
+    contentNew = ""
+    //新宋体中文字符的长度和宽度
+    fontSize = getProperty("AS_GLOBAL_FONT_SIZE") 
+    charWidth = getProperty("AS_GLOBAL_FONT_WIDTH")  
+    charHeigh = getProperty("AS_GLOBAL_FONT_HEIGH")  
+    if( charHeigh == null || charWidth == null || charHeigh == null)
+    {
+        fontSize = 12
+        charWidth = 12
+        charHeigh = 15
+    }
+    
+    contentArray = content.split("\n")
+    for (i=0;i<contentArray.length;i++)
+    {
+        lineStr = contentArray[i]
+        textSize = getEngLength(lineStr)
+        if (textSize > 0)
+        {
+            totalRow = totalRow + (textSize / 40) + 1
+            contentNew = contentNew + lineStr
+            if (i < contentArray.length - 1)
+                contentNew = contentNew + "\n"
+        }
+    }
+    if (totalRow < 2) totalRow = 2
+    if (totalRow > 12) 
+    {
+        totalRow = 12 
+        addwidth = 36
+    }
+    
+    editMsg = form.findNamedControl("editMessage")    
+    font = editMsg.getJComponent().getFont()
+    fontNew = class java.awt.Font(  font.getFamily(), font.getStyle(), fontSize)
+    editMsg.setFont(fontNew)    
+    editMsg.setPreferredSize(class java.awt.Dimension(240+addwidth, 50 + totalRow*charHeigh))
+    editMsg.setText(contentNew)
+    
+    if(fontSize < 18)
+    {
+        form.findNamedControl("OkButton").setLocation(25+addwidth/2, 85 + totalRow*charHeigh)
+        form.findNamedControl("CancelButton").setLocation(150+addwidth/2, 85 + totalRow*charHeigh)
+        form.setPreferredSize(class java.awt.Dimension(310 + addwidth, 120 + totalRow*charHeigh))
+    }
+    else
+    {
+        button  = form.findNamedControl("OkButton")
+        dimension = button.getPreferredSize()        
+        button.setPreferredSize(class java.awt.Dimension (int(dimension.getWidth() * 1.2), int(dimension.getHeight() * 2) ))
+        button.setLocation(25 + addwidth/2, 85 + int (totalRow*charHeigh*1.2) )
+        
+        button  = form.findNamedControl("CancelButton")
+        dimension = button.getPreferredSize()        
+        button.setPreferredSize(class java.awt.Dimension (int(dimension.getWidth()* 1.2), int(dimension.getHeight()* 2) ))
+        button.setLocation(145 + addwidth/2, 85 + int( totalRow*charHeigh*1.2) )
+    
+        form.setPreferredSize(class java.awt.Dimension(310 + addwidth, 140 + totalRow*charHeigh))
+    }
+        
+    form.invalidate()
+    showAsDialog(form)
+    return stringToInt(form.findNamedControl("selectedValue").getText())
+}
+
+/**
+ * 字符串中有中文和英文并存的，取得length，1个中文是2个长度
+ */
+function getEngLength(str)
+{
+    if (str == null) return 0
+    len = 0
+    for (i=0;i<str.length();i++)
+    {
+        chr = str.charAt(i)
+        if (chr <= '~')
+        {
+            len = len + 1
+        }else{
+            len = len + 2
+        }
+    }
+    return len
+}
+
+
+/*显示setin、setout的车辆的原因*/
+function dialogSetInOutReason(title)
+{
+    form = getForm("AS_PM_SetInOut_Reason")
+    form.setText(title)
+    return  showAsDialog(form)
+}
+
+
+
+function DialogYesNoAll(title, content)
+{
+    form = getForm("MES_DialogYesNoAll")
+    form.setText(title)
+
+    totalRow = 0
+    addwidth = 0
+    contentNew = ""
+    //新宋体中文字符的长度和宽度
+    fontSize = getProperty("AS_GLOBAL_FONT_SIZE") 
+    charWidth = getProperty("AS_GLOBAL_FONT_WIDTH")  
+    charHeigh = getProperty("AS_GLOBAL_FONT_HEIGH")  
+    if( charHeigh == null || charWidth == null || charHeigh == null)
+    {
+        fontSize = 12
+        charWidth = 12
+        charHeigh = 15
+    }
+    
+    contentArray = content.split("\n")
+    for (i=0;i<contentArray.length;i++)
+    {
+        lineStr = contentArray[i]
+        textSize = getEngLength(lineStr)
+        if (textSize > 0)
+        {
+            totalRow = totalRow + (textSize / 40) + 1
+            contentNew = contentNew + lineStr
+            if (i < contentArray.length - 1)
+                contentNew = contentNew + "\n"
+        }
+    }
+    if (totalRow < 2) totalRow = 2
+    if (totalRow > 12) 
+    {
+        totalRow = 12 
+        addwidth = 36
+    }
+    
+    editMsg = form.findNamedControl("editMessage")    
+    font = editMsg.getJComponent().getFont()
+    fontNew = class java.awt.Font(  font.getFamily(), font.getStyle(), fontSize)
+    editMsg.setFont(fontNew)    
+    editMsg.setPreferredSize(class java.awt.Dimension(240+addwidth, 50 + totalRow*charHeigh))
+    editMsg.setText(contentNew)
+    
+        
+    form.invalidate()
+    showAsDialog(form)
+    return stringToInt(form.findNamedControl("selectedValue").getText())
+}

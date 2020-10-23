@@ -1,0 +1,581 @@
+import("java.text.DecimalFormat")
+/**
+ * Description:     General functions
+ * Author:          Bruce Liu
+ * version:         1.0
+ * date:            2013/08/08
+ **/
+ 
+/**
+ * 判断一个输入对象是否是个整数，如果输入为字符串，字符串的长度没有限制
+ * @param s : s 输入字符串，可以是整数类型或字符串类型
+ * @return true - 是整数 false - 不是整数
+ */
+function isInteger(s)
+{
+    if(s == null || s == "")
+    {
+        return false
+    }
+    if(s instanceof Integer)
+    {
+        return true
+    }
+    
+    flag = s[0]
+    if(flag == '-')
+    {
+        s = s.substring(1)
+    }
+    if(s.length() == 0)
+    {
+        return false
+    }
+
+    foreach c ( s )
+    {
+        if(c > 57 || c < 48)
+        {
+            return false
+        }
+    }
+    return true
+}
+
+/**
+ * 判断一个输入对象是否是个浮点数，如果输入为字符串，字符串的长度没有限制
+ * @param s : s 输入字符串，可以是浮点数类型或字符串类型
+ * @return true - 是浮点数 false - 不是浮点数
+ */
+function isFloat(s)
+{
+     if(s == null || s == "")
+     {
+        return false
+     }
+     if(s instanceof Float)
+     {
+        return true
+     }
+     s = s.toString()
+     flag = s[0]
+     if(flag == '-')
+     {
+        s = s.substring(1)
+     }
+     p = s.lastIndexOf(".")
+     if(p == 0)
+     {
+        return isInteger(s.substring(1))
+     }
+     if(p == s.length() - 1)
+     {
+        return false
+     }
+     num = s.split("\\.")
+     
+     if(num.length == 1)
+     {
+        return isInteger(num[0])
+     }
+     else if( num.length == 2 )
+     {
+        return (isInteger(num[1]) && isInteger(num[0]))
+     }
+     else
+     {
+        return false
+     }
+}
+
+/**
+ * 检查一个字符串是否可以转换成int类型
+ * 使用stringToInt(s)转换成正确的字符串为true
+ * 
+ */
+function checkInteger(s)
+{
+    function f(e)
+    {
+        return false
+    }
+    catch(Exception, f)
+    if (s == null) return false
+    s = s.toString().trim()
+    
+    if ((s.length() > 0) && ("" == s.replaceAll("0","")))
+    {
+        return true
+    }else
+    {
+        if (stringToInt(s) == 0)
+        {
+            return false
+        }
+    }
+    return true
+}
+
+/**
+ * 检查一个字符串是否可以转换成float类型
+ * 使用Float::valueOf(s)转换成正确的float的字符串为true
+ * 
+ */
+function checkFloat(s)
+{
+    function f(e)
+    {
+        return false
+    }
+    catch(Exception, f)
+    if (s == null) return false
+    ft = Float::valueOf(s.toString().trim())
+    if ( (ft > Float::MAX_VALUE) || (ft < (-1*Float::MAX_VALUE)) )
+        return false
+    return true
+}
+
+/**
+ * 检查一个字符串是否可以转换成double类型
+ * 使用stringToDouble(s)转换成正确的字符串为true
+ * 
+ */
+function checkDouble(s)
+{
+    function f(e)
+    {
+        return false
+    }
+    catch(Exception, f)
+    if (s == null) return false
+    s = s.toString().trim()
+    e = s.replaceAll("0","")
+    if ((s.length() > 0) && (("" == e) || ("." == e)))
+    {
+        return true
+    }else
+    {
+        if (stringToDouble(s) == 0.0)
+        {
+            return false
+        }
+    }
+    return true
+}
+
+/*
+ * 将布尔型的字符串转换成整数 
+ * @param deleted: 字符串类型
+ * @return 如果输入为true  返回0 
+ *         如果输入为false 返回1
+ */
+function transformBooleantoLong(deleted)
+{
+    if ("true".equalsIgnoreCase(deleted))
+    {
+        return 0
+    }
+    else if ("false".equalsIgnoreCase(deleted))
+    {
+        return 1
+    }
+    else
+    {
+        println("The invalid value")
+    }
+}
+
+
+/**
+ * 将个object类型转换成string，如果输入为空指针，返回空字符串
+ * @param obj input object
+ * @return string : non-null value
+ */
+function trimToString(obj)
+{
+    if (obj == null) return ""
+    else return obj.toString()
+}
+
+/* 
+ * 将bool类型转换成String
+ * @param String: object of boolean
+ * @return String: 0 - false, 1 true
+ * 
+ */
+function boolTo01(obj)
+{
+    if (obj == null)
+    {
+        return "0"
+    }else if (obj.toString().equalsIgnoreCase("true"))
+    {
+        return "1"
+    }
+    else if  (obj.toString().equalsIgnoreCase("false"))
+    {
+        return "0"
+    }
+    else
+    {
+        return "0"
+    }
+}
+
+/**
+ * return a bool according to the input object
+ * @param obj input object
+ * @return string : non-null value
+ */
+function trimToBool(obj)
+{
+    if (obj == null)
+        return false;
+    else
+    {
+       str = obj.toString()
+       if ((str == "0")||(str == "否")) return false
+       else if ((str == "1")||(str == "是")) return true
+       else return stringToBoolean(str)
+    }
+}
+  
+/**
+ * 返回list（从xml转成的hashtable中获得的最后一层嵌套）中的字符串
+ * @param listItem
+ * @return 字符串
+ */
+function listToString(listItem)
+{
+    if(null == listItem)
+    {
+        return ""
+    }
+    else
+    {
+        return listItem.get(0).toString()
+    }
+}
+
+/**
+ * <p>对一个字符串前，或字符串后补特定的字符串</p>
+ * putChar("236",8,"0",0) = "00000236"
+ * putChar("236",8,"0",1) = "23600000"
+ * @param str 输入字符串
+ * @param totalLenth 输出字符串的长度
+ * @param suffix 用来填补的字符
+ * @param pos 0 标识在输入字符串前补，1标识在输入字符串后补。
+ * @return 返回字符串
+ */
+function putChar(str, totalLength, suffix, pos)
+{
+    totalLengthStr = ""
+    for (i=0; i < totalLength; i++)
+    {
+        totalLengthStr += suffix
+    }
+
+    if (str == null || str.length() == 0) return totalLengthStr
+
+    if (str.length() > totalLength) return str
+
+    returnValue = totalLengthStr
+    if (pos == 0)
+    {
+        returnValue = totalLengthStr.substring(0,totalLength-str.length())+str
+    }
+    if (pos ==1)
+    {
+        returnValue = str + totalLengthStr.substring(0,totalLength-str.length())
+    }
+    return returnValue;
+}
+
+/**
+ * <p>对一个字符串前，或字符串后补特定的字符串</p>
+ * putChar("236",8,"0",0) = "00000236"
+ * putChar("236",8,"0",1) = "23600000"
+ * @param str 输入字符串
+ * @param totalLenth 输出字符串的长度（中文长度，1个中文长度是2个英文长度）
+ * @param suffix 用来填补的字符(必须是英文字符)
+ * @param pos 0 标识在输入字符串前补，1标识在输入字符串后补。
+ * @return 返回字符串
+ */
+function putMixChar(str, totalLength, suffix, pos)
+{
+    totalLengthInt = stringToInt(totalLength * 2 + "")
+    totalLengthStr = ""
+    for (i=0; i < totalLengthInt; i++)
+    {
+        totalLengthStr += suffix
+    }
+
+    if (str == null || str.length() == 0) return totalLengthStr
+    //字符英文长度
+    strLength =  (getLength(str) * 2).intValue()
+    
+    if (strLength > totalLengthInt) return str.substring(0,totalLength)
+
+    returnValue = totalLengthStr
+    if (pos == 0)
+    {
+        returnValue = totalLengthStr.substring(0,totalLengthInt-strLength)+str
+    }
+    if (pos ==1)
+    {
+        returnValue = str + totalLengthStr.substring(0,totalLengthInt-strLength)
+    }
+    return returnValue;
+}
+
+/**
+ * 字符串中有中文和英文并存的，取得length，1个英文是半个长度
+ */
+function getLength(str)
+{
+    len = 0.0
+    for (i=0;i<str.length();i++)
+    {
+        chr = str.charAt(i)
+        if (chr < '~')
+        {
+            len = len + 0.5
+        }else{
+            len = len + 1
+        }
+    }
+    return len
+}
+
+/**
+ * 去掉一个字符串的前后的0
+ */
+function trimZero(str)
+{
+    while(str.endsWith("0")){
+        if (str.indexOf(".")>-1)
+        {
+            if (str.endsWith(".0"))
+            {
+                str = str.substring(0,str.length()-2)
+            }else{
+                str = str.substring(0,str.length()-1)
+            }
+        }else{
+            break
+        }
+    }
+    while(str.startsWith("0")){
+        if (str.startsWith("0.") || str == "0")
+        {
+            break
+        }else{
+            str = str.substring(1,str.length())
+        }
+    }
+    return str
+}
+    
+/**
+ *根据物料号取得名称
+ */
+function getPartDesc(partNumber)
+{
+    if (partNumber != null)
+    {
+        part = getPart(partNumber)
+        if(part != null)
+            return part.getDescription()
+        else
+            return partNumber
+    }else{
+        return ""
+    }
+}
+
+
+/*
+ * 根据班别代码返回班别名称，1、2、3分别对应甲、乙、丙班
+ * */
+function getGroupName(groupCode)
+{
+    switch(groupCode)
+    {
+        case "1":
+            return "甲班"
+        case "2":
+            return "乙班"
+        case "3":
+            return "丙班"
+        default:
+            return groupCode
+    }
+}
+
+/*
+ * 根据班次代码返回班次名称，1、2、3分别返回早、中、晚班
+ * */
+function getShiftName(shiftCode)
+{
+    switch(shiftCode)
+    {
+        case "1":
+            return "早班"
+        case "2":
+            return "中班"
+        case "3":
+            return "晚班"
+        default:
+            return shiftCode
+    }
+}
+
+/**
+ * 将输入的一个对象转换成中文布尔型的是否
+ */
+function boolToYN(obj)      
+{      
+    if (trimToString(obj).equalsIgnoreCase("true"))      
+    {      
+        return "是"      
+    }else{      
+        return "否"      
+    }      
+}
+
+/**
+ * collectType 的code name的对应关系转换
+ */
+function getCollectType(obj)      
+{      
+    codeArray = createArray(3)      
+    nameArray = createArray(3)      
+    codeArray[0] =  "1"      
+    codeArray[1] =  "2"      
+    codeArray[2] =  "3"      
+    nameArray[0] =  "人工录入"      
+    nameArray[1] =  "自动采集"      
+    nameArray[2] =  "不采集"      
+    return codeNameChange(obj, codeArray, nameArray)      
+}      
+
+/**
+ * parameterType 的code name的对应关系转换
+ */
+function getParameterType(obj)      
+{      
+    codeArray = createArray(2)      
+    nameArray = createArray(2)      
+    codeArray[0] =  "1"      
+    codeArray[1] =  "2"      
+    nameArray[0] =  "计数"      
+    nameArray[1] =  "计量"      
+    return codeNameChange(obj, codeArray, nameArray)      
+}      
+      
+/**
+ * processType 的code name的对应关系转换
+ */
+function getProcessType(obj)      
+{      
+    codeArray = createArray(3)      
+    nameArray = createArray(3)      
+    codeArray[0] =  "0"      
+    codeArray[1] =  "1"      
+    codeArray[2] =  "2"      
+    nameArray[0] =  "标准值"      
+    nameArray[1] =  "下限值"      
+    nameArray[2] =  "上限值"      
+    return codeNameChange(obj, codeArray, nameArray)      
+}
+
+/**
+ * code 和 name 的对应关系转换
+ */
+function codeNameChange(obj, codeArray, nameArray)      
+{      
+    for (i=0;i<codeArray.length;i++)      
+    {      
+        if (trimToString(obj) == codeArray[i])      
+            return nameArray[i]      
+    }      
+    for (i=0;i<nameArray.length;i++)      
+    {      
+        if (trimToString(obj) == nameArray[i])      
+            return codeArray[i]      
+    }      
+    return ""      
+}
+
+
+function isString(string){
+        
+    if( ( string >= "A" && string <="Z" ) ||   ( string >= "a" && string <="z" )  )
+    {
+        return true
+    }else{
+        return false
+    }
+}
+
+function checkNumeric(str){
+    if (stringToInt(str) == 0){
+        return false
+    }else {
+        return true
+    }
+}
+
+function numberFormat(value,format){
+    formatter = DecimalFormat(format)
+    number = formatter.format(value)
+    return number
+}
+
+
+function fileCheck(filePath)
+{
+    file = class java.io.File(filePath)
+    if(file.exists() && !file.isDirectory())
+    {       
+        return true
+    }
+    else
+    {
+        return false
+    }
+}
+
+/**
+ * 字符串补全
+ * @param str 要补全的字符串
+ * @param leftpad 判断是左补全还是右补全，默认左补全
+ * @param maxlength 与补全字符串比较的长度
+ * @param image 需补全的形状
+ * @return
+ */
+function padStr(str,leftpad,maxlength,image)
+{
+    pad = str
+    sb = stringBuffer()
+    if(str != null)
+    {
+        if(str.length()<maxlength)
+        {
+            if(leftpad)
+            {
+                sb.append(str)
+            }
+            for(i=0;i<maxlength-str.length();i++)
+            {
+                sb.append(image)
+            }
+        }
+        if(!leftpad)
+        {
+            sb.append(str)
+        }
+        pad = sb.toString()
+    }
+    return pad
+}

@@ -1,0 +1,109 @@
+//PLC Command value
+GC_UPLOAD = 2
+LC_UPLOAD = 2
+LC_CLAER = 0
+FORCE_FEED = 3
+CLEAN_UPLOAD = 2
+COMMAND_FLAG_OUT_TRUE = true
+COMMAND_FLAG_CLEAR = false
+LOCK_STATUS = 20
+/**--------------------------------------XML FilePath----------------------------------------**/
+
+LIVEDATAGROUP_GC_UPLOAD_FILEPATH = "LiveDataGroup_GC_Upload_FilePath"
+LIVEDATAGROUP_CLEAN_UPLOAD_FILEPATH = "LiveDataGroup_Clean_Upload_FilePath"
+LIVEDATAGROUP_CLEAR_LOT_COUNT_FILEPATH = "LiveDataGroup_Clear_Lot_Count_FilePath"
+LIVEDATAGROUP_CLEAN_FGMT_FILEPATH = "LiveDataGroup_Clean_Fgmt_FilePath"
+LIVEDATAGROUP_CLEAN_REFRESH_FILEPATH = "LiveDataGroup_Clean_Refresh_FilePath"
+LIVEDATAGROUP_CLEAN_CHGLQD_FILEPATH = "LiveDataGroup_Clean_ChgLqd_FilePath"
+LIVEDATAGROUP_GC_DOWNLOAD_FILEPATH = "LiveDataGroup_GC_Download_FilePath"
+LIVEDATAGROUP_LC_STATUS_DOWNLOAD_FILEPATH = "LiveDataGroup_LC_Status_Download_FilePath"
+LIVEDATAGROUP_TJ_SPRAY_FILEPATH = "LiveDataGroup_TJ_Spray_FilePath"
+LIVEDATAGROUP_TJ_DEGUMING_FILEPATH = "LiveDataGroup_TJ_Deguming_FilePath"
+LIVEDATAGROUP_TJ_RINSE_FILEPATH = "LiveDataGroup_TJ_Rinse_FilePath"
+LIVEDATAGROUP_TJ_COMPLETE_FILEPATH = "LiveDataGroup_TJ_Complete_FilePath"
+LIVEDATAGROUP_TJ_CHGLQD_FILEPATH = "LiveDataGroup_TJ_ChgLqd_FilePath"
+/**-----------------------------------XML FilePath------------------------------------------**/
+
+
+
+//----------Live Data tag set-------------//
+COMMAND_IN_TAG_SET = "CommandIn"
+DATA_IN_TAG_SET = "DataIn"
+
+COMMAND_OUT_TAG_SET = "CommandOut"
+FAULT_OUT_TAG_SET = "FaultOut"
+STATUS_OUT_TAG_SET = "StatusOut"
+DATA_OUT_TAG_SET = "DataOut"
+//----------Live Data tag set end-------------//
+//----------Live Data Template-------------//
+GCUPLOAD_TEMPLATE = "GCUpload"
+CLEAN_UPLOAD_TEMPLATE = "CleanUpload"
+CLEAR_LOT_COUNT_TEMPLATE = "ClearLotCount"
+CLEAN_FGMT_TEMPLATE = "CleanFgmt"
+CLEAN_REFRESH_TEMPLATE = "CleanRefresh"
+GCDOWNLOAD_TEMPLATE = "GCDownload"
+TJSPRAY_TEMPLATE = "TJSpray"
+TJDEGUMING_TEMPLATE = "TJDeguming"
+TJRINSE_TEMPLATE = "TJRinse"
+TJCOMPLETE_TEMPLATE = "TJComplete"
+//----------Live Data Template end-------------//
+//Others
+
+SOS_INTEGRATION_SUBROUTINES = "MES_Common_Integration"
+CONFIGURATION_PROPERTIES_INTEGRATION = "InterfaceConfiguration"
+
+//----------ERP interface Constant-------------//
+SOURCE_SYS_MES = "MES761"
+// SOURCE_LINEID_MES = "123"
+
+//工单创建
+IFACECODE_ORDERCREATE = "MES001WIPCT"
+IFACEMEAN_ORDERCREATE = "MES工单创建"
+ADDRESS_KEY_ORDERCREATE = "commonInterfaceAddress"
+ATTR1_KEY_ORDERCREATE = "sendOrderMessageAttr1"
+ATTR2_KEY_ORDERCREATE = "attr2"
+//报工
+TRAN_TYPE_MILESTONE = "工单完工(WIP Completion)"
+IFACECODE_MILESTONE = "MES002WIPCMPL"
+IFACEMEAN_MILESTONE = "MES工单完工"
+TRAN_TYPE_COMPLETERETURN = "工单完工退回(WIP Completion Return)"//工单完工退回
+ADDRESS_KEY_MILESTONE = "commonInterfaceAddress"
+ATTR1_KEY_MILESTONE = "sendFinishedOrReturnMessageAttr1"
+ATTR2_KEY_MILESTONE = "attr2"
+//领料计划
+// TRAN_TYPE_REQUISITIONPLAN = "子库存转移(Move Order Transfer)"
+TRAN_TYPE_REQUISITIONPLAN = "车间领用"
+ADDRESS_KEY_REQUISITIONPLAN = "sendAcquisitionPlanAddressTest"
+ATTR1_KEY_REQUISITIONPLAN = ""
+ATTR2_KEY_REQUISITIONPLAN = ""
+
+
+
+
+//退料 调拨 成品入库
+TRAN_TYPE_MATERIALRETURN = "工单退料(WIP Return)"//退料
+TRAN_CODE_MATERIALRETURN = 10L//退料
+TRAN_TYPE_MATERIALMOVE = "Subinventory Transfer"//调拨
+TRAN_CODE_MATERIALMOVE = 20L//调拨
+TRAN_TYPE_PRODUCTINCOMING = "成品入库"//成品入库
+TRAN_CODE_PRODUCTINCOMING = 30L//成品入库
+TRAN_TYPE_WIPISSUE = "工单发料(WIP Issue)"//工单发料
+TRAN_TYPE_NEGATIVEISSUE = "工单负组件发放(WIP Negative Issue)"//工单负组件发放
+
+// TRAN_TYPE_WIPISSUE = "子库存转移(Move Order Transfer)"
+TRAN_CODE_WIPISSUE = 40L//工单发料
+ADDRESS_KEY_WAREHOUSE= "wareHouseServiceAddressTest"
+ATTR1_KEY_ACQUISITIONPLAN = ""
+ATTR2_KEY_ACQUISITIONPLAN = ""
+IFACECODE_TRANINFO = "WareHouseTxn"
+IFACEMEAN_TRANINFO = ""
+
+// INTERFACE_ADDRESS_KEY = "commonInterfaceAddress"
+INTERFACE_USER_KEY = "userName"
+INTERFACE_PWD_KEY = "passWord"
+SEND_STATUS_S = "S"
+SEND_STATUS_W = "W"
+SEND_STATUS_E = "E"
+// INTERFACE_ATTR1_KEY = "sendOrderMessageAttr1" //库存组织代码
+// INTERFACE_ATTR2_KEY = "attr2" //
+//----------ERP interface Constant-------------//

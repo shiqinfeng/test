@@ -1,0 +1,380 @@
+import("java.text.SimpleDateFormat")
+
+/**
+ * Description: this subroutine provides common time functions
+ * 
+ * Author: Bruce Liu
+ * Date: 2013/08/08
+ * Revision: 1.0
+ **/
+
+
+
+/**
+ * Description: use java.text.SimpleDateFormat to format time
+ * example: yyyy-MM-dd HH:mm:ss = 2010-10-20 15:23:44, yyyy-MM-dd = 2010-10-20
+ * @param Time； time 
+ * @return String: string of format Time
+ **/
+function formatTimeByDateFormat(time,mask){
+    stringOfDate = ""
+    if(time != null){
+        c = class java.util.Calendar::getInstance()
+        c.set(time.getYear(), time.getMonth() -1, time.getDay(), time.getHour(), time.getMinute(),time.getSecond())
+        date = c.getTime()
+        sformatter = class java.text.SimpleDateFormat(mask)
+        stringOfDate = sformatter.format(date)
+    }
+    
+    return stringOfDate
+}
+
+
+/**
+ * Description: use java.util.TimeZone to change timeZone to Asia/Shanghai
+ * @param Time； time 
+ * @return Time: time which 
+ **/
+function changeTimeZoneTOShangHai(time){
+    timeZone = class java.util.TimeZone::getTimeZone("Asia/Shanghai")
+    time2 = time.toTimeZone(timeZone)
+    return time2
+}
+
+/**
+ * Description: Compares two Time by year、month、and day 
+ * @param Time； time1 
+ * @param Time； time2 
+ * @return Int: 1 is returned if time1 is greater that time2,0=equal,-1=less
+ **/
+function compareTimeByYMD(time1,time2){
+    timeOne = createTime(time1.getYear(),time1.getMonth(),time1.getDay(),0,0,0)
+    timeTwo = createTime(time2.getYear(),time2.getMonth(),time2.getDay(),0,0,0)
+    return timeOne.compareTo(timeTwo)
+}
+
+/**
+ * Description: Compares two Time by hour、minute、and second
+ * @param Time； time1 
+ * @param Time； time2 
+ * @return Int: 1 is returned if time1 is greater that time2,0=equal,-1=less
+ **/
+function compareTimeByHMS(time1,time2){
+    timeOne = createTime(2013,0,0,time1.getHour(),time1.getMinute(),time1.getSecond())
+    timeTwo = createTime(2013,0,0,time2.getHour(),time2.getMinute(),time2.getSecond())
+    return timeOne.compareTo(timeTwo)
+}
+
+
+
+/**
+ * Description: return string of format Time,like "2010-10-20 15:23:44" 
+ * @param Time； time 
+ * @return String: string of format Time
+ **/
+function getStringOfTimeInSql(time){
+    stringOfTime = ""
+    if(time != null){
+        y = time.getYear()
+        m = time.getMonth()
+        d = time.getDay()
+        h = time.getHour()
+        t = time.getMinute()
+        s = time.getSecond()
+        stringOfTime = y + "-"
+        if(m < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + m + "-"
+        
+        if(d < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + d + " "
+        
+        if(h < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + h + ":"
+        
+        if(t < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + t + ":"
+        
+        if(s < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + s
+    }
+    
+    return stringOfTime
+}
+
+/**
+ * Description: Convert String objec to Time object
+ * @param text = "2011-03-10 15:14:13"
+ * @param mask = "yyyy-MM-dd HH:mm:ss"
+ * or
+ * @param text = "2011/03/10 15:14:13"
+ * @param mask = "yyyy/MM/dd HH:mm:ss"
+ * @return Date
+ **/
+function getTimeFromString(text,mask){
+    format = class java.text.SimpleDateFormat(mask)
+    date = format.parse(text)
+    return date
+}
+
+
+/** 
+ * Description: Convert String objec to Date Object, only supports two types
+ * @param text = "2011-03-10 15:14:13"
+ * mask = "yyyy-MM-dd HH:mm:ss"
+ * or
+ * @param text = "2011/03/10 15:14:13"
+ * mask = "yyyy/MM/dd HH:mm:ss"
+ * @return Date
+ **/
+function getTimeFromString(text){
+    if(text != null){
+        if(text.contains("/")){
+            mask = "yyyy/MM/dd HH:mm:ss"
+        }else if(text.contains("-")){
+            mask = "yyyy-MM-dd HH:mm:ss"
+        }
+        return getTimeFromString(text,mask)
+    }
+    return null
+}
+
+/**
+ * Description: Convert String to time
+ * @param text = "2011-03-10 15:14:13"
+ * @param mask = "yyyy-MM-dd HH:mm:ss"
+ * or
+ * @param text = "2011/03/10 15:14:13"
+ * @param mask = "yyyy/MM/dd HH:mm:ss"
+ * @return Time,com.datasweep.compatibility.ui.Time
+ **/
+function getPnutTimeFromString(text,mask){
+    date = getTimeFromString(text,mask)
+    cClass = class java.util.Calendar
+    c = cClass::getInstance()
+    c.setTime(date)
+    
+    y = c.get(cClass::YEAR)
+    m = c.get(cClass::MONTH) + 1
+    d = c.get(cClass::DAY_OF_MONTH)
+    h = c.get(cClass::HOUR_OF_DAY)
+    mi = c.get(cClass::MINUTE)
+    s = c.get(cClass::SECOND)
+    
+    time = createTime(y,m,d,h,mi,s)
+    return time
+}
+
+/**
+ * Description: Change time string format
+ * @param text = "2011-03-10 15:14:13"
+ * @param fromMask = "yyyy-MM-dd HH:mm:ss"
+ * @param toMask = "yyyy/MM/dd HH:mm:ss"
+ * @return String
+ **/
+function changeFormat(text,fromMask,toMask){
+    time = getTimeFromString(text,fromMask)
+    timeStr = formatTimeByDateFormat(time,toMask)
+    return timeStr
+}
+
+ /**
+ * 转换日期时间格式
+ * @param strTime 字符串的日期时间
+ * @param inputFormat 输入的日期时间格式
+ * @return Time格式的时间
+ */
+function changeTimeFormat(strTime, inputFormat)
+{
+    format = class java.text.SimpleDateFormat(inputFormat)
+    if(strTime == null || strTime.equals(""))
+        strTime = "1970-01-01 08:00:00"
+    date = format.parse(strTime)
+}
+
+/**
+ * Description: get the time difference in minutes
+ * @param time1
+ * @param time2
+ * @return the time difference in minutes
+ **/
+function getTimeDifferenceInMinute(time1,time2){
+    if(time1 != null && time2 != null){
+        t1 = time1.toLong()
+        t2 = time2.toLong()
+        seconds = (t2-t1)/(10000000)  //seconds
+        minutes = seconds/60.0  //minutes
+        return minutes
+    }else{
+        return 0
+    }
+}
+
+/**
+ * Description: get the time difference in minutes
+ * @param pBeginTime
+ * @param pEndTime
+ * @return the time difference in minutes
+ **/
+function timeDifference(pBeginTime,pEndTime){        
+    format = SimpleDateFormat("yyyy-MM-dd HH:mm")
+    pBeginTime = createTime(pBeginTime.toString())
+    pBeginTime = formatTime(pBeginTime,"Y-M-D Z:T:S")
+    
+    pEndTime = createTime(pEndTime.toString())
+    pEndTime = formatTime(pEndTime,"Y-M-D Z:T:S")
+    
+    beginL = format.parse(pBeginTime).getTime(); 
+    endL = format.parse(pEndTime).getTime(); 
+    day = (endL - beginL)/86400000;
+    hour = ((endL - beginL))/3600000; 
+    min = ((endL - beginL))/60000; 
+    return min
+
+}
+
+
+/**
+ * Description: the start time of a day
+ * @param time
+ * @return the start time of a day, i.e. yyyy-mm-dd 00:00:00
+ **/
+function getStartOfDay(time){
+    if(time != null){
+        return createTime(time.getYear(),time.getMonth(),time.getDay(),0,0,0)
+    }
+    return null
+}
+
+
+/**
+ * Description: the end time of a day
+ * @param time
+ * @return the end time of a day, i.e. yyyy-mm-dd 23:59:59
+ **/
+function getEndOfDay(time){
+    if(time != null){
+        return createTime(time.getYear(),time.getMonth(),time.getDay(),23,59,59)
+    }
+    return null
+}
+
+
+/**
+ * Description: get the calendar mask
+ * @return Calendar Mask String, it's fixed string "Y-M-D" 
+ **/
+function getCalendarMaskString()
+{
+    return "Y-M-D"
+}
+
+/**
+ * Description: get the standard shift start time
+ * 
+ * @return common shift start time
+ **/
+function getSwitchShiftTypeTime()
+{   
+    return createTime(2013, 8, 8, 8, 0, 0)
+}
+
+/**
+ * Description: get the calendar week mask
+ * 
+ * @return the calendar week mask
+ **/
+function getDipslayCalendarWeekMaskString()
+{
+    return "Y-M-D W"
+}
+
+/**
+ * Description: get the normal calendar full mask
+ * 
+ * @return the normal calendar full mask
+ **/
+function getDipslayCalendarFullString()
+{
+    return "Y-M-D Z:T:S"
+}
+
+/**
+ * Description: create time from string
+ * @param workday = time string
+ * @param h = hour
+ * @param m = minute
+ * @param s = second
+ * @return time object
+ **/
+function createTimeU(workDay, h, m, s)
+{
+    workDay = workDay.replaceAll("-","")
+    year = Integer::valueOf( workDay.substring(0,4) ).intValue()
+    month = Integer::valueOf( workDay.substring(4,6) ).intValue()
+    day = Integer::valueOf( workDay.substring(6,8) ).intValue()       
+    workDay = createTime(year, month, day, h, m, s)
+}
+
+
+/**
+ * 把yyyyMMdd格式的日期转换为yyyy/MM/dd格式的 20110831
+ */
+function convertDate(date)
+{
+    if(date.length() != 8)
+    {
+        e = class java.lang.Exception("日期格式不为8位")
+        throw(e)
+    }
+    y = date.substring(0, 4)
+    m = date.substring(4, 6)
+    d = date.substring(6, 8)
+    
+    return y + "/" + m + "/" + d
+}
+
+
+/**
+* 时间类型转变 yyyy-MM-dd HH:mm:ss(年月日时分秒)
+* @param: TIME
+* @param: 时间
+* @return Date
+**/
+function dateToString(tme){
+
+    format =SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    return format.format(tme.getCalendar().getTime())
+}
+/**
+* 时间类型转变 yyyy-MM-dd(年月日)
+* @param: TIME
+* @param: 时间
+* @return Date
+**/
+function timeToString(tme){
+
+    format =SimpleDateFormat("yyyy-MM-dd")
+    return format.format(tme.getCalendar().getTime())
+}
+
+function getTimeDifferenceInSeconds(time1,time2){
+    if(time1 != null && time2 != null){
+        t1 = time1.toLong()
+        t2 = time2.toLong()
+        seconds = (t2-t1)/(10000000)  //seconds
+        return seconds
+    }else{
+        return 0
+    }
+
+}

@@ -1,0 +1,403 @@
+import("com.rockwell.mes.commons.base.ifc.choicelist.MESChoiceListHelper")
+
+/**
+ * 描述：使用数组列表初始化下拉框选项
+ * 
+ * @parameter: combobox - Class:(com.datasweep.compatibility.ui.ComboBox)
+ *          下拉框控件
+ * @parameter: vectorArray - Class:(Vector<String[]>)
+ *          下拉框数据，数组列表，数组第一列是编号，数组第二列是描述。例如：["No", "Description"]
+ *          
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function initComboboxByArrays(combobox, vectorArray)
+{
+    combobox.addItem(null)
+    foreach array(vectorArray)
+    {
+        combobox.addItem(class com.ftpc.common.bean.ChoiceItem(array[0], array[1]))
+    }
+}
+
+
+/**
+ * 描述：使用SQL语句初始化下拉框
+ * 
+ * @parameter: combobox - Class:(com.datasweep.compatibility.ui.ComboBox)
+ *          下拉框控件
+ * @parameter: sqlStatement - Class:(java.lang.String)
+ *          Select SQL语句，第一列是ID，第二列是描述。例如：select id, desc from table
+ *          
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function initComboboxBySQL(combobox, sqlStatement)
+{
+    combobox.addItem(null)
+    
+    vectorArray = getArrayDataFromActive(sqlStatement)
+    foreach array(vectorArray)
+    {
+        combobox.addItem(class com.ftpc.common.bean.ChoiceItem(array[0], array[1]))
+    }
+}
+
+//初始化设备
+function initComboboxEquipment(comboboxEquipment,equipClass)
+{
+//     sql = "select equip_name,description from equipment e left join Equipment_Class_equip ec on e.equip_key = ec.equip_key where 1=1 "
+    sql = "select equip_name,equip_name from equipment e left join Equipment_Class_equip ec on e.equip_key = ec.equip_key where 1=1 "   
+    if(equipClass != null)
+    {
+        sql +=" and equip_class_key = "+equipClass.getKey()
+    }
+//     initComboboxBySQL(comboboxEquipment, sql)
+    vectorResult = querySql(sql)
+    comboboxEquipment.setItems(vectorResult.toArray())
+//     vectorArray = getArrayDataFromActive(sql)
+}
+
+/**
+ * 描述：使用ATRow列表初始化下拉框
+ * 
+ * @parameter: combobox - Class:(com.datasweep.compatibility.ui.ComboBox)
+ *          下拉框控件
+ * @parameter: vectorATRow - Class:(Vector<com.datasweep.compatibility.client.ATRow>)
+ *          下拉框数据，ATRow列表
+ * @parameter: idColumnName - Class:(java.lang.String)
+ *          ID列的列名(AT Column)
+ * @parameter: descriptionColumnName - Class:(java.lang.String)
+ *          描述列的列名(AT Column)
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function initComboboxByATRows(combobox, vectorATRow, idColumnName, descriptionColumnName)
+{
+    combobox.addItem(null)
+    
+    foreach atrow(vectorATRow)
+    {
+        combobox.addItem(class com.ftpc.common.bean.ChoiceItem(atrow.getValue(idColumnName), atrow.getValue(descriptionColumnName)))
+    }
+}
+
+
+/**
+ * 描述：获取选中的项的ID
+ * 
+ * @parameter: combobox - Class:(com.datasweep.compatibility.ui.ComboBox)
+ *          下拉框控件
+ * @return: java.lang.String - 选中的项的ID，如果没有被选中的项，则返回NULL。
+ * @author: Lin Hui 03/31/2016
+ */
+function getComboboxSelectedItemId(combobox)
+{
+    item = combobox.getSelectedItem()
+    
+    if(item != null)
+    {
+        return item.getId()
+    }
+    
+    return null
+}
+
+/**
+ * 描述：根据Bean对象，选中下拉框中相应的项。
+ * 
+ * @parameter: combobox - Class:(com.datasweep.compatibility.ui.ComboBox)
+ *          下拉框控件
+ * @parameter: bean - Class:(com.ftpc.common.bean.ChoiceItem)
+ *          下拉框选择项对应的对象
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function setComboboxSelected(combobox, bean)
+{
+    combobox.setSelectedItem(bean)
+}
+
+
+/**
+ * 描述：根据ID值，选中下拉框中相应的项。
+ * 
+ * @parameter: combobox - Class:(com.datasweep.compatibility.ui.ComboBox)
+ *          下拉框控件
+ * @parameter: id - Class:(java.lang.String)
+ *          id值
+ * @return: void
+ * @author: Lin Hui 03/31/2016
+ */
+function setComboboxSelectedById(combobox, id)
+{
+    if(id == null || id.trim().equals(""))
+    {
+        combobox.setSelectedItem(null)
+    }
+    else
+    {
+        for(i = 0; i < combobox.getItemCount(); i++)
+        {
+            bean = combobox.getItem(i)
+            if(bean != null && id.equals(bean.getId()))
+            {
+                combobox.setSelectedIndex(i)
+            }
+        }
+    }
+}
+
+/**
+ * 初始化工作中心下拉框 
+ * 吴建熙 /2016/08/01
+ * @param: combobox: 工作中心下拉框控件
+ * @return: 
+ * */
+function initComboboxWorkCenter(combobox, pline)
+{
+    combobox.removeAll()
+    vectorWorkCenter = vector()
+    if(pline != null && pline instanceof class com.datasweep.compatibility.client.ProductionLine){
+        vectorWorkCenter = pline.getWorkCenters()
+    }else{
+        fltrWorkCenter = createWorkCenterFilter()
+        vectorWorkCenter = fltrWorkCenter.exec()
+    }
+    vectorWorkCenter.add(0, null)
+    combobox.setItems(vectorWorkCenter.toArray())
+}
+/**
+ * 初始化科室下拉框 
+ * dengbing 2020/05/22
+ * @param: combobox: 科室下拉框控件
+ * @return: 
+ * */
+function initComboboxAreaNew(combobox,departMent)
+{
+    combobox.removeAll()
+    sql = "select ud.atr_key,ud.department_no_S,ud.department_desc_S from AT_UM_Department ud 
+            where ud.parent_department_I = "+departMent+" order by ud.department_no_S"
+    vectorResult = querySql(sql)
+    vectorResult.add(0, null)
+    //vectorResult.add(0, null)
+    combobox.setItems(vectorResult.toArray())
+}
+/**
+ * 初始化部门下拉框 
+ * dengbing 2020/06/8
+ * @param: combobox: 部门下拉框控件
+ * @return: 
+ * */
+function initComboboxDepartment(combobox)
+{
+    combobox.removeAll()
+    sql = "select ud.atr_key,ud.department_no_S,ud.department_desc_S from AT_UM_Department ud 
+            where ud.department_no_S like 'B_%' order by ud.department_no_S"
+    vectorResult = querySql(sql)
+    vectorResult.add(0, null)
+    //vectorResult.add(0, null)
+    combobox.setItems(vectorResult.toArray())
+}
+/**
+ * 初始化科室下拉框 
+ * dengbing 2020/06/8
+ * @param: combobox: 部门下拉框控件
+ * @return: 
+ * */
+function initComboboxAreaName(combobox)
+{
+    combobox.removeAll()
+    sql = "select ud.atr_key,ud.department_no_S,ud.department_desc_S from AT_UM_Department ud 
+            where ud.department_no_S like 'K_%' order by ud.department_no_S"
+    vectorResult = querySql(sql)
+    vectorResult.add(0, null)
+    //vectorResult.add(0, null)
+    combobox.setItems(vectorResult.toArray())
+}
+/**
+ * 初始化工序下拉框 
+ * fzg /2019/07/06
+ * @param: combobox: 工序下拉框
+ * @return: 
+ * */
+function initComboboxOperation(combobox)
+{
+    combobox.removeAll()
+    fltrOperation = createOperationFilter()
+    //fltrOperation.orderByUda("sorting",true)
+    vectorOperation = fltrOperation.exec()
+    vectorOperation.add(0, null)
+    combobox.setItems(vectorOperation.toArray())
+}
+/**
+ * 初始化工序下拉框 
+ * fzg /2019/07/06
+ * @param: combobox: 工序下拉框
+ * @return: 
+ * */
+function initComboboxOpName(combobox)
+{
+    combobox.removeAll()
+    combobox.addItem(null)
+    fltrOperation = createOperationFilter()
+    vectorOperation = fltrOperation.exec()
+//     vectorOperation.add(0, null)
+    
+    foreach operation(vectorOperation)
+    {
+        combobox.addItem(operation.getName())
+    }
+}
+/**
+ * 初始化工序下拉框 
+ * 展示工序的汉化名称
+ * swh /2019/11/08
+ * @param: combobox: 工序下拉框
+ * @return: 
+ * */
+function initComboboxOpDescription(combobox)
+{
+    combobox.removeAll()
+    combobox.addItem(null)
+    fltrOperation = createOperationFilter()
+    vectorOperation = fltrOperation.exec()
+//     vectorOperation.add(0, null)
+    
+    foreach operation(vectorOperation)
+    {
+        combobox.addItem(operation.getDescription())
+    }
+}
+/**
+ * 初始化设备类下拉框 
+ * FZG /2019/06/29
+ * FZG /2019/07/06 类似方法已存在（MES_PP_Common）
+ * @param: comboboxEquipClass: 设备类下拉框控件
+ * @return: 
+ * */
+function initComboboxEquipClass(comboboxEquipClass){
+    comboboxEquipClass.removeAll()
+    fltrEquipClass = createEquipmentClassFilter()
+    fltrEquipClass.addOrderBy(class com.datasweep.plantops.common.constants.filtering.IEquipmentClassFilterAttributes::NAME, class com.datasweep.plantops.common.constants.filtering.IFilterSortOrders::ASCENDING)
+    vectorEquipClass = fltrEquipClass.exec()
+    comboboxEquipClass.addItem(null)
+    vectorEquipClass.add(0, null)
+    comboboxEquipClass.setItems(vectorEquipClass.toArray())
+}
+
+
+function initComboboxByChoiceList(combobox, choiceListName, withEmptyChoice) {
+    combobox.removeAll()
+    tempArr = MESChoiceListHelper::getChoiceElementArray(choiceListName)
+    combobox.setItems(MESChoiceListHelper::getItems(tempArr, withEmptyChoice))
+}
+
+/**
+ * 初始化数据字典
+ * FZG /2019/09/19
+ * @param: combobox: 下拉框控件
+ * @param: dicName: 数据字典名称
+ * @return: 
+ * */
+function initcomboboxByDicName(combobox,dicName){
+    sql = "select di.CODE_S,di.VALUE_S  from AT_SM_DATADICTIONAR  dd  inner join AT_SM_DATADICTIONARYITEM di on  dd.ATR_KEY = di.PARENT_KEY where 1=1 and dd.Name_S = '"+dicName+"'"
+    vectorResult = querySql(sql)
+//     vectorObj = vector()
+    combobox.removeAll()
+    vectorResult = querySql(sql)
+    vectorResult.add(0, null)
+    combobox.setItems(vectorResult.toArray())
+//     vectorObj.add(null)
+//     for(i=0;i<vectorsqlProduct.size();i++){
+//         obj = vectorsqlProduct.get(i) 
+//         proCateNew8 = obj[1]
+//         vectorObj.add(proCateNew8)
+//         combobox.setItems(vectorObj.toArray())
+//     }
+}
+
+function initcomboboxBypline(combobox,pline){
+    sql = " select  wc_name+uv.description from WORKCENTER_UV uv left  join  P_LINE_WORK_CENTER pr on  pr.child_key =uv.wc_key left  join   PRODUCTION_LINE pl on pl.p_line_key = pr.parent_key where  pl.p_line_name = '"+pline+"'"
+    vectorResult = querySql(sql)
+//     vectorObj = vector()
+    combobox.removeAll()
+    vectorResult = querySql(sql)
+    vectorResult.add(0, null)
+    combobox.setItems(vectorResult.toArray())
+//     vectorObj.add(null)
+//     for(i=0;i<vectorsqlProduct.size();i++){
+//         obj = vectorsqlProduct.get(i) 
+//         proCateNew8 = obj[1]
+//         vectorObj.add(proCateNew8)
+//         combobox.setItems(vectorObj.toArray())
+//     }
+}
+   /**
+ * @author: dengbing
+ * @date: 2020-05-18
+ * @description: 返回生产地简称value
+ * @versions:1.0
+ * */
+function  setAddrDescToGrid(){
+    value = null
+    sql ="select gg.com_code_S,gg.company_name_S from AT_OM_GroupCode gg where gg.monitor_I = 10"  
+    vectorResult = querySql(sql)
+    if(!vectorResult.isEmpty())
+    {
+        value = vectorResult.get(0)[0]
+    }
+    return value
+}
+
+/**
+ * author : Deng Bing
+ * Smile 2020/05/12
+ * Description: 返回数据字典的value,并设置到下拉框
+ * param:name：字典名称,module：模块（Long）,code:字典项code
+ * return:value
+ * **/
+function setDicDataDescToCombobox(name,module,code,combobox)
+{   
+    value = initComboboxByDictionary(name,module,code)
+    combobox.setSelectedText(value)
+}
+/**
+ * 初始化店铺
+ * dengbing /2020/06/2
+ * @param: combobox: 下拉框控件
+ * @param:
+ * @return: 
+ * */
+function initcomboboxBySzone(combobox){
+    sql = "select sz.storage_zone_name,sz.description from STORAGE_ZONE sz order by sz.storage_zone_name"
+    vectorResult = querySql(sql)
+//     vectorObj = vector()
+    combobox.removeAll()
+    vectorResult = querySql(sql)
+    vectorResult.add(0, null)
+    combobox.setItems(vectorResult.toArray())
+}
+/**
+ * 初始车间
+ * dengbing /2020/06/03
+ * @param: combobox: 下拉框控件
+ * @param:
+ * @return: 
+ * */
+function initComboboxPline(combobox){
+    sql = "select pl.p_line_key,pl.p_line_name,pl.description from PRODUCTION_LINE pl order by pl.p_line_name"
+    vectorResult = querySql(sql)
+//     vectorObj = vector()
+    combobox.removeAll()
+    vectorResult = querySql(sql)
+    vectorResult.add(0, null)
+    combobox.setItems(vectorResult.toArray())
+//     vectorObj.add(null)
+//     for(i=0;i<vectorsqlProduct.size();i++){
+//         obj = vectorsqlProduct.get(i) 
+//         proCateNew8 = obj[1]
+//         vectorObj.add(proCateNew8)
+//         combobox.setItems(vectorObj.toArray())
+//     }
+}

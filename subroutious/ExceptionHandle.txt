@@ -1,0 +1,40 @@
+/**
+ * @author: 
+ * @date: 2019.07.2
+ * @description: import from xian longi
+ * @versions: 1.0
+ * */
+import("com.rockwell.ftpc.framework.exception.MESException")
+
+function handleException(e){
+    msg = getDialogMsg(e)//e.getMessage()
+    showDialog(msg)
+}
+
+//获取不包含异常前缀的消息提示
+function getDialogMsg(e){
+    c = e.getCause()
+    if(c != null){
+       getDialogMsg(c) 
+    }else{
+       msg = e.getMessage()
+       if(msg == null || msg == ""){
+            return "系统处理出错,详见后台日志!";
+       }
+       return msg
+    }
+}
+
+//显示对话框
+function showDialog(message){
+    form = getForm("mes_dlg_SysShowException")
+    if (form != null)
+    {
+        editMsg = form.findNamedControl("editMsg")
+        if (editMsg != null)
+        {
+            editMsg.setText(message)
+        }
+        showAsDialog(form)
+    }
+}

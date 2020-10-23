@@ -1,0 +1,248 @@
+importSubroutine("MES_Common_Base")
+importSubroutine("MES_Common_Privilege")
+
+
+/**
+ * 描述：获取用户可管理的所有部门名称
+ */
+function getManageDepartmentNames(user)
+{
+    vectorDeptName = vector()
+    if(user != null && !isSystemAdministrator(user))
+    {
+        filter = createATRowFilter("UM_User_Manage_Department")
+        filter.forColumnNameEqualTo("user_name", user.getName())
+        vectorUserDepartment = filter.exec()
+        foreach atrow(vectorUserDepartment)
+        {
+            if(!vectorDeptName.contains(atrow.getValue("department_name")))
+            {
+                vectorDeptName.add(atrow.getValue("department_name"))
+            }
+        }
+    }
+    else
+    {
+        fltrATRow = createATRowFilter("UM_Department")
+        vectorAT = fltrATRow.exec()
+        foreach atrow(vectorAT)
+        {
+            if(!vectorDeptName.contains(atrow.getValue("department_no")))
+            {
+                vectorDeptName.add(atrow.getValue("department_no"))
+            }
+        }
+    }
+    
+    return vectorDeptName
+}
+
+
+function showDMTree(treeview)
+{
+    showDMTree(treeview,null)
+}
+function showDMTree(treeview,showDepartment)
+{
+    treeview.removeAll()
+    filter = createATRowFilter("UM_Department")
+    filter.addOrderATColumnBy("sort", IFilterSortOrders::ASCENDING)
+    atAllRows = filter.exec()
+    vectorAtRow = vector()
+    if(showDepartment == null)
+    {
+        vectorAtRow = findDMRootAtRow(atAllRows)
+    }
+    else
+    {
+       vectorAtRow.add(showDepartment)
+    }
+    addToDMTree(treeview,vectorAtRow,atAllRows)
+    treeview.expandAll()
+}
+
+function findDMRootAtRow(atRows)
+{
+    vectorAtRow = vector()
+    foreach atRow(atRows)
+    {
+        parentName = atRow.getValue("parent_department")
+        if(isEmptyStr(parentName))
+        {
+            vectorAtRow.add(atRow)
+        }
+    }
+    return vectorAtRow
+}
+
+function addToDMTree(node,atRows,atAllRows)
+{
+    foreach atRow(atRows)
+    {
+        childNode = node.addNode("[" + atRow.getValue("department_no")+"]["+atRow.getValue("department_desc") + "]")
+        childNode.setNodeObject(atRow)
+        atChildRows = fildDMChildAtRow(atRow,atAllRows)
+        if(atChildRows.size()>0)
+        {
+            imageIcon = getImage("Menu UserGroup")
+            childNode.setIcon(imageIcon)
+        }
+        else
+        {
+            imageIcon = getImage("Menu User")
+            childNode.setIcon(imageIcon)
+        }
+        
+        addToDMTree(childNode,atChildRows,atAllRows)
+    }
+}
+function fildDMChildAtRow(atParentRow,atRows)
+{
+    //name = atParentRow.getValue("department_no")
+    name = atParentRow.getKey()
+    vectorAtRow = vector()
+    foreach atRow(atRows)
+    {
+        parentName = atRow.getValue("parent_department")
+        if(parentName == name)
+        {
+            vectorAtRow.add(atRow)
+        }
+    }
+    return vectorAtRow
+}
+
+
+function getDepartmentByName(departmentName)
+{
+    departmentObj = null
+    filter = createATRowFilter("UM_Department")
+    filter.forColumnNameEqualTo("department_no",departmentName)
+    atRows = filter.exec()
+    if(atRows.size()>0)
+    {
+        departmentObj = atRows.get(0)
+    }
+    return departmentObj
+}
+function getDepartmentByKey(departmentKey)
+{
+    departmentObj = null
+    filter = createATRowFilter("UM_Department")
+    filter.forATRowKeyEqualTo(departmentKey)
+    atRows = filter.exec()
+    if(atRows.size()>0)
+    {
+        departmentObj = atRows.get(0)
+    }
+    return departmentObj
+}
+function showparentDepartment(parentDepartmentObj,editparentDepartment)
+{
+    if(parentDepartmentObj == null)
+    {
+        editparentDepartment.setText("")
+    }
+    else
+    {
+        editparentDepartment.setText(parentDepartmentObj.getValue("department_no")+"->"+parentDepartmentObj.getValue("department_desc"))
+    }
+}
+function findDMNode(treeview,atrow)
+{
+    node = null
+    treenodes = treeview.getNodes()
+    foreach treenode(treenodes)
+    {
+        if(node!=null)
+        {
+            break
+        }
+        atrowNode = treenode.getNodeObject()
+        //println("node:"+treenode.getText()+","+atrowNode.getKey()+","+atrow.getKey())
+        if(atrowNode.getKey()==atrow.getKey())
+        {
+            node = treenode
+        }
+        else
+        {
+            node = findDMNode(treenode,atrow)
+        }
+        
+    }
+    return node
+}
+
+function isExistChildDepartment(atrow)
+{
+    result = false
+    if(atrow!=null)
+    {
+       // parentDepartmentName = atrow.getValue("department_no")
+        parentDepartmentName = atrow.getKey()
+        filter = createATRowFilter("UM_Department")
+        filter.forColumnNameEqualTo("parent_department",parentDepartmentName)
+        atRows = filter.exec()
+        if(atRows.size()>0)
+        {
+            result = true
+        }
+    }
+    return result
+}
+
+function getDepartmentListByUser(user)
+{
+    vectorDepartment = vector()
+    if(user != null)
+    {
+        username = user.getName()
+        filter = createATRowFilter("UM_User_Manage_Department")
+        filter.forColumnNameEqualTo("user_name", username)
+        vectorUserDepartment = filter.exec()
+        foreach userDepartment(vectorUserDepartment)
+        {
+            departmentName = userDepartment.getValue("department_name")
+            department = getDepartmentByName(departmentName)
+            if(department!=null)
+            {
+                vectorDepartment.add(department)
+            }
+        }
+    }
+    return vectorDepartment
+}
+
+function getAllDepartmentList()
+{
+    filter = createATRowFilter("UM_Department")
+    vectorDepartment = filter.exec()
+    return vectorDepartment
+}
+
+/**
+ * 描述：递归方法，根据当前用户组所拥有的权限，设置每个节点的复选框的状态。
+ * 
+ * @parameter: treenode - 树形菜单节点
+ * @parameter: vectorAP - 选中的用户组拥有的所有权限 
+ * @return: void
+ * @author: Lin Hui 03/22/2016
+ */
+function setNodeCheckedForUserDepartment(treenode, vectorDepartment)
+{
+    arrayNode = treenode.getNodes()
+    foreach treenodeChild(arrayNode)
+    {
+        treenodeChild.setChecked(false)
+        nodeDepartment = treenodeChild.getNodeObject()
+        foreach department(vectorDepartment)
+        {
+            if(department.getKey()==nodeDepartment.getKey())
+            {
+                treenodeChild.setChecked(true)
+                break
+            }
+        }
+        setNodeCheckedForUserDepartment(treenodeChild, vectorDepartment)
+    }
+}

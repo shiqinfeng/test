@@ -1,0 +1,323 @@
+importSubroutine("MES_Common_Grid-2.0")
+importSubroutine("LoadControlImage")
+/**
+ * 描述：重置容器控件下所有子控件的值
+ * 
+ * @parameter: container - 容器控件对象
+ * 
+ * @return void
+ * @author: Lin Hui 04/12/2016
+ */
+function resetAllControlValues(container)
+{
+    controlArray = container.getControls()
+   
+    foreach control (controlArray)
+    {
+        if( control instanceof class com.datasweep.compatibility.ui.Edit)
+        {
+//             control.setText(null)  
+            control.setText("")
+        }
+        else if(control instanceof class com.datasweep.compatibility.ui.ComboBox)
+        {
+            control.setSelectedIndex(-1)
+        }
+        //
+        else if( control instanceof class com.rockwell.mes.clientfw.pmc.ifc.view.activities.ChoicelistFieldActivity)
+        {
+            control.setChoiceValue(null)   
+        }
+        //重置SmartEdit编辑框
+        else if(control instanceof class com.rockwell.smartedit.SmartEdit)
+        {
+            control.setValue(null)
+        }
+        //重置DateTimePicker日期时间控件
+        else if(control instanceof class com.datasweep.compatibility.ui.DateTimePicker)
+        {
+            control.setValue(getDBTime())
+            if(control.getShowNone())
+            {
+                control.setShowNoneIsChecked(false)
+            }
+        }
+        //重置CheckBox复选框控件
+        else if(control instanceof class com.datasweep.compatibility.ui.FlatCheckBox)
+        {
+            control.setChecked(false)
+        }
+        else if(control instanceof class com.datasweep.compatibility.ui.CContainer)
+        {
+            resetAllControlValues(control)
+        }
+    }
+}
+
+function setupControl(control, option)
+{
+    setupControls([control], [option])
+}
+
+
+function setupControls(arrayControl, arrayOptions)
+{
+    form = getActiveDsForm()
+    hashtableData = form.getProperty("ControlOptions")
+    if(hashtableData == null)
+    {
+        hashtableData = hashtable()
+        form.setProperty("ControlOptions", hashtableData)
+    }
+    for(i = 0; i < arrayControl.length; i++)
+    {
+        control = arrayControl[i]
+        if(i < arrayOptions.length)
+        {
+            option = arrayOptions[i]
+            hashtableOption = parseOptions(option)
+            hashtableData.put(control.getName(), hashtableOption)
+        }
+    }
+}
+
+
+function parseOptions(options)
+{
+    hashtableOpt = hashtable()
+    arrayOptions = options.split(",")
+    foreach opt(arrayOptions)
+    {
+        arrayData = opt.trim().split("=")
+        if(arrayData.length != 2)
+        {
+            arrayData = opt.trim().split(":")
+        }
+        
+        if(arrayData.length == 2)
+        {
+            key = arrayData[0].trim()
+            value = arrayData[1].trim()
+            
+            if(key.equalsIgnoreCase("allowNull") || key.equalsIgnoreCase("allow_null") || key.equalsIgnoreCase("allowBlank") || key.equalsIgnoreCase("allow_blank") || key.equalsIgnoreCase("nullable"))
+            {
+                value = Boolean::parseBoolean(value)
+                hashtableOpt.put("nullable", value)
+            }
+            if(key.equalsIgnoreCase("allowEdit") || key.equalsIgnoreCase("allow_edit") || key.equalsIgnoreCase("allowModify") || key.equalsIgnoreCase("allow_modify") || key.equalsIgnoreCase("modifiable") || key.equalsIgnoreCase("allowUpdate") || key.equalsIgnoreCase("allow_update") || key.equalsIgnoreCase("editable"))
+            {
+                value = Boolean::parseBoolean(value)
+                hashtableOpt.put("modifiable", value)
+            }
+            if(key.equalsIgnoreCase("errorMsg") || key.equalsIgnoreCase("errorMessage") || key.equalsIgnoreCase("error_msg") || key.equalsIgnoreCase("error_message"))
+            {
+                hashtableOpt.put("errorMessage", value)
+            }
+        }
+    }
+    
+    return hashtableOpt
+}
+
+/**
+ * 描述：重置容器控件下所有子控件的值
+ * 
+ * @parameter: container - 容器控件对象
+ * 
+ * @return com.ftpc.common.bean.Result - 反馈结果对象
+ * @author: Lin Hui 04/12/2016 
+ */
+function validateAllInput(container)
+{
+    result = class com.ftpc.common.bean.Result()
+    form = getActiveDsForm()
+    hashtableData = form.getProperty("ControlOptions")
+    if(hashtableData != null)
+    {
+        controlArray = container.getControls()      
+        foreach control (controlArray)
+        {
+            if(control instanceof class com.datasweep.compatibility.ui.CContainer)
+            {
+                validateAllInput(control)
+            }
+            else
+            {
+                hashtableOpt = hashtableData.get(control.getName())
+                
+                if(hashtableOpt != null)
+                {
+                    nullable = hashtableOpt.get("nullable")
+                    if(nullable == null)
+                    {
+                        nullable = true
+                    }
+                    modifiable = hashtableOpt.get("modifiable")
+                    if(modifiable == null)
+                    {
+                        modifiable = true
+                    }
+                    errorMessage = hashtableOpt.get("errorMessage")
+                    messagePack = hashtableOpt.get("messagePack")
+                    messageID = hashtableOpt.get("messageID")
+                    
+                    if(!nullable)
+                    {
+                        if( control instanceof class com.datasweep.compatibility.ui.Edit)
+                        {
+                            value = control.getText()
+                            if(value == null || value.trim().equals(""))
+                            {
+                                setErrorMessge(result, errorMessage)
+                                return result
+                            }
+                        }
+                        else if(control instanceof class com.datasweep.compatibility.ui.ComboBox)
+                        {
+                            value = control.getSelectedIndex()
+                            if(value < 0)
+                            {
+                                setErrorMessge(result, errorMessage)
+                                return result
+                            }
+                        }
+                        //
+                        else if( control instanceof class com.rockwell.mes.clientfw.pmc.ifc.view.activities.ChoicelistFieldActivity)
+                        {
+                            value = control.getChoiceValue()
+                            if(value == null)
+                            {
+                                setErrorMessge(result, errorMessage)
+                                return result
+                            }
+                        }
+                        //
+                        else if(control instanceof class com.rockwell.smartedit.SmartEdit)
+                        {
+                            value = control.getValue()
+                            if(value == null || value.toString().trim().equals(""))
+                            {
+                                setErrorMessge(result, errorMessage)
+                                return result
+                            }
+                        }
+                        //
+                        else if(control instanceof class com.datasweep.compatibility.ui.DateTimePicker)
+                        {
+                            if(control.getShowNone())
+                            {
+                                if(!control.getShowNoneIsChecked())
+                                {
+                                    setErrorMessge(result, errorMessage)
+                                    return result
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return result
+}
+
+function setErrorMessge(result, errorMessage)
+{
+    result.setOk(false)
+    result.setErrorMessage(errorMessage)
+}
+
+
+function setButtonImage(form)
+{
+    controls = form.getAllControls()
+    for(control:controls)
+    {
+        typeName = control.getClass().getName()
+        if(typeName.contains("FlatButton"))
+        {
+          name = control.getName()
+          image = getFlatButtonImage(name)
+          if(image!=null)
+          {
+            control.setImage(image)
+            control.setTextAlign(20)
+          }
+        } 
+    }
+}
+
+
+/*       
+ * 重置按钮调用的方法  用来清空所有的查询条件      
+ * parameter:      
+ * groupBoxName : groupbox对象的名字      
+ */
+function setButtonResetDefaultValue(groupBox)
+{      
+    if (groupBox != null)
+    {
+        controlArray = groupBox.getControls()      
+        foreach control (controlArray)
+        {      
+if( control instanceof class com.datasweep.compatibility.ui.Edit){
+                   control.setText(null)      
+            }
+else if(control instanceof class com.datasweep.compatibility.ui.ComboBox){
+                   control.setSelectedIndex(-1)      
+            }
+            //加入本方法，用于Reset activityList下拉框数据-梁生
+else if( control instanceof class com.rockwell.mes.clientfw.pmc.ifc.view.activities.ChoicelistFieldActivity)
+            {
+                   control.setChoiceValue(null)   
+            }
+            //加入本方法，用于Reset SmartEdit编辑框
+else if(control instanceof class com.rockwell.smartedit.SmartEdit){
+                   control.setValue(null)
+            }
+            //加入本方法，用于Reset DateTimePicker日期时间控件
+else if(control instanceof class com.datasweep.compatibility.ui.DateTimePicker){
+                   control.setValue(getDBTime())
+                   if(control.getShowNone())
+                   {
+                        control.setShowNoneIsChecked(false)
+                   }
+            }
+            //加入本方法，用于Reset CheckBox复选框控件
+ else if(control instanceof class com.datasweep.compatibility.ui.FlatCheckBox){
+                   control.setChecked(false)
+            }
+        }          
+    }      
+}
+
+/*       
+ * 初始化DateTimePicker的值，以当前时间为基准，向前或向后。
+ * parameter: dateTimePicker    控件名称
+ *            type              初始化类型(D-天，M-月，Y-年，H-小时，Mi-分钟，S-秒)
+ *            num               初始化的差值天数，正值为向前，负值为向后。
+ * groupBoxName : groupbox对象的名字      
+ */
+function initDateTimePicker(dateTimePicker, type, num) {
+    if(dateTimePicker.getValue() != null) {
+        if("D".equals(type)) {
+            dateTimePicker.setValue(dateTimePicker.getValue().addDays(num))
+        } else if("M".equals(type)) {
+            dateTimePicker.setValue(dateTimePicker.getValue().addMonths(num))
+        } else if("Y".equals(type)) {
+            dateTimePicker.setValue(dateTimePicker.getValue().addYears(num))
+        } else if("H".equals(type)) {
+            dateTimePicker.setValue(dateTimePicker.getValue().addHours(Long::valueOf(num)))
+        } else if("Mi".equals(type)) {
+            dateTimePicker.setValue(dateTimePicker.getValue().addMinutes(Long::valueOf(num)))
+        } else if("S".equals(type)) {
+            dateTimePicker.setValue(dateTimePicker.getValue().addSeconds(Long::valueOf(num)))
+        }
+    }
+}
+
+function openDialog(form)
+{
+    return class com.ftpc.common.ui.utilities.FormUtility::startDialog(form, environment)
+}

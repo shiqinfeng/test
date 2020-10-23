@@ -1,0 +1,93 @@
+
+APQ_DLL_LIBRARIES_LIST = "ApqRfidDllLibraries"
+APQ_DLLS_LIST = "ApqRfidDlls"
+
+function loadDlls()
+{
+    result = class com.rockwell.base.pojo.Result()
+    result.setOk(true)
+    
+    function handleException(e)
+    {
+        e.printStackTrace()
+        result.setOk(false)
+        result.setErrorMessage(e.getLocalizedMessage())
+        return result
+    }
+    catch(Exception, handleException)
+    
+    dslistLib = getList(APQ_DLL_LIBRARIES_LIST)
+    if(dslistLib == null)
+    {
+        result.setOk(false)
+        result.setErrorMessage("List[" + APQ_DLL_LIBRARIES_LIST + "]未定义！")
+        return result
+    }
+    vectorLib = dslistLib.getItems()
+    
+    dslistDll = getList(APQ_DLLS_LIST)
+    if(dslistDll == null)
+    {
+        result.setOk(false)
+        result.setErrorMessage("List[" + APQ_DLLS_LIST + "]未定义！")
+        return result
+    }
+    vectorDll = dslistDll.getItems()
+    
+//     preference = class com.datasweep.core.utility.Preference("~options.dat")
+//     values = preference.load()
+//     if (values == null) {
+//          values = class java.util.Properties()
+//     }
+//     
+//     version = values.get("bartender-print-version")
+    
+    dir = class com.rockwell.activity.ActivityList::getJarDirectory()
+    
+    loaded = true
+    foreach dll(vectorDll)
+    {
+        dllFile = class java.io.File(dir + class java.io.File::separator + dll)
+        if(!dllFile.exists())
+        {
+            loaded = false
+            break
+        }
+    }
+    
+//     if(version == null || !version.equals(dslistDll.getCategory()) || !loaded)
+    if(!loaded)
+    {
+        dir = class com.rockwell.activity.ActivityList::getJarDirectory()
+        foreach lib(vectorLib)
+        {
+            libPath = dir + class java.io.File::separator + lib + ".jar"
+            libFile = class java.io.File(libPath)
+            if(libFile.exists())
+            {
+                result = class com.rockwell.file.util.FileUtils::unZip(libFile, dir)
+                if(!result.isOk())
+                {
+                    return result
+                }
+            }
+        }
+//         values.setProperty("bartender-print-version", dslistDll.getCategory())
+//         preference.save(values)
+    }
+    
+    return result
+}
+
+function printBartenderLabel(PrintInfo)
+{    
+    result = loadDlls()
+    if(result != null && result.isOk())
+    {
+        return class com.rockwell.print.bartender.BartenderPrintUtil::printBartender(PrintInfo)
+    }
+    else
+    {
+        return result
+    }
+}

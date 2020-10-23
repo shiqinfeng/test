@@ -1,0 +1,153 @@
+
+/**
+ * 获取ChoiceList描述
+ * choiceListName : 配置的choiceList名称
+ * value : 值
+ */
+function getChoiceElementDesc(choiceListName, value)
+{
+    if(value != null)
+    {
+        value = Long::valueOf(value)
+        if(value!=0){
+             element = class com.rockwell.mes.commons.base.ifc.choicelist.MESChoiceListHelper::getChoiceElement(choiceListName, value)
+             if(element != null)
+            {
+                return element.getLocalizedMessage()
+            }
+        }else{
+            return ""
+        }
+        
+        
+        //return String::valueOf(value)
+    }
+    else
+    {
+        return ""
+    }
+}
+/*
+ * by:hu shuai and fengGe
+ * date:2016/07/07
+ * type类型转Mesege
+ * grid:表名
+ * vectorData:查询出来的数据集合
+ * n:字段所在的列
+ * name:message里的名字
+ */
+// function setMessageDescToGrid(grid,vectorData,n,name)
+// {   
+//     //查询时调用
+//     if(vectorData.size() > 0)
+//     {
+//         for(i = 0 ;i < vectorData.size(); i++)
+//         {
+//             data = vectorData.elementAt(i)
+//             type = data[n]
+//             if(!isEmptyStr(type))
+//             {
+//                type = Long::valueOf(type)
+//                type = getChoiceElementDesc(name,type)
+//                grid.setCellValue(i,n,type) 
+//             }
+//         }
+//     }
+//    
+// }
+function setMessageDescToGrid(grid,vectorData,n,name)
+{   
+    
+    if(vectorData.size() > 0)
+    {
+        for(i = 0 ;i < vectorData.size(); i++)
+        {
+            type = grid.getCellText(i,n)
+            if(!isEmptyStr(type) && class org.apache.commons.lang.StringUtils::isNumeric(type))
+            {
+               type = Long::parseLong(type)
+               type = getChoiceElementDesc(name,type)
+               grid.setCellValue(i,n,type) 
+            }
+        }
+    }
+   
+}
+/**
+ * 更新所选中行的某个对象
+ * Add eidt时使用
+ * 
+ *
+ */
+function setTypeToGrid(grid,type,n,name,row)
+{
+    if(type != null)
+    {
+        
+       type = Long::valueOf(type)
+       type = getChoiceElementDesc(name,type)
+       grid.setCellValue(row,n,type) 
+      
+               
+    }
+}
+
+
+function setMessageDescToGridWithColor(grid,vectorData,n,name,panelDynamic)
+{   
+    
+    if(vectorData.size() > 0)
+    {    htable = hashtable()
+        for(i = 0 ;i < vectorData.size(); i++)
+        {
+            type = grid.getCellText(i,n)
+            colorType = Long::parseLong(type)
+            if(!isEmptyStr(type) && class org.apache.commons.lang.StringUtils::isNumeric(type))
+            {
+               type = Long::parseLong(type)               
+               typeDesc = getChoiceElementDesc(name,type)
+               grid.setCellValue(i,n,typeDesc) 
+               // 拼接key值
+               lineColor = name+"_"+colorType            
+               pro = getProperties("CridLineColorMapping")         
+               color = pro.get(lineColor)
+               class java.lang.System::setProperty(lineColor,color)
+               showColor = class java.awt.Color::getColor(lineColor)
+               //  设置行颜色
+               setRowBackgroupColor(activityGridResult.getGrid(), i, showColor)             
+              
+               if(!htable.containsKey(typeDesc)){
+                 htable.put(typeDesc,showColor)
+               }            
+            }
+        }
+        showGraphicSymbol(htable, panelDynamic)
+    }
+   
+}
+
+//  颜色图例展示
+function showGraphicSymbol(htable, panelDynamic){
+    panelDynamic.removeAll()  
+    index = 1
+    foreach  item( htable.keys())
+    {   index++
+        keyDesc = htable[item]
+        uuid =  class java.util.UUID::randomUUID()
+        panel = createTopFlowPanel("panel-"+uuid,100,30)
+        label = createFlatLabel("label-"+uuid,18)
+        labelStr = label.getName()
+        label.setText(item+":")
+        panel.add(label)  
+//         panelDynamic.add(label)  
+        label = createFlatLabel("label-"+uuid,18)
+        label.setText("")
+        label.setBackColor(keyDesc)
+        panel.add(label)           
+        panelDynamic.add(panel)   
+        panelDynamic.setHeight(25*index)
+//         panelDynamic.add(label)  
+    }
+    panelDynamic.repaint()
+    panelDynamic.performLayout()
+}

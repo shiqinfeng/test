@@ -1,0 +1,596 @@
+
+importSubroutine("MES_Common_Integration")
+import ("com.rockwell.discrete.mes.order.model.diamondline.MESOMDiamondLine")
+import ("com.rockwell.discrete.mes.order.model.diamondline.MESOMDiamondLineFilter")
+
+/**
+ * 字节数组转换成字符串
+ */
+// function byteArrayToString(byteArray)
+// {
+//     str = ""
+//     for (i = 0; i < 16; i++)
+//     {
+//         byteLow = byteArray[i * 2]
+//         byteHigh = byteArray[i * 2 + 1]
+//         charInt = byteArrayToInt(byteLow, byteHigh)
+//         str += (char)charInt
+//     }
+//     return str.trim()
+// }
+
+// /**
+//  * 字节数组转换成字符串
+//  */
+function byteArrayToString(byteArray)
+{
+    str = ""
+    foreach byte(byteArray)
+    {
+// //         print(byte + ",")
+        str += (char)((int)byte)
+    }
+    str = String(byteArray, "ascii")
+    return str.trim()
+}
+
+/**
+ * 2字节的字节数组转换成整数
+ */
+function byteArrayToInt(byteLow, byteHigh)
+{
+    return (byteLow << 8) | (0x00FF & byteHigh)
+}
+
+/**
+ * 字节数组转换成时间字符串
+ */
+function byteArrayToTimeStr(byteArray)
+{
+    timeStr = ""
+    if(byteArray.length == 12)
+    {
+        year = byteArrayToInt(byteArray[0], byteArray[1])
+        month = byteArrayToInt(byteArray[2], byteArray[3])
+        day = byteArrayToInt(byteArray[4], byteArray[5])
+        hour = byteArrayToInt(byteArray[6], byteArray[7])
+        min = byteArrayToInt(byteArray[8], byteArray[9])
+        sec = byteArrayToInt(byteArray[10], byteArray[11])
+        timeStr = year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec
+    }
+    return timeStr
+}
+
+/**
+ * 4字节的字节数组转换成浮点数
+ */
+function byteArrayToFloat(byteArray)
+{
+//     temp = 0
+//     temp = temp | (byteArray[0] & 0xff) << 0
+//     temp = temp | (byteArray[1] & 0xff) << 8
+//     temp = temp | (byteArray[2] & 0xff) << 16
+//     temp = temp | (byteArray[3] & 0xff) << 24
+//     result = Float::intBitsToFloat((int)temp)
+//     bgResult = class java.math.BigDecimal(result)
+//     result = bgResult.setScale(2, class java.math.BigDecimal::ROUND_HALF_UP).floatValue()
+//     return result
+
+//     bais = class java.io.ByteArrayInputStream(byteArray)
+//     dis = class java.io.DataInputStream(bais)
+//     result = dis.readFloat()
+//     dis.close()
+//     bais.close()
+//     return result
+    
+    buf = class java.nio.ByteBuffer::allocateDirect(4)
+//     buf = buf.order(class java.nio.ByteOrder::LITTLE_ENDIAN)
+    buf.put(byteArray)
+    buf.rewind()
+    result = buf.getFloat()
+    return result
+}
+
+function processLCReceiveData(receiveData,uid)
+{
+    byteArray = receiveData.getData()
+//     println(String(byteArray, "UTF-8"))
+    
+    
+    eqId = class java.util.Arrays::copyOfRange(byteArray, 0, 16) // 0-31 机台号
+    // println("机台号:" + byteArrayToString(eqId))
+    // println("Equipment:" + byteArrayToString(eqId))
+    eqIdStr = byteArrayToString(eqId)
+    equipObj = null
+    if(!isEmptyStr(eqIdStr))
+    {
+        eqIdStr = eqIdStr.toUpperCase()
+        equipObj = getEquipmentByName(eqIdStr)
+    }
+    lotNo = class java.util.Arrays::copyOfRange(byteArray, 380, 396) // 340-371 随工单
+    // println("随工单:" + byteArrayToString(lotNo))
+    // println("lot:" + byteArrayToString(lotNo))
+    lotNoStr = byteArrayToString(lotNo)
+    if(!isEmptyStr(lotNoStr))
+    {
+        lotNoStr = lotNoStr.toUpperCase()
+    }
+    lotObj = getLotByName(lotNoStr)
+    cutStartTime = class java.util.Arrays::copyOfRange(byteArray, 40, 52) // 40-41 切割开始时间
+    cutStartTime = byteArrayToTimeStr(cutStartTime)
+    // println("切割开始时间:" + cutStartTime)
+    // println("start time:" + cutStartTime)
+    cutEndTime = class java.util.Arrays::copyOfRange(byteArray, 52, 64) // 切割结束时间
+    cutEndTime = byteArrayToTimeStr(cutEndTime)
+    // println("切割结束时间:" + cutEndTime)
+    // println("end time:" + cutEndTime)
+    gytlTime = class java.util.Arrays::copyOfRange(byteArray, 64, 76) // 工艺提料时间
+    gytlTime = byteArrayToTimeStr(gytlTime)
+    // println("工艺提料时间:" + gytlTime)
+    // println("finish time:" + gytlTime)
+    eqCurentTime = class java.util.Arrays::copyOfRange(byteArray, 76, 88) // 机器实时时间
+    eqCurentTime = byteArrayToTimeStr(eqCurentTime)
+    // println("机器实时时间:" + eqCurentTime)
+    // println("equip times:" + eqCurentTime)
+    zhugunHour = class java.util.Arrays::copyOfRange(byteArray, 88, 90) // 主辊使用时间 - 小时
+    zhugunHour = byteArrayToInt(zhugunHour[0], zhugunHour[1])
+    if(zhugunHour > 0)
+    {
+        zhugunHour = class java.lang.Float::valueOf(zhugunHour+"")
+    }else{
+        zhugunHour = 0.0f
+    }
+    
+    // println("主辊使用时间:" + zhugunHour)
+    // println("Main roller used time:" + zhugunHour)
+    conggunHour = class java.util.Arrays::copyOfRange(byteArray, 90, 92) // 从辊使用时间 - 小时
+    conggunHour = byteArrayToInt(conggunHour[0], conggunHour[1])
+    // println("从辊使用时间:" + conggunHour)
+    // println("second roller used time:" + conggunHour)
+    daoLunHour1 = class java.util.Arrays::copyOfRange(byteArray, 92, 94) // 导轮1使用时间 - 小时
+    daoLunHour1 = byteArrayToInt(daoLunHour1[0], daoLunHour1[1])
+    // println("导轮1使用时间:" + daoLunHour1)
+    // println("daolun1 used time:" + daoLunHour1)
+    daoLunHour2 = class java.util.Arrays::copyOfRange(byteArray, 94, 96) // 导轮2使用时间 - 小时
+    daoLunHour2 = byteArrayToInt(daoLunHour2[0], daoLunHour2[1])
+    // println("导轮2使用时间:" + daoLunHour2)
+    // println("daolun2 used time:" + daoLunHour2)
+    daoLunHour3 = class java.util.Arrays::copyOfRange(byteArray, 96, 98) // 导轮3使用时间 - 小时
+    daoLunHour3 = byteArrayToInt(daoLunHour3[0], daoLunHour3[1])
+    // println("导轮3使用时间:" + daoLunHour3)
+    
+    daoLunHour4 = class java.util.Arrays::copyOfRange(byteArray, 98, 100) // 导轮4使用时间 - 小时
+    daoLunHour4 = byteArrayToInt(daoLunHour4[0], daoLunHour4[1])
+    // println("导轮4使用时间:" + daoLunHour4)
+    
+    daoLunHour5 = class java.util.Arrays::copyOfRange(byteArray, 100, 102) // 导轮5使用时间 - 小时
+    daoLunHour5 = byteArrayToInt(daoLunHour5[0], daoLunHour5[1])
+    // println("导轮5使用时间:" + daoLunHour5)
+    
+    daoLunHour6 = class java.util.Arrays::copyOfRange(byteArray, 102, 104) // 导轮6使用时间 - 小时
+    daoLunHour6 = byteArrayToInt(daoLunHour6[0], daoLunHour6[1])
+    // println("导轮6使用时间:" + daoLunHour6)
+    
+    bjtc = class java.util.Arrays::copyOfRange(byteArray, 118, 120) // 报警停车
+    bjtc = byteArrayToInt(bjtc[0], bjtc[1])
+    // println("报警停车:" + bjtc)
+    
+    dxbjtc = class java.util.Arrays::copyOfRange(byteArray, 120, 122) // 断线报警停车
+    dxbjtc = byteArrayToInt(dxbjtc[0], dxbjtc[1])
+    if(equipObj != null)
+    {
+        if(dxbjtc == 1)
+        {
+            equipObj.setUDA(1L,"error")
+            equipObj.save()
+        }
+    }
+    // println("断线报警停车:" + dxbjtc)
+    
+    jqStatus = class java.util.Arrays::copyOfRange(byteArray, 122, 124) // 加切状态
+    jqStatus = byteArrayToInt(jqStatus[0], jqStatus[1])
+    // println("加切状态:" + jqStatus)
+    
+    reqType = class java.util.Arrays::copyOfRange(byteArray, 130, 132) // 请求类型
+    reqType = byteArrayToInt(reqType[0], reqType[1])
+    // println("请求类型:" + reqType)
+    
+    jobNo = class java.util.Arrays::copyOfRange(byteArray, 132, 134) // 加工程序号
+    jobNo = byteArrayToInt(jobNo[0], jobNo[1])
+    // println("加工程序号:" + jobNo)
+    // println("job no:" + jobNo)
+    opStatusCode = class java.util.Arrays::copyOfRange(byteArray, 134, 136) // 单机动作状态代码
+    opStatusCode = byteArrayToInt(opStatusCode[0], opStatusCode[1])
+    // println("单机动作状态代码:" + opStatusCode)
+    // println("work status:" + opStatusCode)
+    workStatusCode = class java.util.Arrays::copyOfRange(byteArray, 148, 150) // 加工状态代码
+    workStatusCode = byteArrayToInt(workStatusCode[0], workStatusCode[1])
+    // println("workStatusCode:" + workStatusCode)
+    
+    zhuZhouFaultCode = class java.util.Arrays::copyOfRange(byteArray, 150, 152) // 主轴 FaultCode
+    zhuZhouFaultCode = byteArrayToInt(zhuZhouFaultCode[0], zhuZhouFaultCode[1])
+    // println("主轴 FaultCode:" + zhuZhouFaultCode)
+    
+    congZhouFaultCode = class java.util.Arrays::copyOfRange(byteArray, 152, 154) // 从轴 FaultCode
+    congZhouFaultCode = byteArrayToInt(congZhouFaultCode[0], congZhouFaultCode[1])
+    // println("从轴 FaultCode:" + congZhouFaultCode)
+    
+    sxzlbFaultCode = class java.util.Arrays::copyOfRange(byteArray, 154, 156) // 收线张力臂 FaultCode
+    sxzlbFaultCode = byteArrayToInt(sxzlbFaultCode[0], sxzlbFaultCode[1])
+    // println("收线张力臂 FaultCode:" + sxzlbFaultCode)
+    
+    fxzlbFaultCode = class java.util.Arrays::copyOfRange(byteArray, 156, 158) // 放线张力臂 FaultCode
+    fxzlbFaultCode = byteArrayToInt(fxzlbFaultCode[0], fxzlbFaultCode[1])
+    // println("放线张力臂 FaultCode:" + fxzlbFaultCode)
+    
+    sxpFaultCode = class java.util.Arrays::copyOfRange(byteArray, 158, 160) // 收线排 FaultCode
+    sxpFaultCode = byteArrayToInt(sxpFaultCode[0], sxpFaultCode[1])
+    // println("收线排 FaultCode:" + sxpFaultCode)
+    
+    fxpFaultCode = class java.util.Arrays::copyOfRange(byteArray, 160, 162) // 放线排 FaultCode
+    fxpFaultCode = byteArrayToInt(fxpFaultCode[0], fxpFaultCode[1])
+    // println("放线排 FaultCode:" + fxpFaultCode)
+    
+    sxFaultCode = class java.util.Arrays::copyOfRange(byteArray, 162, 164) // 收线 FaultCode
+    sxFaultCode = byteArrayToInt(sxFaultCode[0], sxFaultCode[1])
+    // println("收线 FaultCode:" + sxFaultCode)
+    
+    fxFaultCode = class java.util.Arrays::copyOfRange(byteArray, 164, 166) // 放线 FaultCode
+    fxFaultCode = byteArrayToInt(fxFaultCode[0], fxFaultCode[1])
+    // println("放线 FaultCode:" + fxFaultCode)
+    
+    jinjiFaultCode = class java.util.Arrays::copyOfRange(byteArray, 166, 168) // 进给 FaultCode
+    jinjiFaultCode = byteArrayToInt(jinjiFaultCode[0], jinjiFaultCode[1])
+    // println("进给 FaultCode:" + jinjiFaultCode)
+    
+    zhuZhouAlarmCode = class java.util.Arrays::copyOfRange(byteArray, 168, 170) // 主轴 AlarmCode
+    zhuZhouAlarmCode = byteArrayToInt(zhuZhouAlarmCode[0], zhuZhouAlarmCode[1])
+    // println("主轴 AlarmCode:" + zhuZhouAlarmCode)
+    
+    congZhouAlarmCode = class java.util.Arrays::copyOfRange(byteArray, 170, 172) // 从轴 AlarmCode
+    congZhouAlarmCode = byteArrayToInt(congZhouAlarmCode[0], congZhouAlarmCode[1])
+    // println("从轴 AlarmCode:" + congZhouAlarmCode)
+    
+    sxzlbAlarmCode = class java.util.Arrays::copyOfRange(byteArray, 172, 174) // 收线张力臂 AlarmCode
+    sxzlbAlarmCode = byteArrayToInt(sxzlbAlarmCode[0], sxzlbAlarmCode[1])
+    // println("收线张力臂 AlarmCode:" + sxzlbAlarmCode)
+    
+    fxzlbAlarmCode = class java.util.Arrays::copyOfRange(byteArray, 174, 176) // 放线张力臂 AlarmCode
+    fxzlbAlarmCode = byteArrayToInt(fxzlbAlarmCode[0], fxzlbAlarmCode[1])
+    // println("放线张力臂 AlarmCode:" + fxzlbAlarmCode)
+    
+    sxpAlarmCode = class java.util.Arrays::copyOfRange(byteArray, 176, 178) // 收线排 AlarmCode
+    sxpAlarmCode = byteArrayToInt(sxpAlarmCode[0], sxpAlarmCode[1])
+    // println("收线排 AlarmCode:" + sxpAlarmCode)
+    
+    fxpAlarmCode = class java.util.Arrays::copyOfRange(byteArray, 178, 180) // 放线排 AlarmCode
+    fxpAlarmCode = byteArrayToInt(fxpAlarmCode[0], fxpAlarmCode[1])
+    // println("放线排 AlarmCode:" + fxpAlarmCode)
+    
+    sxAlarmCode = class java.util.Arrays::copyOfRange(byteArray, 180, 182) // 收线 AlarmCode
+    sxAlarmCode = byteArrayToInt(sxAlarmCode[0], sxAlarmCode[1])
+    // println("收线 AlarmCode:" + sxAlarmCode)
+    
+    fxAlarmCode = class java.util.Arrays::copyOfRange(byteArray, 182, 184) // 放线 AlarmCode
+    fxAlarmCode = byteArrayToInt(fxAlarmCode[0], fxAlarmCode[1])
+    // println("放线 AlarmCode:" + fxAlarmCode)
+    
+    jinjiAlarmCode = class java.util.Arrays::copyOfRange(byteArray, 184, 186) // 进给 AlarmCode
+    jinjiAlarmCode = byteArrayToInt(jinjiAlarmCode[0], jinjiAlarmCode[1])
+    // println("进给 AlarmCode:" + jinjiAlarmCode)
+    
+    
+    
+    
+    gxConsume = class java.util.Arrays::copyOfRange(byteArray, 300, 304) // 钢线消耗量
+    gxConsume = byteArrayToFloat(gxConsume)
+    // println("钢线消耗量:" + class java.math.BigDecimal(gxConsume))
+    
+    gxRemain = class java.util.Arrays::copyOfRange(byteArray, 304, 308) // 钢线剩余量
+    gxRemain = byteArrayToFloat(gxRemain)
+    // println("钢线剩余量:" + gxRemain)
+    
+    sjll = class java.util.Arrays::copyOfRange(byteArray, 312, 316) // 砂浆实际流量
+    sjll = byteArrayToFloat(sjll)
+    // println("砂浆实际流量:" + sjll)
+    
+    sjTemp = class java.util.Arrays::copyOfRange(byteArray, 316, 320) // 砂浆实际温度
+    sjTemp = byteArrayToFloat(sjTemp)
+    // println("砂浆实际温度:" + sjll)
+    
+    // fxzlValue = class java.util.Arrays::copyOfRange(byteArray, 320, 324) // 放线张力值
+    fxzlValue = class java.util.Arrays::copyOfRange(byteArray, 320, 324) // 放线张力值
+    fxzlValue = byteArrayToFloat(fxzlValue)
+    // println("放线张力值:" + fxzlValue)
+    
+    sxzlValue = class java.util.Arrays::copyOfRange(byteArray, 324, 328) // 收线张力值
+    sxzlValue = byteArrayToFloat(sxzlValue)
+    // println("收线张力值:" + sxzlValue)
+    
+    jgxpxQty = class java.util.Arrays::copyOfRange(byteArray, 328, 332) // 金刚线跑线量
+    jgxpxQty = byteArrayToFloat(jgxpxQty)
+    // println("金刚线跑线量:" + jgxpxQty)
+    // println("jingangxian used:" + jgxpxQty)
+    ddyxQty = class java.util.Arrays::copyOfRange(byteArray, 332, 336) // 单刀用线量
+    ddyxQty = byteArrayToFloat(ddyxQty)
+    // println("单刀用线量:" + ddyxQty)
+    // println("used per lot:" + ddyxQty)
+    // zgcj = class java.util.Arrays::copyOfRange(byteArray, 336, 340) // 主辊槽距
+    zgcj = class java.util.Arrays::copyOfRange(byteArray, 336, 340) // 主辊槽距
+    zgcj = byteArrayToFloat(zgcj)
+    // println("主辊槽距:" + zgcj)
+    // println("gap:" + zgcj)
+    // gxxj = class java.util.Arrays::copyOfRange(byteArray, 340, 344) // 钢线线径
+    gxxj = class java.util.Arrays::copyOfRange(byteArray, 340, 344) // 钢线线径
+    gxxj = byteArrayToFloat(gxxj)
+    // println("钢线线径:" + gxxj)
+    // println("xianjing:" + gxxj)
+    materialNo = class java.util.Arrays::copyOfRange(byteArray, 396, 412) // 金刚线编码
+    // println("金刚线编码:" + byteArrayToString(materialNo))
+    // println("jingangxian code:" + byteArrayToString(materialNo))
+    materialNoStr = byteArrayToString(materialNo)
+    zhugunNo = class java.util.Arrays::copyOfRange(byteArray, 412, 428) // 主辊编码
+    // println("主辊编码:" + byteArrayToString(zhugunNo))
+    // println("zhugun code:" + byteArrayToString(zhugunNo))
+    zhugunNoStr =  byteArrayToString(zhugunNo)
+    userNo = class java.util.Arrays::copyOfRange(byteArray, 428, 444) // 用户编码
+    // println("用户编码:" + byteArrayToString(userNo))
+    // println("user:" + byteArrayToString(userNo))
+    userNoStr = byteArrayToString(userNo)
+    
+    downUserNo = class java.util.Arrays::copyOfRange(byteArray, 16, 32) // 下料用户编码
+    // println("用户编码:" + byteArrayToString(userNo))
+    // println("downUser:" + byteArrayToString(downUserNo))
+    downUserNoStr = byteArrayToString(userNo)
+    qgyVender = class java.util.Arrays::copyOfRange(byteArray, 444, 460) // 切割液厂家
+    // println("切割液厂家:" + byteArrayToString(qgyVender))
+    // println("qiegeye vendor:" + byteArrayToString(qgyVender))
+    qgyVenderStr = byteArrayToString(qgyVender)
+    // wheelNo = class java.util.Arrays::copyOfRange(byteArray, 464, 480) // 工字轮编码
+    // // println("工字轮编码:" + byteArrayToString(wheelNo))
+    // println("gongzilun :" + byteArrayToString(wheelNo))
+    // println("reqType:"+reqType)
+    println("lotNoStr:"+lotNoStr+"  eqIdStr "+eqIdStr)
+    logInfo(MODULE_IM, "接收切片发送数据:[机台:"+eqIdStr+",随工单:"+lotNoStr+",请求类型:"+reqType+",加工状态代码:"+workStatusCode+"]", getDBTime(),"Longi_Socket_Interface", "byteArrayToFloat")
+    if(reqType == FORCE_FEED)
+    {
+//         logInfo(MODULE_IM, "强制上料[机台："+eqIdStr+"]+",, getDBTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        
+        logInfo(MODULE_IM, "强制上料[机台:"+eqIdStr+",随工单:"+lotNoStr+",用户:"+userNoStr+"]", getDBTime(),"Longi_Socket_Interface", "byteArrayToFloat")
+//         startLotOnEquip(lotNoStr,eqIdStr,userNoStr,getDBTime(),"section forced start")
+        
+        faultCode = getFaultCodeByMessageID("FEEDBACK_DATA_IS_NORMAL")    
+        faultByte = (byte)faultCode
+        socketControl21.send(uid,[faultByte])
+        sql = "select start_time_t from at_om_lothistory where op_name_s = 'section' and serial_number_s = '"+lotNoStr+"' and start_time_t is not null"
+        resultVector = querySql(sql)
+        if(!(resultVector.size() > 0))
+        {
+            startLotOnEquip(lotNoStr,eqIdStr,userNoStr,getDBTime(),"切片强制上料")
+        }
+        
+//         savePriorCutStopQty(lotObj,gxRemain,jobNo)//保存开刀钢线剩余量
+        savePriorCutStopQty(lotObj,gxRemain,jobNo,zgcj,materialNoStr)//保存开刀钢线剩余量
+//         println("faultByte:"+faultByte)
+    }else if(reqType == LC_UPLOAD){
+        logInfo(MODULE_IM, "切片上料[机台:"+eqIdStr+",随工单:"+lotNoStr+",用户:"+userNoStr+"]", getDBTime(),"Longi_Socket_Interface", "byteArrayToFloat")
+        errorMessage = checkSectionUpload(lotNoStr,eqIdStr,materialNoStr,jobNo,zhugunNoStr,userNoStr)
+        
+        faultCode = getFaultCodeByMessageID(errorMessage)
+        faultByte = (byte)faultCode
+//         println("faultByte:"+faultByte)
+        socketControl21.send(uid,[faultByte])
+        if("FEEDBACK_DATA_IS_NORMAL".equals(errorMessage))
+        {
+//             startLotOnEquip(lotNoStr,eqIdStr,userNoStr,getDBTime(),"section start")
+            sql = "select start_time_t from at_om_lothistory where op_name_s = 'section' and serial_number_s = '"+lotNoStr+"' and start_time_t is not null"
+            resultVector = querySql(sql)
+            if(!(resultVector.size() > 0))
+            {
+                startLotOnEquip(lotNoStr,eqIdStr,userNoStr,getDBTime(),"切片上料")
+            } 
+        }
+//         savePriorCutStopQty(lotObj,gxRemain,jobNo)//保存开刀钢线剩余量
+        savePriorCutStopQty(lotObj,gxRemain,jobNo,zgcj,materialNoStr)//保存开刀钢线剩余量
+    }else if(reqType == LC_CLAER){  
+        faultByte = (byte)0
+        println("faultByte:"+faultByte)
+        socketControl21.send(uid,[faultByte])
+    }
+    if((workStatusCode == 2)||(workStatusCode == 3))
+    {
+        logInfo(MODULE_IM, "切片下料[机台:"+eqIdStr+",随工单:"+lotNoStr+",用户:"+downUserNoStr+"]", getDBTime(),"Longi_Socket_Interface", "byteArrayToFloat")
+        lotObj = getLotByName(lotNoStr)
+        if(lotObj == null)
+        {
+            return
+        }
+        sql = "select complete_time_t from at_om_lothistory where op_name_s = 'section' and serial_number_s = '"+lotNoStr+"' and complete_time_t is not null"
+        resultVector = querySql(sql)
+        if(resultVector.size() > 0)
+        {
+            logInfo(MODULE_IM, "已经下料,流水码---"+lotNoStr, getDBTime(), "Longi_Socket_Interface", "processLCReceiveData")
+            return
+        }
+        objFilter = class com.rockwell.discrete.mes.order.model.datacollection.MESOMDataCollectionFilter()
+        objFilter.forSerialnumberEqualTo(lotNoStr)
+        
+        //判断记录是否存在
+        if(objFilter.getCount()>0)
+        {
+            dataCollectObj = objFilter.getFilteredObjects().get(0)
+        }else
+        {
+            dataCollectObj = class com.rockwell.discrete.mes.order.model.datacollection.MESOMDataCollection()
+            dataCollectObj.setSerialnumber(lotNoStr)
+        }
+        //获取钢线导入信息
+        diamondFilter = class com.rockwell.discrete.mes.order.model.diamondline.MESOMDiamondLineFilter()
+        diamondFilter.forSpoolnoEqualTo(materialNoStr)
+        diamondObj = null
+        steelWireLength = 0.0f //单卷钢线长度
+        if(diamondFilter.getCount()>0)
+        {
+            diamondObj = diamondFilter.getFilteredObjects().get(0)
+        }
+        if(diamondObj != null)
+        {
+            steelWireLength = diamondObj.getLinelength()
+            dataCollectObj.setSteelwirevendor(diamondObj.getSuppliername())//钢线厂家
+            dataCollectObj.setSteelwirelength(steelWireLength)//单卷钢线长度
+            if(diamondObj.getLinediameter() != null)
+            {
+                gxxj = diamondObj.getLinediameter()//钢线线径
+                //1000.0f 
+            }
+        }
+        //计算钢线刀数
+//         cutCountSql = "select count(*) from at_om_datacollection where steel_wire_number_s = '"+materialNoStr+"' and serial_number_s <> '"+lotNoStr+"'"
+        cutCountSql = "select count(*) from at_om_datacollection d left join at_om_lothistory l on d.serial_number_s = l.serial_number_s
+                where l.op_name_s = 'section' and steel_wire_number_s = '"+materialNoStr+"' and d.serial_number_s <> '"+lotNoStr+"' and l.equip_name_s = '"+eqIdStr+"'"
+        cutCountResult = querySql(cutCountSql)
+        cutCount = 0L
+        if(cutCountResult.size() > 0)
+        {
+            cutCountStr = cutCountResult.get(0)[0]
+            cutCount = class java.lang.Long::valueOf(cutCountStr)
+        }
+        cutCount += 1L
+        cutCount = class java.lang.Long::valueOf(cutCount+"")
+        isUsedBy = 0L //未使用
+        lineLeftQty = 0.0f
+        if(cutCount == 1)  //第一刀
+        {
+    //         otherEqSql = "select d.serial_number_s,current_cut_stop_qty_f from at_om_datacollection d left join at_om_lothistory l on d.serial_number_s = l.serial_number_s
+    //                     where l.op_name_s = 'section' and steel_wire_number_s = '"+cutLineSN+"' and d.serial_number_s <> '"+serialNo+"' and l.equip_name_s <> '"+equipName+"'"
+            otherEqSql = "select d.serial_number_s,current_cut_stop_qty_f from at_om_datacollection d left join at_om_lothistory l on d.serial_number_s = l.serial_number_s
+                        where l.op_name_s = 'section' and steel_wire_number_s = '"+materialNoStr+"' and d.serial_number_s <> '"+lotNoStr+"' and l.equip_name_s <> '"+eqIdStr+"' and l.complete_time_t is not null  order by l.complete_time_t desc"
+            
+            isUsedByVector = querySql(otherEqSql)
+            if(isUsedByVector.size() > 0)
+            {
+                isUsedBy = 1L //已使用,该卷钢线为残线
+                lineLeftQty = stringToBigDecimal(isUsedByVector.get(0)[1])
+            }
+        }
+        //获取上一刀随工单
+        lastCutStopQty = 0.0f
+        lastSerialNo =  getLastWipLotByEquip(eqIdStr,lotNoStr)//根据机台获取上刀随工单
+//         lastSerialNo = getLastWipLotByXjbm(materialNoStr,lotNoStr)//根据线距编码获取上刀随工单
+        if(lastSerialNo != null)
+        {
+            lastDataFilter = class com.rockwell.discrete.mes.order.model.datacollection.MESOMDataCollectionFilter()
+            lastDataFilter.forSerialnumberEqualTo(lastSerialNo)
+            
+             //判断记录是否存在
+            if(lastDataFilter.getCount()>0)
+            {
+                lastDataObj = lastDataFilter.getFilteredObjects().get(0)
+                lastCutStopQty = lastDataObj.getCurrentcutstopqty()
+                if(lastCutStopQty == null)
+                {
+                    lastCutStopQty = 0.0f
+                }
+            }
+        }
+        
+        if(!(lastCutStopQty > 0))
+        {
+            if(dataCollectObj.getPriorcutstopqty() != null)
+            {
+                lastCutStopQty = dataCollectObj.getPriorcutstopqty()
+            }      
+        }
+        if(cutCount == 1 && isUsedBy == 0)
+        {
+            ddyxQty = lastCutStopQty + steelWireLength - gxRemain
+        }else {
+            ddyxQty = lastCutStopQty - gxRemain
+        }
+//         if(lastCutStopQty > gxRemain){
+//             ddyxQty = lastCutStopQty - gxRemain
+//         }else{
+//             ddyxQty = lastCutStopQty + steelWireLength - gxRemain
+//         }
+        //保存数据
+        wipTime = getDBTime()
+        lotHisFilter = class com.rockwell.discrete.mes.order.model.lothistory.MESOMLotHistoryFilter()
+        lotHisFilter.forSerialnumberEqualTo(lotNoStr)
+    //     lotHisFilter.forEquipnameEqualTo()
+        lotHisFilter.forRoutestepnameEqualTo(QP_ROUTE_STEP_NAME)
+        lotHisObj = null
+        startTime = null
+//     cutTime = 0.0f
+        if(lotHisFilter.getCount()>0)
+        {
+            lotHisObj = lotHisFilter.getFilteredObjects().get(0)
+            startTime = lotHisObj.getStarttime()
+        }
+        cutTime = getTimeDifferenceInMinute(startTime,wipTime)//切割时间
+        cutTime = class java.lang.Float::valueOf(cutTime+"")
+        dataCollectObj.setCuttime(cutTime) 
+        dataCollectObj.setSteelwirenumber(materialNoStr)
+        dataCollectObj.setJobno(class java.lang.Long::valueOf(jobNo))//程序号
+        dataCollectObj.setHomerollnumber(zhugunNoStr)
+        dataCollectObj.setHomerollusetime(zhugunHour)//主辊使用时间
+        dataCollectObj.setLeftlinetension(fxzlValue)
+    //     dataCollectObj.setLeftlinestorage(leftStorage)
+        
+        dataCollectObj.setSteelwirerunqty(ddyxQty)//钢线用量
+        dataCollectObj.setCutliquidflow(sjll)
+        dataCollectObj.setCutliquidtemp(sjTemp)
+        dataCollectObj.setCutliquidvendor(qgyVenderStr)
+    //     dataCollectObj.setRightlinestorage(rightStorage)
+        dataCollectObj.setRightlinetension(sxzlValue)
+        dataCollectObj.setSpoolnumber(materialNoStr)
+//         if(diamondObj != null)
+//         {
+//             dataCollectObj.setSteelwirevendor(diamondObj.getSteelwirevendor())//钢线厂家
+//             dataCollectObj.setSteelwirelength(diamondObj.getSteelwirelength())//单卷钢线长度
+//             if(diamondObj.getSteelwirediameter() != null)
+//             {
+//                 gxxj = diamondObj.getSteelwirediameter()//钢线直径
+//                 //1000.0f
+//             }
+//         }
+        dataCollectObj.setSteelwirediameter(gxxj)//钢线直径
+        dataCollectObj.setHomerollgap(zgcj)//主辊槽距
+        dataCollectObj.setCurrentcutstopqty(gxRemain)//本刀停机线量
+        dataCollectObj.setSteelwirecutqty(cutCount)//钢线刀数
+        dataCollectObj.save(null,null,null)
+//         completeLotOnEquip(lotNoStr,eqIdStr,downUserNoStr,getDBTime(),"section complete","")
+        completeLotOnEquip(lotNoStr,eqIdStr,downUserNoStr,wipTime,"切片下料","")
+    }
+}
+
+function savePriorCutStopQty(lotObj,storage,programID,zgcj,materialNoStr)
+{
+    //采集设备数据
+    if(lotObj != null)
+    {
+        serialNo = lotObj.getName()
+        objFilter = class com.rockwell.discrete.mes.order.model.datacollection.MESOMDataCollectionFilter()
+        objFilter.forSerialnumberEqualTo(serialNo)
+        //判断记录是否存在
+        dataCollectObj = null
+        if(objFilter.getCount()>0)
+        {
+            dataCollectObj = objFilter.getFilteredObjects().get(0)
+        }else
+        {
+            dataCollectObj = class com.rockwell.discrete.mes.order.model.datacollection.MESOMDataCollection()
+            dataCollectObj.setSerialnumber(serialNo)
+        }
+        if(dataCollectObj.getPriorcutstopqty() == null)
+        {
+            dataCollectObj.setPriorcutstopqty(storage)
+            dataCollectObj.setJobno2(class java.lang.Long::valueOf(programID))
+//             dataCollectObj.setSteelwirenumber(materialNoStr)//线距编码
+            dataCollectObj.setStartwirenumber(materialNoStr)//线距编码
+            dataCollectObj.setHomerollgap(zgcj)//主辊槽距
+            dataCollectObj.save(null,null,null)
+        }
+//         dataCollectObj.setPriorcutstopqty(storage)
+//         dataCollectObj.save(null,null,null)
+    }
+}

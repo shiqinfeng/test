@@ -1,0 +1,87 @@
+//*************************************************************************************************
+// Function: getFlatButtonImage()
+// author:guofengxu   date:20170720
+// 
+//*************************************************************************************************
+function getFlatButtonImage(fbName)
+{
+  lowerName = fbName
+//   .toLowerCase()
+  if(lowerName.contains("buttonReset"))
+  {
+     return getImage("FB_Reset")
+  }
+  else if(lowerName.contains("buttonQuery"))
+  {
+    return getImage("FB_Query")
+  }
+  else if(lowerName.contains("buttonExport"))
+  {
+    return getImage("FB_Export")
+  }
+  else if(lowerName.contains("buttonSave"))
+  {
+   return getImage("FB_Save")
+  }
+  else if(lowerName.contains("buttonClear"))
+  {
+   return getImage("FB_Delete")
+  }
+  else if(lowerName.contains("buttonAdd"))
+  {
+   return getImage("FB_Add")
+  }
+  else if(lowerName.contains("buttonDelete"))
+  {
+   return getImage("FB_Delete")
+  }
+  else if(lowerName.contains("buttonEdit"))
+  {
+   return getImage("FB_Edit")
+  }
+  else if(lowerName.contains("buttonImport"))
+  {
+   return getImage("FB_Import")
+  }
+ else if(lowerName.contains("buttonPrint"))
+  {
+   return getImage("FB_Print")
+  }
+  else if(lowerName.contains("buttonRelease"))
+  {
+   return getImage("FB_Release")
+  }
+  else if(lowerName.contains("buttonSelectall"))
+  {
+   return getImage("FB_SelectAll")
+  }
+  else if(lowerName.contains("buttonDeselect"))
+  {
+   return getImage("FB_Unselect")
+  }
+   else if(lowerName.contains("buttonSelect"))
+  {
+   return getImage("FB_Select")
+  }
+  else if(lowerName.contains("buttonCreate"))
+  {
+   return getImage("FB_Create")
+  }
+  else if(lowerName.contains("buttonCopy"))
+  {
+   return getImage("FB_Copy")
+  }
+  else if(lowerName.contains("buttonChangeuser"))
+  {
+   return getImage("FB_ChangeUser")
+  }
+  else if(lowerName.contains("buttonHelp"))
+  {
+   return getImage("FB_Help")
+  }
+//   else if(lowerName.contains("buttonCancel"))
+//   {
+//    return getImage("FB_Cancel")
+//   }
+  return null
+}

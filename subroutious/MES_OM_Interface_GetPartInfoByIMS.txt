@@ -1,0 +1,196 @@
+importSubroutine("MES_Common_UI")
+importSubroutine("MES_Common_Time")
+importSubroutine("MES_Common_Combobox")
+importSubroutine ("ra_errorHandling")
+importSubroutine ("MES_Common_Base")
+importSubroutine ("MES_Common_Log")
+importSubroutine("MES_PP_Common")
+importSubroutine("MES_Common_DataDict")
+importSubroutine("MES_OM_Common") 
+DSS_NAME = "PDS"
+/**
+ * 描述: 获取IMS中间表的PART信息：新增，更新
+ * 
+ * @author: Deng Bing 05/26/2020
+ * @revision: 1.0
+ **/
+function getPartInfoByIMS(partno)
+{
+    //addLastInfoToListBox(listboxMessage,"准备执行")
+    setProperty("partObj",null)
+    sql = "select ps.part_number,
+            ps.erp_part_number,
+            ps.description,
+            ps.category,
+            ps.figure_number,
+            ps.powder_code,
+            ps.formation_weight,
+            ps.product_weight,
+            ps.model_code,
+            ps.tse,
+            ps.ship_account,
+            ps.rc_max,
+            ps.saler,
+            ps.price,
+            ps.status,
+            ps.praddr,
+            ps.min_pro_cycle,
+            ps.normal_cycle,
+            ps.default_plant,
+            ps.part_type,
+            ps.part_revision,
+            ps.remark,
+            ps.pqe,
+            ps.cust_part_number,
+            ps.picture
+            from part_ims ps WHERE ps.part_number='"+partno+"'"
+    //sql += " where  ps.part_number = 'A001'"
+    vectorData = getArrayDataFromActive(sql) 
+    user = getCurrentUser()
+    name = user.getName()
+    userDesc = user.getDescription()
+    vectorPart = vector()
+    vectorFlag = vector()
+    if(!vectorData.isEmpty())
+    {
+        //addLastInfoToListBox(listboxMessage,"开始执行")
+        for(i=0;i<vectorData.size();i++)
+        {
+            data = vectorData.get(i)
+            partNo = data[0]
+            if(partNo != null)
+            {
+                partObj = getPart(partNo)
+                if(partObj == null)
+                {
+                   partObj = createPart()
+                   partObj.setUDA(name,"create_by")
+                }
+                else
+                {
+                    println(partNo+"已存在")
+                }
+                vectorPart.add(partObj)
+                //获取保存成功的条数
+                flag = saveToDB(partObj,userDesc,data)
+                if(flag == true)
+                {
+                    vectorFlag.add(flag)
+                }
+            }
+        }
+    }
+    if(vectorFlag.size() == vectorPart.size())
+    {
+        //handleInfoMsg("MES_MAINFROM_MSG_TRX", "SAVE_SUCCESSFULLY", null, null, HANDLER_OPTION_DEFAULT, null)
+        logInfo(FORM_MODULE," save succefully", getDBTime(), "subroutine:MES_OM_Interface_GetPartInfoByIMS"  , "Function:getPartInfoByIMS()")
+       // addLastInfoToListBox(listboxMessage,"执行完毕")
+        defaultObj = getProperty("partObj")
+        return defaultObj
+    }
+    return null
+}
+//保存到PART表
+function saveToDB(partObj,userDesc,data)
+{
+    flag = false
+    partObj.setPartNumber(data[0])
+    partObj.setDescription(data[2])
+    partObj.setCategory(data[3])
+    partObj.setRevision("1")
+    partObj.setUDA(data[1],"erp_part_number")
+    partObj.setUDA(data[4],"figure_number")
+    partObj.setUDA(data[5],"powder_code")
+    partObj.setUDA(data[6],"formation_weight")
+    partObj.setUDA(data[8],"model_code")
+    partObj.setUDA(data[9],"tse")
+    partObj.setUDA(data[10],"ship_account")
+    partObj.setUDA(data[12],"saler")
+    partObj.setUDA(data[13],"price")
+    partObj.setUDA(data[14],"status")
+    partObj.setUDA(data[16],"min_pro_cycle")
+    partObj.setUDA(data[17],"normal_cycle")
+    partObj.setUDA(data[18],"default_plant")
+    partObj.setUDA(data[7],"product_weight")
+    partObj.setUDA(data[11],"rc_max")
+    partObj.setUDA(data[15],"praddr")
+    partObj.setUDA(data[19],"part_type")
+    partObj.setUDA(data[23],"cust_part_number")
+    partObj.setUDA(data[21],"remark")
+    partObj.setUDA(data[22],"pqe")
+    partObj.setUDA(userDesc,"last_modified_by")
+    println(data[0])
+    partObj.setUDA(data[0],"picture")
+    image(data[0])
+//     if(!image(data[0]))
+//     {
+//         continue
+//     }
+
+setProperty("partObj",partObj)
+//     response = partObj.save(null,null, null)
+//     if(response.isOk())
+//     {
+//         setProperty("partObj",partObj)
+//         addLastInfoToListBox(listboxMessage,"产品:"+partObj.getDescription()+"保存成功")
+//         println("产品:"+partObj.getPartNumber()+"保存成功")
+//         logInfoMessage("subroutine:MES_OM_Interface_GetPartInfoByIMS:产品"+partObj.getDescription()+"保存成功")
+//         //listboxMessage.setText("产品:"+partObj.getPartNumber()+"保存成功")
+//         
+//         flag = true
+//         //return true
+//     }
+//     else
+//     {
+//         addLastInfoToListBox(listboxMessage,"产品:"+partObj.getDescription()+"保存失败")
+//         println("产品:"+partObj.getPartNumber()+"保存失败")
+//         logErrorMessage("subroutine:MES_OM_Interface_GetPartInfoByIMS:产品"+partObj.getDescription()+"保存失败"+response.getFirstErrorMessage())
+//         //listboxMessage.setText("产品:"+partObj.getPartNumber()+"保存失败")
+//         
+//         flag = false
+//         //return false
+//     }
+    return true
+}
+//保存图片
+function image(partNo)
+{
+    sql = "select 
+            ps.part_number,
+			ps.image_obj
+            from part_ims ps where ps.part_number = '"+partNo+"'"
+    imageName = partNo
+    //conn = dss.getConnection()
+    //byteArray = class com.rockwell.discrete.mes.system.tool.ImageToByteArray::readImgFromDb(27,conn,sql)
+    byteArray = class com.rockwell.discrete.mes.system.tool.ImageToByteArray::readImgFromDb(2,DSS_NAME,sql)
+    if(byteArray == null)
+    {
+        return false
+    }
+    //println(byteArray)
+    imageHolderObj = class com.datasweep.plantops.swing.ImageHolder(byteArray)
+    // 创建image对象
+    dsImage = createImage(imageName)
+    
+    dsImage.setImageHolder(imageHolderObj)
+    if(dsImage != null)
+    {
+        dsImage.setName(imageName)
+    }
+    if(dsImage.isNew())
+    {
+        response = dsImage.save(null,null,null)
+        if(response.isOk())
+        {
+            println("图片:"+imageName+"保存成功")
+            logInfoMessage("subroutine:MES_OM_Interface_GetPartInfoByIMS图片:"+imageName+"保存成功")
+            return true
+        }
+        else
+        {
+            println("subroutine:MES_OM_Interface_GetPartInfoByIMS图片:"+imageName+"保存失败"+response.getFirstErrorMessage())
+            logErrorMessage("图片:"+imageName+"保存失败"+response.getFirstErrorMessage())
+            return false
+        }
+    }
+}
