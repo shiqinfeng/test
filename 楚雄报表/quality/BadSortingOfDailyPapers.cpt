@@ -1,0 +1,1194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20170720" releaseVersion="10.0.0">
+<TableDataMap>
+<TableData name="ds1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="eqName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="plineName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="shopName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[ select st,area_s,product_line_s,eq_id_s,recipe_s,sum(check_qty_i),1-sum(ok_qty_i)/sum(check_qty_i),sum(q1_qty_i),sum(q1_qty_i)/sum(check_qty_i), 
+ sum(q2_qty_i),sum(q2_qty_i)/sum(check_qty_i),
+ sum(q3_qty_i),sum(q3_qty_i)/sum(check_qty_i),
+ sum(q4_qty_i),sum(q4_qty_i)/sum(check_qty_i),
+ sum(q5_qty_i),sum(q5_qty_i)/sum(check_qty_i),
+ sum(q6_qty_i),sum(q6_qty_i)/sum(check_qty_i),
+ sum(q7_qty_i),sum(q7_qty_i)/sum(check_qty_i),
+ sum(q8_qty_i),sum(q8_qty_i)/sum(check_qty_i),
+ sum(q9_qty_i),sum(q9_qty_i)/sum(check_qty_i),
+ sum(q10_qty_i),sum(q10_qty_i)/sum(check_qty_i),
+ sum(q11_qty_i),sum(q11_qty_i)/sum(check_qty_i),
+ sum(q12_qty_i),sum(q12_qty_i)/sum(check_qty_i),
+ sum(q13_qty_i),sum(q13_qty_i)/sum(check_qty_i),
+ sum(q14_qty_i),sum(q14_qty_i)/sum(check_qty_i),
+ sum(q15_qty_i),sum(q15_qty_i)/sum(check_qty_i),
+ sum(q16_qty_i),sum(q16_qty_i)/sum(check_qty_i),
+ sum(q17_qty_i),sum(q17_qty_i)/sum(check_qty_i),
+ sum(q18_qty_i),sum(q18_qty_i)/sum(check_qty_i)
+ from 
+  (     
+  select u.area_s,u.product_line_s,p.eq_id_s,case when TO_CHAR(p.check_endTime_T,'HH24mi') >= 0000 AND TO_CHAR(p.check_endTime_T,'HH24mi')< 0830 then TO_CHAR(p.check_endTime_T-1,'yyyy-MM-dd')　        
+						 else TO_CHAR(p.check_endTime_T,'yyyy-MM-dd') end as  st , p.ok_qty_i,p.check_qty_i,p.q1_qty_i,p.recipe_s,
+						 p.q2_qty_i,p.q3_qty_i,p.q4_qty_i,p.q5_qty_i,p.q6_qty_i,p.q7_qty_i,p.q8_qty_i,p.q9_qty_i,p.q10_qty_i,
+						 p.q11_qty_i,p.q12_qty_i,p.q13_qty_i,p.q14_qty_i,p.q15_qty_i,
+						 p.q16_qty_i,p.q17_qty_i,p.q18_qty_i
+						 from at_OM_SprtResult p , Equipment t , uda_Equipment u
+                         where  p.eq_id_s= t.equip_name and t.equip_key=u.object_key 
+${if(len(endDate)==0,"","and p.check_endTime_T >= to_date('"+ endDate+"'||'08:30:00','yyyy-MM-dd hh24:mi:ss') and p.check_endTime_T <=
+to_date('"+ endDate+"'||'08:29:59','yyyy-MM-dd hh24:mi:ss')+1
+")}  
+${if(len(shopName)==0,""," and u.area_s in ('"+shopName+"')")} 
+${if(len(plineName)==0,""," and u.product_line_s in ('"+plineName+"')")} 
+${if(len(eqName)==0,""," and p.eq_id_s like '%"+eqName+"%'")}
+  )
+group by st,area_s,product_line_s,eq_id_s,recipe_s order by st desc  ]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="ds2" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="shopName"/>
+<O>
+<![CDATA[101]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineDescription  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key
+]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="ds3" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="shopName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineDescription  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key
+where 1=1
+${if(len(shopName)==0,""," and a.area_name in ('"+shopName+"')")} ]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+</TableDataMap>
+<ElementCaseMobileAttr>
+<ElementCaseMobileAttrProvider horizontal="1" vertical="1" zoom="true" refresh="false" isUseHTML="false" isMobileCanvasSize="false" appearRefresh="false" allowFullScreen="false"/>
+</ElementCaseMobileAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC F="0" T="6"/>
+<FC/>
+<UPFCR COLUMN="true" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1728000,1152000,1152000,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[4546600,2743200,2921000,2997200,14097000,3225800,2921000,4013200,4368800,4241800,4470400,4216400,4419600,4089400,4140200,4191000,4546600,4495800,4927600,4521200,4851400,4597400,4470400,4749800,4165600,4394200,4648200,4394200,4445000,4419600,4419600,4241800,4521200,4521200,4343400,4394200,4495800,4241800,4851400,4343400,4318000,4165600,4445000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="7" s="0">
+<O>
+<![CDATA[分选日报-各项不良]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="0" cs="36" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="2">
+<O>
+<![CDATA[日期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="2">
+<O>
+<![CDATA[车间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="2">
+<O>
+<![CDATA[片区]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="2">
+<O>
+<![CDATA[机台]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="2">
+<O>
+<![CDATA[分选菜单]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="2">
+<O>
+<![CDATA[进料数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="2">
+<O>
+<![CDATA[总计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="2">
+<O>
+<![CDATA[Q1数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="2">
+<O>
+<![CDATA[Q1占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="2">
+<O>
+<![CDATA[Q2数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="2">
+<O>
+<![CDATA[Q2占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="2">
+<O>
+<![CDATA[Q3数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="2">
+<O>
+<![CDATA[Q3占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="1" s="2">
+<O>
+<![CDATA[Q4数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="1" s="2">
+<O>
+<![CDATA[Q4占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="1" s="2">
+<O>
+<![CDATA[Q5数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="1" s="2">
+<O>
+<![CDATA[Q5占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="1" s="2">
+<O>
+<![CDATA[Q6数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="1" s="2">
+<O>
+<![CDATA[Q6占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="1" s="2">
+<O>
+<![CDATA[Q7数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="20" r="1" s="2">
+<O>
+<![CDATA[Q7占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="21" r="1" s="2">
+<O>
+<![CDATA[Q8数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="22" r="1" s="2">
+<O>
+<![CDATA[Q8占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="23" r="1" s="2">
+<O>
+<![CDATA[Q9数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="24" r="1" s="2">
+<O>
+<![CDATA[Q9占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="25" r="1" s="2">
+<O>
+<![CDATA[Q10数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="26" r="1" s="2">
+<O>
+<![CDATA[Q10占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="27" r="1" s="2">
+<O>
+<![CDATA[Q11数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="28" r="1" s="2">
+<O>
+<![CDATA[Q11占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="29" r="1" s="2">
+<O>
+<![CDATA[Q12数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="30" r="1" s="2">
+<O>
+<![CDATA[Q12占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="31" r="1" s="2">
+<O>
+<![CDATA[Q13数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="32" r="1" s="2">
+<O>
+<![CDATA[Q13占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="33" r="1" s="2">
+<O>
+<![CDATA[Q14数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="34" r="1" s="2">
+<O>
+<![CDATA[Q14占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="35" r="1" s="2">
+<O>
+<![CDATA[Q15数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="36" r="1" s="2">
+<O>
+<![CDATA[Q15占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="37" r="1" s="2">
+<O>
+<![CDATA[Q16数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="38" r="1" s="2">
+<O>
+<![CDATA[Q16占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="39" r="1" s="2">
+<O>
+<![CDATA[Q17数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="40" r="1" s="2">
+<O>
+<![CDATA[Q17占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="41" r="1" s="2">
+<O>
+<![CDATA[Q18数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="42" r="1" s="2">
+<O>
+<![CDATA[Q18占比]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ST"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="1" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="AREA_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PRODUCT_LINE_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="EQ_ID_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="RECIPE_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="1-SUM(OK_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<CellInsertPolicy>
+<InsertPolicy>
+<![CDATA[copy]]></InsertPolicy>
+</CellInsertPolicy>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q1_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q1_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q2_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q2_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q3_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q3_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q4_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q4_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q5_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q5_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="17" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q6_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="18" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q6_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="19" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q7_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="20" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q7_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="21" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q8_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="22" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q8_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="23" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q9_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="24" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q9_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="25" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q10_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="26" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q10_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="27" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q11_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="28" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q11_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="29" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q12_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="30" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q12_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="31" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q13_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="32" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q13_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="33" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q14_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="34" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q14_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="35" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q15_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="36" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q15_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="37" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q16_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="38" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q16_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="39" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q17_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="40" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q17_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="41" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q18_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="42" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUM(Q18_QTY_I)/SUM(CHECK_QTY_I)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="6" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="10" s="6">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="11">
+<PrivilegeControl/>
+<CellPageAttr/>
+<CellInsertPolicy>
+<InsertPolicy>
+<![CDATA[copy]]></InsertPolicy>
+</CellInsertPolicy>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="203040000" height="42768000"/>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+<Background name="ColorBackground" color="-1"/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0" useParamsTemplate="true"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" color="-723724" borderRadius="0" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-526086"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.FreeButton">
+<Listener event="click">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[$.each(this.options.form.name_widgets, function(i, item) {
+    if(item.options.type !== 'label') {
+        item.setValue("");
+        item.setText("");
+        item.reset();
+    }
+});]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="button0"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[重置]]></Text>
+</InnerWidget>
+<BoundsAttr x="600" y="80" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="eqName"/>
+<LabelName name="机台号:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true"/>
+</InnerWidget>
+<BoundsAttr x="970" y="25" width="180" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabeleqName"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[机台号:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="870" y="25" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="endDate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=now()]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="685" y="25" width="180" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelendDate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[日期:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="585" y="25" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="shopName"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="AREA_NAME" viName="SHOP"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[ds2]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr delimiter="&apos;,&apos;" isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="115" y="25" width="180" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelshopName"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[车间:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="15" y="25" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="Search"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="490" y="80" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="plineName"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="P_LINE_NAME" viName="PLINEDESCRIPTION"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[ds3]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<databinding>
+<![CDATA[{}]]></databinding>
+</widgetValue>
+<RAAttr delimiter="&apos;,&apos;" isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="400" y="25" width="180" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelplineName"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[片区:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="300" y="25" width="100" height="25"/>
+</Widget>
+<Sorted sorted="false"/>
+<MobileWidgetList>
+<Widget widgetName="shopName"/>
+<Widget widgetName="plineName"/>
+<Widget widgetName="endDate"/>
+<Widget widgetName="eqName"/>
+<Widget widgetName="Search"/>
+<Widget widgetName="button0"/>
+</MobileWidgetList>
+<Display display="true"/>
+<DelayDisplayContent delay="true"/>
+<UseParamsTemplate use="true"/>
+<Position position="0"/>
+<Design_Width design_width="1314"/>
+<NameTagModified>
+<TagModified tag="eqName" modified="true"/>
+<TagModified tag="endDate" modified="true"/>
+<TagModified tag="plineName" modified="true"/>
+<TagModified tag="shopName" modified="true"/>
+</NameTagModified>
+<WidgetNameTagMap>
+<NameTag name="eqName" tag="机台号:"/>
+<NameTag name="endDate" tag="endDate:"/>
+<NameTag name="plineName" tag="endDate:"/>
+<NameTag name="shopName" tag="endDate:"/>
+</WidgetNameTagMap>
+<ParamAttr class="com.fr.report.mobile.DefaultMobileParamStyle"/>
+</Layout>
+<DesignAttr width="1314" height="116"/>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="112"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="96"/>
+<Background name="ColorBackground" color="-16750849"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="128"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="KAA"/>
+<PreviewType PreviewType="0"/>
+<TemplateIdAttMark class="com.fr.base.iofile.attr.TemplateIdAttrMark">
+<TemplateIdAttMark TemplateId="3b0b1ef2-6eaa-418d-84b9-6f96571d41cd"/>
+</TemplateIdAttMark>
+</WorkBook>

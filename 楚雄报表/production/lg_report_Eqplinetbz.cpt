@@ -1,0 +1,1632 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20170720" releaseVersion="10.0.0">
+<TableDataMap>
+<TableData name="areaqp" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT   AREA_NAME, DESCRIPTION FROM AREA  order by area_name]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="lineqp" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="areaqp"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT P_LINE_NAME,DESCRIPTION FROM PRODUCTION_LINE where p_line_name like '${areaqp}%' order by P_LINE_NAME]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="equipmentqp" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="equipmentcjz"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="areaqp"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="productlineqp"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT EQUIP_NAME,DESCRIPTION,AREA_S, product_line_s FROM EQUIPMENT_UV where equip_name like 'Q%' 
+${if(len(areaqp) == 0,"","and AREA_S='" + areaqp+"'")}
+${if(len(productlineqp) == 0,"","and product_line_s= '" + productlineqp+"'")}
+${if(len(equipmentcjz) == 0,"","and DESCRIPTION= '" + equipmentcjz+"'")}
+order by AREA_S,product_line_s]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="equipmentfactory" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select DISTINCT description  FROM EQUIPMENT_UV where equip_name like 'Q%']]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="equipmentmainqp" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="workctz"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="beginqp"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="areaqp"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endqp"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="equipmentqpz"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="productlineqp"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT d.area_s,d.product_line_s,a.EQUIP_NAME_S,d.equip_id_old_s, sum(DECODE(a.serial_number_s,NULL,0,1 )) serial
+FROM AT_OM_LOTHISTORY  a   left join user_uv b on   b.user_name=a.COMPLETE_USER_NAME_S
+left join  EQUIPMENT_UV  d on  a.EQUIP_NAME_S=d.EQUIP_NAME
+where 1=1
+
+
+
+${if(len(beginqp) == 0,"","and to_date(to_char(a.START_TIME_T, 'yyyy-MM-dd HH24:mi:ss'),'yyyy-MM-dd HH24:mi:ss')>= to_date('" + beginqp +"','yyyy-mm-dd hh24:mi:ss')")}
+${if(len(endqp) == 0,"","and to_date(to_char(a.START_TIME_T, 'yyyy-MM-dd HH24:mi:ss'),'yyyy-MM-dd HH24:mi:ss')<= to_date('" + endqp +"','yyyy-mm-dd hh24:mi:ss')")}
+
+${if(len(areaqp) == 0,"","and d.area_s='" + areaqp+"'")}
+${if(len(productlineqp) == 0,"","and d.product_line_s= '" + productlineqp+"'")}
+${if(len(equipmentqpz) == 0,"","and a.EQUIP_NAME_S= '" + equipmentqpz+"'")}
+${if(len(workctz) == 0,"","and a.op_name_s='" + workctz+"'")}
+
+group by d.area_s,d.product_line_s,a.EQUIP_NAME_S,d.equip_id_old_s order by d.area_s,d.product_line_s,a.EQUIP_NAME_S
+]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="workcenter" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select a.op_name,a.description from operation  a left join route_step b on a.op_key=b.op_key 
+order by b.route_step_key  ]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+</ReportWebAttr>
+<ElementCaseMobileAttr>
+<ElementCaseMobileAttrProvider horizontal="4" vertical="4" zoom="true" refresh="false" isUseHTML="false" isMobileCanvasSize="false" appearRefresh="true" allowFullScreen="false"/>
+</ElementCaseMobileAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[723900,1152000,1152000,1152000,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[4267200,2743200,2743200,2743200,8496300,2743200,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="0">
+<O>
+<![CDATA[旧机台]]></O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand extendable="1"/>
+</C>
+<C c="2" r="1" s="0">
+<O>
+<![CDATA[机台]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="0">
+<O>
+<![CDATA[刀数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="0">
+<O>
+<![CDATA[展示]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="equipmentmainqp" columnName="EQUIP_ID_OLD_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2==0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-657158"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="equipmentmainqp" columnName="EQUIP_NAME_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="equipmentmainqp" columnName="SERIAL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="2">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[="<table width=" + ROUND(D3 / max(D3[!0;!0]A), 2) * 100 + "% border=0 cellspacing=0 cellpadding=0> <tr> <td bgcolor=#81ceea><div color=#81ceea align=right>&nbsp</div></td> </tr> </table>"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr showAsHTML="true"/>
+<CellPageAttr/>
+<Expand/>
+</C>
+<C c="1" r="3" cs="2" s="3">
+<O>
+<![CDATA[总计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" s="1">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(D3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="6">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="6">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="6">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="11">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="11">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="11">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="11">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="12">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="12">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="12">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="12">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="13">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="13">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="13">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="13">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="14">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="14">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="14">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="14">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="15">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="15">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="15">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="15">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="27">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="27">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="27">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="27">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="28">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="28">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="28">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="28">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="29">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="29">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="29">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="29">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="30">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="30">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="30">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="30">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="31">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="31">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="31">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="31">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="32">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="32">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="32">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="32">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="33">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="33">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="33">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="33">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="34">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="34">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="34">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="34">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="35">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="35">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="35">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="35">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="36">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="36">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="36">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="36">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="37">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="37">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="37">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="37">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="38">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="38">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="38">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="38">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="39">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="39">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="39">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="39">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="40">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="40">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="40">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="40">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="41">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="41">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="41">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="41">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="42">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="42">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="42">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="42">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="43">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="43">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="43">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="43">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="44">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="44">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="44">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="44">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="45">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="45">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="45">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="45">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="46">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="46">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="46">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="46">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="47">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="47">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="47">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="47">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="48">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="48">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="48">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="48">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="49">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="49">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="49">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="50">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="50">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="50">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="51">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="51">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="51">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="52">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="52">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="52">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="53">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="53">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="53">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="54">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="54">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="54">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="55">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="55">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="55">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="56">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="56">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="56">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="57">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="57">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="57">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="58">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="58">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="58">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="59">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="59">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="59">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="60">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="60">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="60">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="61">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="61">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="61">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="62">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="62">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="62">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="63">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="63">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="63">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="64">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="64">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="64">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="65">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="65">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="65">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="66">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="66">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="66">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="67">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="67">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="67">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="68">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="68">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="68">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="43200000" height="144000000"/>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+<Background name="ColorBackground" color="-1"/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="false" windowPosition="1" align="0" useParamsTemplate="false"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" color="-723724" borderRadius="0" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-2171170"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="workctz"/>
+<LabelName name="工序:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<allowBlank>
+<![CDATA[false]]></allowBlank>
+<DirectEdit>
+<![CDATA[false]]></DirectEdit>
+<CustomData>
+<![CDATA[false]]></CustomData>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="OP_NAME" viName="DESCRIPTION"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[workcenter]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sql("MES_PROD","select a.op_name,a.description from operation  a left join route_step b on a.op_key=b.op_key 
+order by b.route_step_key",1,3)]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="122" y="94" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="workcenterz"/>
+<LabelName name="工号:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[工序:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="42" y="94" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="productlineqp"/>
+<LabelName name="片区:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<allowBlank>
+<![CDATA[false]]></allowBlank>
+<DirectEdit>
+<![CDATA[false]]></DirectEdit>
+<CustomData>
+<![CDATA[false]]></CustomData>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="P_LINE_NAME" viName="DESCRIPTION"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[lineqp]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sql("MES_PROD","SELECT P_LINE_NAME,DESCRIPTION FROM PRODUCTION_LINE",1,1)]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="374" y="60" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labeldeptcode_c_c_c"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[片区:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="331" y="60" width="43" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelbegin_c_c"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[开始时间:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="42" y="24" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="beginqp"/>
+<LabelName name="开始时间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr format="yyyy-MM-dd HH:mm:ss"/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=format(today(),"yyyy-MM-dd") + ' 08:30:00']]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="122" y="24" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelend"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[结束时间:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="294" y="24" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="endqp"/>
+<LabelName name="结束时间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr format="yyyy-MM-dd HH:mm:ss"/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=format(today()+1,"yyyy-MM-dd") + ' 08:30:00']]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="374" y="24" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labeldeptcode"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[车间:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="42" y="60" width="79" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="areaqp"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DirectEdit>
+<![CDATA[false]]></DirectEdit>
+<CustomData>
+<![CDATA[false]]></CustomData>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="AREA_NAME" viName="DESCRIPTION"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[areaqp]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sql("MES_PROD","SELECT   AREA_NAME, DESCRIPTION FROM AREA  order by area_name",1,1)]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="122" y="60" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="equipmentqp"/>
+<LabelName name="工序:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[机台:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="294" y="94" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="equipmentqpz"/>
+<LabelName name="机台:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="EQUIP_NAME" viName="EQUIP_NAME"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[equipmentqp]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="374" y="94" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="Search"/>
+<LabelName name="机台:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="444" y="126" width="80" height="21"/>
+</Widget>
+<Sorted sorted="true"/>
+<MobileWidgetList>
+<Widget widgetName="beginqp"/>
+<Widget widgetName="endqp"/>
+<Widget widgetName="areaqp"/>
+<Widget widgetName="equipmentqpz"/>
+<Widget widgetName="productlineqp"/>
+<Widget widgetName="Search"/>
+<Widget widgetName="workctz"/>
+</MobileWidgetList>
+<Display display="true"/>
+<DelayDisplayContent delay="false"/>
+<UseParamsTemplate use="false"/>
+<Position position="0"/>
+<Design_Width design_width="1293"/>
+<NameTagModified>
+<TagModified tag="workctz" modified="true"/>
+<TagModified tag="beginqp" modified="true"/>
+<TagModified tag="areaqp" modified="true"/>
+<TagModified tag="Search" modified="true"/>
+<TagModified tag="endqp" modified="true"/>
+<TagModified tag="equipmentqpz" modified="true"/>
+<TagModified tag="productlineqp" modified="true"/>
+</NameTagModified>
+<WidgetNameTagMap>
+<NameTag name="workctz" tag="工序:"/>
+<NameTag name="beginqp" tag="开始时间:"/>
+<NameTag name="areaqp" tag="车间:"/>
+<NameTag name="Search" tag="机台:"/>
+<NameTag name="endqp" tag="结束时间:"/>
+<NameTag name="equipmentqpz" tag="机台:"/>
+<NameTag name="productlineqp" tag="片区:"/>
+</WidgetNameTagMap>
+<ParamAttr class="com.fr.report.mobile.DefaultMobileParamStyle"/>
+</Layout>
+<DesignAttr width="1293" height="157"/>
+</ParameterUI>
+<Background name="ColorBackground" color="-2171170"/>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="微软雅黑" style="1" size="96" foreground="-1"/>
+<Background name="ColorBackground" color="-13395457"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="微软雅黑" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="微软雅黑" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="微软雅黑" style="1" size="72" foreground="-1"/>
+<Background name="ColorBackground" color="-13395457"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="KAA"/>
+<PreviewType PreviewType="2"/>
+<MobileOnlyTemplateAttrMark class="com.fr.base.iofile.attr.MobileOnlyTemplateAttrMark"/>
+<TemplateIdAttMark class="com.fr.base.iofile.attr.TemplateIdAttrMark">
+<TemplateIdAttMark TemplateId="0d064893-a980-4d77-b9a8-e2f9d2307285"/>
+</TemplateIdAttMark>
+</WorkBook>

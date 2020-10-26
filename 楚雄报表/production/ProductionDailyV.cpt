@@ -1,0 +1,3161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20170720" releaseVersion="10.0.0">
+<TableDataMap>
+<TableData name="ds1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="equiptype"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pdtType"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="equipname"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="cln"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="serNum"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="shift"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="plineName"/>
+<O>
+<![CDATA[101A]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="shopName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="sort"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dgm"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  
+to_char(pdt_date,'yyyy-MM-dd') AS pdtDate,
+pdt_shift,
+serial_number,
+pdt_type_new,
+replace(sec_equip_name,'null',' ')sec_equip_name,
+first_a_pdt_rate,
+total_a_pdt_rate,
+tech_valur_rate,
+ok_length_total,
+theory_qty,
+total_a_qty,
+total_a1_qty,
+total_b_qty,
+total_substd_qty,
+o_scrap,
+rods1_length,
+rods2_length,
+rods3_length,
+subtract_total,
+home_roll_gap,
+steel_wire_diameter,
+replace(steel_wire_vendor,'null',' ')steel_wire_vendor,
+steel_wire_cut_qty,
+replace(cut_liquid_vendor,'null',' ')cut_liquid_vendor,
+replace(sec_pdt_remarks,'null',' ')sec_pdt_remarks,
+b_margin,
+b_poour_collapse,
+b_sticky_collapse,
+b_in_collapse,
+b_arc,
+b_side_collapse,
+b_silicon_drop,
+a1_line_mark,
+b_line_mark,
+a1_slice,
+b_slice,
+c_ttv50_75,
+o_ttv_c,
+b_dirty_piece,
+o_unrecognized,
+c_missing_angle,
+total_subfissure,
+b_piebald,
+c_stairs,
+c_crack,
+c_pore,
+c_stress_piece,
+c_resistivity_bad,
+b_size,
+a1_poor_prism,
+a1_color_diff,
+a1_knife_slice,
+b_silica_gel,
+a1_lightspot,
+joint_opr,
+replace(vis_start_opr,'null',' ')vis_start_opr,
+replace(sec_start_opr,'null',' ')sec_start_opr,
+replace(sec_complete_opr,'null',' ')sec_complete_opr,
+replace(dgm_start_opr,'null',' ')dgm_start_opr,
+replace(fetch_opr,'null',' ')fetch_opr,
+replace(dgm_equip_name,'null',' ')dgm_equip_name,
+replace(cln_equip_name,'null',' ')cln_equip_name,
+replace(cln_start_opr,'null',' ')cln_start_opr,
+ispt_opr,
+replace(SORT_EQUIP_NAME,'null',' ')SORT_EQUIP_NAME,
+to_char(vis_start_time,'yyyy-MM-dd hh24:mi:ss') as visTime,
+to_char(vis_complete_time,'yyyy-MM-dd hh24:mi:ss') as viscomtime,
+to_char(sec_start_time,'yyyy-MM-dd hh24:mi:ss') as secstartTime,
+ replace(sec_start_shift,'null',' ')sec_start_shift,
+ to_char(sec_complete_time,'yyyy-MM-dd hh24:mi:ss') as seccomTime,
+to_char(dgm_start_time,'yyyy-MM-dd hh24:mi:ss') as dgmtime,
+to_char(cln_start_time,'yyyy-MM-dd hh24:mi:ss') as clntime,
+cln_circle,
+home_roll_time,
+ replace(home_roll_number,'null',' ')home_roll_number,
+ replace(spool_number,'null',' ')spool_number,
+rods_supplier,
+is_break,
+is_jump,
+is_sec_equip_fault,
+once_a_qty,
+twice_a_qty,
+sec_fgmt_weight,
+bp_fgmt_weight,
+abandon_length,
+dgm_fgmt_weight,
+cln_fgmt_weight,
+ispt_fgmt_weight,
+rods_qty,
+start_line_count,
+complete_line_count,
+line_used_qty,
+ok_weight,
+wt_fgmt_qty,
+thry_fgmt_qty,
+act_diff,
+pdre_fgmt_qty,
+shop_name,
+pline_name,
+replace(sec_equip_type,'null',' ')sec_equip_type,
+replace(sec_start_group,'null',' ')sec_start_group,
+value_qty,
+sort_upload_qty,
+add_cut_rate,
+break_rate,
+cut_count,
+jump_rate,
+stria_rate,
+ttv_rate,
+damge_rate,
+equicalent_rate,
+OFF_RATE,
+conversion_rate,
+opt_count,
+sec_fragment,
+side_fragment,
+insp_fragment,
+O_FEEDING_DEBRIS,
+O_APPEARANCE_DEBRIS,
+O_RETURN_CHECK_DEBRIS,
+duplicate_qty,
+REISPT_OPR,
+VISUAL_OPR1,
+replace(VISUAL_OPR2,'null',' ')VISUAL_OPR2,
+O_RECEIVE_MAT_DEBRIS,
+CLEANING_COMBINED,
+THRY_CLN_QTY,
+dirty_qty,
+replace(SEIZ_QTY,'null',' ')SEIZ_QTY,
+to_char(joint_time,'yyyy-MM-dd hh24:mi:ss') as jointtime,
+to_char(RETURN_TIME,'yyyy-MM-dd hh24:mi:ss') as returntime,
+round(PRODUCE_TIME,2),
+support_code,
+PLATE_SUPPLIER
+from
+etl_om_pdtdailydetail
+where 1=1 
+${if(len(shopName)==0,""," and shop_name in ('"+shopName+"')")}
+${if(len(plineName)==0,""," and pline_name in ('"+plineName+"')")}
+${if(len(serNum)==0,""," and serial_number like '%"+serNum+"%'")}
+${if(len(pdtType)==0,""," and pdt_type_new like '%"+pdtType+"%'")}
+${if(len(startDate)==0,"","and pdt_date >= to_date('"+ startDate+"','yyyy-MM-dd')")}  
+${if(len(endDate)==0,"","and pdt_date <= to_date('"+ endDate +"','yyyy-MM-dd')")}
+${if(len(equipname)==0,""," and sec_equip_name like '%"+equipname+"%'")}
+${if(len(equiptype)==0,""," and sec_equip_type like '%"+equiptype+"%'")}
+${if(len(cln)==0,""," and cln_equip_name like '%"+cln+"%'")}
+${if(len(sort)==0,""," and sort_equip_name like '%"+sort+"%'")}
+${if(len(dgm)==0,""," and dgm_equip_name like '%"+dgm+"%'")}
+${if(len(shift)==0,""," and pdt_shift like '%"+shift+"%'")}
+order by pdt_date desc ]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="ds3" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="shopName"/>
+<O>
+<![CDATA[101]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineDescription  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key
+where 1=1 
+${if(len(shopName)==0,""," and a.area_name in ('"+shopName+"')")} ]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="ds4" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select shift_name,description from shift]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="ds2" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineDescription  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key
+]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+</TableDataMap>
+<ElementCaseMobileAttr>
+<ElementCaseMobileAttrProvider horizontal="1" vertical="1" zoom="true" refresh="false" isUseHTML="false" isMobileCanvasSize="false" appearRefresh="false" allowFullScreen="false"/>
+</ElementCaseMobileAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC F="0" T="5"/>
+<FC/>
+<UPFCR COLUMN="true" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1728000,1152000,1152000,723900,723900,723900,723900,723900,723900,723900,723900,723900,1152000,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[5461000,2743200,2743200,2743200,6985000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,5181600,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,11520000,3600000,3600000,5760000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3352800,3600000,3600000,4320000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,4320000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,7920000,7920000,7920000,7920000,7920000,3600000,7200000,7920000,7920000,3352800,5040000,5040000,7920000,8051800,9296400,3600000,3600000,3600000,3600000,3600000,3600000,8128000,8229600,4800600,8026400,7797800,7620000,5760000,7086600,3600000,3600000,3600000,3600000,5486400,5334000,3600000,4927600,4546600,4749800,4495800,4165600,4320000,5461000,3600000,4445000,4699000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="6" s="0">
+<O>
+<![CDATA[楚雄隆基生产日报]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="0" cs="128" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="2">
+<O>
+<![CDATA[生产日期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="2">
+<O>
+<![CDATA[班次]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="2">
+<O>
+<![CDATA[车间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="2">
+<O>
+<![CDATA[片区]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="2">
+<O>
+<![CDATA[流水码]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="2">
+<O>
+<![CDATA[产品别]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="2">
+<O>
+<![CDATA[切片机号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="2">
+<O>
+<![CDATA[清洗机号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="2">
+<O>
+<![CDATA[脱胶机号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="2">
+<O>
+<![CDATA[分选机]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="2">
+<O>
+<![CDATA[1次成品率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="2">
+<O>
+<![CDATA[A级成品率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="2">
+<O>
+<![CDATA[工艺价值率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="1" s="2">
+<O>
+<![CDATA[有效长度(mm)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="1" s="2">
+<O>
+<![CDATA[理论片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="1" s="2">
+<O>
+<![CDATA[A级片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="1" s="2">
+<O>
+<![CDATA[A-1级硅片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="1" s="2">
+<O>
+<![CDATA[B级片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="1" s="2">
+<O>
+<![CDATA[等外品]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="1" s="2">
+<O>
+<![CDATA[报废]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="20" r="1" s="2">
+<O>
+<![CDATA[棒长1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="21" r="1" s="2">
+<O>
+<![CDATA[棒长2]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="22" r="1" s="2">
+<O>
+<![CDATA[棒长3]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="23" r="1" s="2">
+<O>
+<![CDATA[扣减长度]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="24" r="1" s="2">
+<O>
+<![CDATA[槽距]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="25" r="1" s="2">
+<O>
+<![CDATA[钢线直径]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="26" r="1" s="2">
+<O>
+<![CDATA[钢线厂家]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="27" r="1" s="2">
+<O>
+<![CDATA[钢线刀数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="28" r="1" s="2">
+<O>
+<![CDATA[切割液厂家]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="29" r="1" s="2">
+<O>
+<![CDATA[切片备注]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="30" r="1" s="2">
+<O>
+<![CDATA[边缘]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="31" r="1" s="2">
+<O>
+<![CDATA[倒角崩边]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="32" r="1" s="2">
+<O>
+<![CDATA[粘胶面崩]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="33" r="1" s="2">
+<O>
+<![CDATA[进刀面崩]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="34" r="1" s="2">
+<O>
+<![CDATA[圆弧倒崩]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="35" r="1" s="2">
+<O>
+<![CDATA[两侧]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="36" r="1" s="2">
+<O>
+<![CDATA[硅脱]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="37" r="1" s="2">
+<O>
+<![CDATA[A-1线痕]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="38" r="1" s="2">
+<O>
+<![CDATA[B级线痕]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="39" r="1" s="2">
+<O>
+<![CDATA[A-1薄片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="40" r="1" s="2">
+<O>
+<![CDATA[B级薄厚片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="41" r="1" s="2">
+<O>
+<![CDATA[TTV50-75]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="42" r="1" s="2">
+<O>
+<![CDATA[TTV75以上]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="43" r="1" s="2">
+<O>
+<![CDATA[脏污]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="44" r="1" s="2">
+<O>
+<![CDATA[双片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="45" r="1" s="2">
+<O>
+<![CDATA[脏片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="46" r="1" s="2">
+<O>
+<![CDATA[卡片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="47" r="1" s="2">
+<O>
+<![CDATA[无法识别]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="48" r="1" s="2">
+<O>
+<![CDATA[缺角]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="49" r="1" s="2">
+<O>
+<![CDATA[C级盒不良]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="50" r="1" s="2">
+<O>
+<![CDATA[花斑]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="51" r="1" s="2">
+<O>
+<![CDATA[台阶]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="52" r="1" s="2">
+<O>
+<![CDATA[晶裂]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="53" r="1" s="2">
+<O>
+<![CDATA[气孔]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="54" r="1" s="2">
+<O>
+<![CDATA[应力片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="55" r="1" s="2">
+<O>
+<![CDATA[高/低阻]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="56" r="1" s="2">
+<O>
+<![CDATA[尺寸]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="57" r="1" s="2">
+<O>
+<![CDATA[A-1棱面不良]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="58" r="1" s="2">
+<O>
+<![CDATA[色差]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="59" r="1" s="2">
+<O>
+<![CDATA[进刀薄厚]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="60" r="1" s="2">
+<O>
+<![CDATA[硅胶]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="61" r="1" s="2">
+<O>
+<![CDATA[亮点/线]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="62" r="1" s="2">
+<O>
+<![CDATA[拼料者]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="63" r="1" s="2">
+<O>
+<![CDATA[粘胶操作者]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="64" r="1" s="2">
+<O>
+<![CDATA[切片上料者]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="65" r="1" s="2">
+<O>
+<![CDATA[切片下料者]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="66" r="1" s="2">
+<O>
+<![CDATA[脱胶者]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="67" r="1" s="2">
+<O>
+<![CDATA[捞料者]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="68" r="1" s="2">
+<O>
+<![CDATA[插片者]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="69" r="1" s="2">
+<O>
+<![CDATA[检测上料者]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="70" r="1" s="2">
+<O>
+<![CDATA[返检者]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="71" r="1" s="2">
+<O>
+<![CDATA[外观者1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="72" r="1" s="2">
+<O>
+<![CDATA[外观者2]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="73" r="1" s="2">
+<O>
+<![CDATA[拼棒时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="74" r="1" s="2">
+<O>
+<![CDATA[粘料ok时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="75" r="1" s="2">
+<O>
+<![CDATA[粘胶出料时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="76" r="1" s="2">
+<O>
+<![CDATA[切片上料日期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="77" r="1" s="2">
+<O>
+<![CDATA[切片下料时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="78" r="1" s="2">
+<O>
+<![CDATA[上料班次]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="79" r="1" s="2">
+<O>
+<![CDATA[脱胶接料时间 ]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="80" r="1" s="2">
+<O>
+<![CDATA[清洗接料时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="81" r="1" s="2">
+<O>
+<![CDATA[返检完成时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="82" r="1" s="2">
+<O>
+<![CDATA[总生产时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="83" r="1" s="2">
+<O>
+<![CDATA[晶托编号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="84" r="1" s="2">
+<O>
+<![CDATA[清洗循环]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="85" r="1" s="2">
+<O>
+<![CDATA[主辊时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="86" r="1" s="2">
+<O>
+<![CDATA[主辊编号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="87" r="1" s="2">
+<O>
+<![CDATA[线锯编码]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="88" r="1" s="2">
+<O>
+<![CDATA[硅棒厂家]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="89" r="1" s="2">
+<O>
+<![CDATA[是否断线]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="90" r="1" s="2">
+<O>
+<![CDATA[是否跳线]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="91" r="1" s="2">
+<O>
+<![CDATA[设备故障]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="92" r="1" s="2">
+<O>
+<![CDATA[1次合格片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="93" r="1" s="2">
+<O>
+<![CDATA[2次合格片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="94" r="1" s="2">
+<O>
+<![CDATA[切片/掉片碎湿重(g)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="95" r="1" s="2">
+<O>
+<![CDATA[切片边皮料湿重(g)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="96" r="1" s="2">
+<O>
+<![CDATA[断线舍弃长度]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="97" r="1" s="2">
+<O>
+<![CDATA[脱胶捞料碎片湿重（g）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="98" r="1" s="2">
+<O>
+<![CDATA[清洗碎片湿重(g)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="99" r="1" s="2">
+<O>
+<![CDATA[检测接料碎(片)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="100" r="1" s="2">
+<O>
+<![CDATA[清洗碎合计(g)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="101" r="1" s="2">
+<O>
+<![CDATA[检测碎片重(片)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="102" r="1" s="2">
+<O>
+<![CDATA[上料碎]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="103" r="1" s="2">
+<O>
+<![CDATA[外观碎]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="104" r="1" s="2">
+<O>
+<![CDATA[返检碎]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="105" r="1" s="2">
+<O>
+<![CDATA[硅棒根数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="106" r="1" s="2">
+<O>
+<![CDATA[本刀开机线量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="107" r="1" s="2">
+<O>
+<![CDATA[本刀停机余线量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="108" r="1" s="2">
+<O>
+<![CDATA[本刀用量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="109" r="1" s="2">
+<O>
+<![CDATA[有效重量(kg)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="110" r="1" s="2">
+<O>
+<![CDATA[称重碎片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="111" r="1" s="2">
+<O>
+<![CDATA[理论碎片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="112" r="1" s="2">
+<O>
+<![CDATA[实际差异]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="113" r="1" s="2">
+<O>
+<![CDATA[制程碎片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="114" r="1" s="2">
+<O>
+<![CDATA[切片机型]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="115" r="1" s="2">
+<O>
+<![CDATA[切片上料班组]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="116" r="1" s="2">
+<O>
+<![CDATA[价值片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="117" r="1" s="2">
+<O>
+<![CDATA[分选进片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="118" r="1" s="2">
+<O>
+<![CDATA[清洗进料数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="119" r="1" s="2">
+<O>
+<![CDATA[加切]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="120" r="1" s="2">
+<O>
+<![CDATA[断线]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="121" r="1" s="2">
+<O>
+<![CDATA[刀数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="122" r="1" s="2">
+<O>
+<![CDATA[跳线]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="123" r="1" s="2">
+<O>
+<![CDATA[线痕率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="124" r="1" s="2">
+<O>
+<![CDATA[TTV率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="125" r="1" s="2">
+<O>
+<![CDATA[破损率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="126" r="1" s="2">
+<O>
+<![CDATA[折合成品率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="127" r="1" s="2">
+<O>
+<![CDATA[掉片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="128" r="1" s="2">
+<O>
+<![CDATA[折合价值率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="129" r="1" s="2">
+<O>
+<![CDATA[出片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="130" r="1" s="2">
+<O>
+<![CDATA[切片碎]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="131" r="1" s="2">
+<O>
+<![CDATA[边皮碎]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="132" r="1" s="2">
+<O>
+<![CDATA[检测碎]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="133" r="1" s="2">
+<O>
+<![CDATA[粘胶板厂家]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PDTDATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row() % 2 = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-657158"/>
+</HighlightAction>
+</Highlight>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性2]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[&A3 % 500 = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.PageHighlightAction">
+<P i="1"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PDT_SHIFT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SHOP_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PLINE_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SERIAL_NUMBER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PDT_TYPE_NEW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEC_EQUIP_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CLN_EQUIP_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DGM_EQUIP_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SORT_EQUIP_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="FIRST_A_PDT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TOTAL_A_PDT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TECH_VALUR_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="OK_LENGTH_TOTAL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="THEORY_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TOTAL_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TOTAL_A1_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="17" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TOTAL_B_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="18" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TOTAL_SUBSTD_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="19" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="O_SCRAP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="20" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="RODS1_LENGTH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="21" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="RODS2_LENGTH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="22" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="RODS3_LENGTH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="23" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUBTRACT_TOTAL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="24" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="HOME_ROLL_GAP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="25" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="STEEL_WIRE_DIAMETER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="26" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="STEEL_WIRE_VENDOR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="27" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="STEEL_WIRE_CUT_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="28" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CUT_LIQUID_VENDOR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="29" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEC_PDT_REMARKS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="30" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_MARGIN"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="31" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_POOUR_COLLAPSE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="32" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_STICKY_COLLAPSE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="33" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_IN_COLLAPSE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="34" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_ARC"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="35" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_SIDE_COLLAPSE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="36" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_SILICON_DROP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="37" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="A1_LINE_MARK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="38" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_LINE_MARK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="39" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="A1_SLICE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="40" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_SLICE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="41" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="C_TTV50_75"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="42" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="O_TTV_C"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="43" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_DIRTY_PIECE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="44" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DUPLICATE_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="45" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DIRTY_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="46" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEIZ_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="47" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="O_UNRECOGNIZED"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="48" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="C_MISSING_ANGLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="49" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TOTAL_SUBFISSURE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="50" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_PIEBALD"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="51" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="C_STAIRS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="52" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="C_CRACK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="53" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="C_PORE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="54" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="C_STRESS_PIECE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="55" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="C_RESISTIVITY_BAD"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="56" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_SIZE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="57" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="A1_POOR_PRISM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="58" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="A1_COLOR_DIFF"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="59" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="A1_KNIFE_SLICE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="60" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="B_SILICA_GEL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="61" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="A1_LIGHTSPOT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="62" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="JOINT_OPR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="63" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="VIS_START_OPR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="64" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEC_START_OPR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="65" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEC_COMPLETE_OPR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="66" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DGM_START_OPR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="67" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="FETCH_OPR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="68" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CLN_START_OPR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="69" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ISPT_OPR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="70" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="REISPT_OPR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="71" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="VISUAL_OPR1"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="72" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="VISUAL_OPR2"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="73" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="JOINTTIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="74" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="VISTIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="75" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="VISCOMTIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="76" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SECSTARTTIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="77" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SECCOMTIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="78" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEC_START_SHIFT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="79" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DGMTIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="80" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CLNTIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="81" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="RETURNTIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="82" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ROUND(PRODUCE_TIME,2)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="83" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUPPORT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="84" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CLN_CIRCLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="85" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="HOME_ROLL_TIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="86" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="HOME_ROLL_NUMBER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="87" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SPOOL_NUMBER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="88" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="RODS_SUPPLIER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="89" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="IS_BREAK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="90" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="IS_JUMP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="91" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="IS_SEC_EQUIP_FAULT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="92" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ONCE_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="93" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TWICE_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="94" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEC_FGMT_WEIGHT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="95" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="BP_FGMT_WEIGHT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="96" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ABANDON_LENGTH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="97" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DGM_FGMT_WEIGHT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="98" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CLN_FGMT_WEIGHT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="99" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="O_RECEIVE_MAT_DEBRIS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="100" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CLEANING_COMBINED"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="101" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ISPT_FGMT_WEIGHT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="102" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="O_FEEDING_DEBRIS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="103" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="O_APPEARANCE_DEBRIS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="104" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="O_RETURN_CHECK_DEBRIS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="105" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="RODS_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="106" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="START_LINE_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="107" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="COMPLETE_LINE_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="108" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="LINE_USED_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="109" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="OK_WEIGHT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="110" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="WT_FGMT_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="111" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="THRY_FGMT_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="112" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ACT_DIFF"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="113" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PDRE_FGMT_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="114" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEC_EQUIP_TYPE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="115" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEC_START_GROUP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="116" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="VALUE_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="117" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SORT_UPLOAD_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="118" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="THRY_CLN_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="119" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ADD_CUT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="120" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="BREAK_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="121" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="122" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="JUMP_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="123" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="STRIA_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="124" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TTV_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="125" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DAMGE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="126" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="EQUICALENT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="127" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="OFF_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="128" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CONVERSION_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="129" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="OPT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="130" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SEC_FRAGMENT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="131" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SIDE_FRAGMENT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="132" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="INSP_FRAGMENT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="133" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PLATE_SUPPLIER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="70" r="3" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="71" r="3" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="72" r="3" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="132" r="6">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="39" r="12" s="8">
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="820800000" height="144000000"/>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+<Background name="ColorBackground" color="-1"/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<LayerReportAttr isPageQuery="true" countPerPage="100"/>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0" useParamsTemplate="true"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" color="-723724" borderRadius="0" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-526086"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="shopName"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="AREA_NAME" viName="SHOP"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[ds2]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr delimiter="&apos;,&apos;" isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="115" y="25" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="plineName"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="P_LINE_NAME" viName="PLINEDESCRIPTION"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[ds3]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr delimiter="&apos;,&apos;" isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="400" y="25" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelshopName"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[车间:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="15" y="25" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.FreeButton">
+<Listener event="click">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[$.each(this.options.form.name_widgets, function(i, item) {
+    if(item.options.type !== 'label') {
+        item.setValue("");
+        item.setText("");
+        item.reset();
+    }
+});]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="button0"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[重置]]></Text>
+</InnerWidget>
+<BoundsAttr x="600" y="120" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="shift"/>
+<LabelName name="班次:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="DESCRIPTION" viName="DESCRIPTION"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[ds4]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="970" y="85" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelshift"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[班次:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="870" y="85" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="dgm"/>
+<LabelName name="脱胶机号:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true"/>
+</InnerWidget>
+<BoundsAttr x="685" y="85" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labeldgm"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[脱胶机号:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="585" y="85" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="sort"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true"/>
+</InnerWidget>
+<BoundsAttr x="400" y="85" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelsort"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[分选机号:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="300" y="85" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="cln"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true"/>
+</InnerWidget>
+<BoundsAttr x="115" y="85" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelcln"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[清洗机号:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="15" y="85" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="equiptype"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true"/>
+</InnerWidget>
+<BoundsAttr x="970" y="55" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelequiptype"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[切片机型:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="870" y="55" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="equipname"/>
+<LabelName name="切片机号:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true"/>
+</InnerWidget>
+<BoundsAttr x="685" y="55" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelequipname"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[切片机号:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="585" y="55" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="endDate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=today()]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="400" y="55" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelendDate"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[到:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="300" y="55" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="startDate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=today()-1]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="115" y="55" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelstartDate"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[生产日期从:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="15" y="55" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="pdtType"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true"/>
+</InnerWidget>
+<BoundsAttr x="970" y="25" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelpdtType"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[产品别:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="870" y="25" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="serNum"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true"/>
+</InnerWidget>
+<BoundsAttr x="684" y="25" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelserNum"/>
+<LabelName name="片区:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[随工单:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="585" y="25" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelplineName"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[片区:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="300" y="25" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="Search"/>
+<LabelName name="plineName:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="510" y="120" width="80" height="25"/>
+</Widget>
+<Sorted sorted="false"/>
+<MobileWidgetList>
+<Widget widgetName="shopName"/>
+<Widget widgetName="plineName"/>
+<Widget widgetName="serNum"/>
+<Widget widgetName="pdtType"/>
+<Widget widgetName="startDate"/>
+<Widget widgetName="endDate"/>
+<Widget widgetName="equipname"/>
+<Widget widgetName="equiptype"/>
+<Widget widgetName="cln"/>
+<Widget widgetName="sort"/>
+<Widget widgetName="dgm"/>
+<Widget widgetName="shift"/>
+<Widget widgetName="Search"/>
+<Widget widgetName="button0"/>
+</MobileWidgetList>
+<Display display="true"/>
+<DelayDisplayContent delay="true"/>
+<UseParamsTemplate use="true"/>
+<Position position="0"/>
+<Design_Width design_width="1287"/>
+<NameTagModified>
+<TagModified tag="equiptype" modified="true"/>
+<TagModified tag="cln" modified="true"/>
+<TagModified tag="endDate" modified="true"/>
+<TagModified tag="serNum" modified="true"/>
+<TagModified tag="shift" modified="true"/>
+<TagModified tag="plineName" modified="true"/>
+<TagModified tag="shopName" modified="true"/>
+<TagModified tag="sort" modified="true"/>
+<TagModified tag="dgm" modified="true"/>
+<TagModified tag="pdtType" modified="true"/>
+<TagModified tag="equipname" modified="true"/>
+<TagModified tag="Search" modified="true"/>
+<TagModified tag="startDate" modified="true"/>
+</NameTagModified>
+<WidgetNameTagMap>
+<NameTag name="equiptype" tag="equiptype:"/>
+<NameTag name="cln" tag="cln:"/>
+<NameTag name="endDate" tag="endDate:"/>
+<NameTag name="serNum" tag="serNum:"/>
+<NameTag name="shift" tag="班次:"/>
+<NameTag name="plineName" tag="片区:"/>
+<NameTag name="shopName" tag="车间:"/>
+<NameTag name="sort" tag="sort:"/>
+<NameTag name="dgm" tag="脱胶机号:"/>
+<NameTag name="pdtType" tag="pdtType:"/>
+<NameTag name="equipname" tag="切片机号:"/>
+<NameTag name="Search" tag="plineName:"/>
+<NameTag name="startDate" tag="startDate:"/>
+</WidgetNameTagMap>
+<ParamAttr class="com.fr.report.mobile.DefaultMobileParamStyle"/>
+</Layout>
+<DesignAttr width="1287" height="146"/>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="128"/>
+<Background name="ColorBackground" color="-11561760"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-11561760"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.SimpleDateFormatThreadSafe">
+<![CDATA[yyyy-MM-dd]]></Format>
+<FRFont name="Microsoft YaHei UI" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="Microsoft YaHei UI" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00]]></Format>
+<FRFont name="Microsoft YaHei UI" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="Microsoft YaHei UI" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-4144960"/>
+<Bottom style="1" color="-4144960"/>
+<Left style="1" color="-4144960"/>
+<Right style="1" color="-4144960"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="KAA"/>
+<PreviewType PreviewType="0"/>
+<TemplateIdAttMark class="com.fr.base.iofile.attr.TemplateIdAttrMark">
+<TemplateIdAttMark TemplateId="6e8de457-030e-45d2-a012-aa1c5b40d449"/>
+</TemplateIdAttMark>
+</WorkBook>

@@ -1,0 +1,2507 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20170720" releaseVersion="10.0.0">
+<TableDataMap>
+<TableData name="joint" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  jointCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'joint'  and   lp.lot_status_i =10   and pdt_status_s = 'started'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="pLine_ds" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineName  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key 
+where  1=1  -- and  a.area_name in   ('${SHOP}')
+
+--${if(len(SHOP)==0,""," and SHOP_NAME_S = '"+SHOP+"' ")}
+${if(len(SHOP)==0,""," and a.area_name in  ('"+SHOP+"')")}
+order by  a.area_name,pl. p_line_name]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="area_ds" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineName  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key 
+]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="total_ds" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S , count( SERIAL_NUMBER_S)  as  lotCount,  sum(JOINT_LENGTH_F)  as  totalLength
+from   at_OM_lotwip  lp
+left join work_order_items  woi  on  woi.order_item_key = lp.ORDER_ITEM_KEY_I
+left join lot  on   lot.lot_name = lp.SERIAL_NUMBER_S
+left join  uda_lot  ul  on ul.object_key = lot.LOT_KEY
+where LOT_STATUS_I = 10 
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="viscose_started" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  viscoseStartedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'viscose'  and   lp.lot_status_i =10   and   pdt_status_s = 'started'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="viscose_completed" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  viscoseCompletedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'viscose'  and   lp.lot_status_i =10   and   pdt_status_s = 'completed'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="section_started" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  sectionStartedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'section'  and   lp.lot_status_i =10   and   pdt_status_s = 'started'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="operation_ds" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  lotCount
+from   at_OM_lotwip  lp 
+where   lp.lot_status_i =10   
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+${if(len(OP_NAME)==0,""," and OP_NAME_S = '"+OP_NAME+"'")}
+${if(len(pdt_status_s)==0,""," and pdt_status_s = '"+pdt_status_s+"'")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="section_completed" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  sectionCompletedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'section'  and   lp.lot_status_i =10   and   pdt_status_s = 'completed'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="deguming_completed" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  degumingCompletedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'deguming'  and   lp.lot_status_i =10   and   pdt_status_s = 'completed'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="deguming_started" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  degumingStartedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'deguming'  and   lp.lot_status_i =10   and   pdt_status_s = 'started'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="clean_started" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  cleanStartedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'clean'  and   lp.lot_status_i =10   and   pdt_status_s = 'started'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="sort_started" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  sortStartedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'sort'  and   lp.lot_status_i =10   and   pdt_status_s = 'started'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="sort_completed" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  sortCompletedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'sort'  and   lp.lot_status_i =10   and   pdt_status_s = 'completed'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="inspect_completed-old" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[
+select  SHOP_NAME_S, PLINE_NAME_S ,  count( lp.SERIAL_NUMBER_S)  as  lotCount ,sum(T_TOTAL_A_I) as  TOTAL_A ,  
+sum（A1_CHROMATIC_ABERRATION_I	+ A1_KNIFE_SLICE_I	+ A1_LIGHTSPOT_I	+ A1_LINE_MARK_I	+ A1_POOR_PRISM_I+ A1_SLICE_I	）  as  TOTAL_A1,
+sum(B_ARC_I + B_ARC_PROJECTION_I	+ B_ARC_PROJECTION_RANGE_S	+ B_BAD_SIDE_I	+ B_BAD_SIDE_RANGE_S	+ B_BOW_I	+ B_DIAMETER_BAD_I	+ B_DIAMETER_BAD_RANGE_S	+ B_DIRTY_PIECE_I	+
+B_HOT_BAK_I	+ B_IN_COLLAPSE_I	+ B_LINE_MARK_I	+ B_MARGIN_I	+ B_PIEBALD_I	+ B_POOUR_COLLAPSE_I	+ B_SIDE_COLLAPSE_I	+ B_SILICA_GEL_I	+ B_SILICON_DROP_I
++ B_SIZE_I	+ B_SLICE_I	+ B_STICKY_COLLAPSE_I	) as  total_B,
+sum(C_CRACK_I	+ C_MISSING_ANGLE_I	+ C_PORE_I	+ C_RESISTIVITY_BAD_I	+ C_RESISTIVITY_BAD_VALUE_S	+ C_STAIRS_I	+ C_STRESS_PIECE_I	+ C_SUBFISSURE_I + C_TTV50_75_I	) as  total_C
+from   at_OM_lotwip  lp
+left join lot  on   lot.lot_name = lp.SERIAL_NUMBER_S
+left join  uda_lot  ul  on ul.object_key = lot.LOT_KEY
+left join at_OM_recheck   aor on  aor.SERIAL_NUMBER_S = lp.SERIAL_NUMBER_S
+left join lot  on   lot.lot_name = lp.SERIAL_NUMBER_S
+left join  uda_lot  ul  on ul.object_key = lot.LOT_KEY
+
+where OP_NAME_S = 'inspect'  and   lp.lot_status_i =10   and   pdt_status_s = 'completed'  --and  ul.pack_status_i  != 20  --  20   包装完成
+${if(len(SHOP)==0,""," and SHOP_NAME_S = '"+SHOP+"' ")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S =  '"+PLINE_NAME+"' ")}
+--${if(len(OP_NAME)==0,""," and OP_NAME_S = '"+OP_NAME+"'")}
+${if(len(pdt_status_s)==0,""," and pdt_status_s = '"+pdt_status_s+"'")}
+group  by  SHOP_NAME_S, PLINE_NAME_S
+order by  SHOP_NAME_S, PLINE_NAME_S ]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="grade_ds" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select   SHOP_NAME_S，PLINE_NAME_S , grade,  sum(qty_s)  qry
+from  (
+    --  未裝托
+    select    c.SHOP_NAME_S ,   c.PLINE_NAME_S ,      NVL(PARENT_GRADE_ID_S  , grade_s  ) AS grade  ，  c.QTY_S  from  at_om_packprintcase   c     
+    left join at_om_productGrade   op on  op.GRADE_ID_S  = c.grade_s
+    where   c.tray_code_s  is  null   and  c.QTY_S  is not null 
+    
+union  all
+    --  已裝托未入库确认
+    select     c.SHOP_NAME_S ,   c.PLINE_NAME_S ,  NVL(PARENT_GRADE_ID_S  , grade_s  ) AS grade  ， c.QTY_S  from  at_om_packprintcase   c   
+    left join at_om_productGrade   op on   op.GRADE_ID_S  = c.grade_s
+    left join  at_om_packprinttray  t on  t.tray_code_s  =  c.tray_code_s 
+    where  t.storage_flag_i  != 20 
+)
+group by    SHOP_NAME_S，PLINE_NAME_S   ,  grade]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="inspect_completed" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  inspectCompletedCount
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'inspect'  and   lp.lot_status_i =10   and   pdt_status_s = 'completed'
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="norireport" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select count(t.serial_number_s)
+  from at_om_recheck t
+  left join lot_uv u on u.LOT_NAME=t.serial_number_s
+ where to_char(t.creation_time, 'yyyy-MM-dd hh24:mi:ss') >
+       '2020-02-28 08:30:00'
+   and to_char(t.creation_time, 'yyyy-MM-dd hh24:mi:ss') <
+       to_char(sysdate-8/24/60, 'yyyy-MM-dd hh24:mi:ss')
+   --and t.serial_number_s not like 'CZF%' 
+   and  regexp_like(t.serial_number_s,'CZL|CZM|CZS')   
+   and t.status_i=20
+   and t.serial_number_s not in 
+   (select p.serial_number from ETL_OM_PdtDailyDetail p)]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="joint_completed" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  SHOP_NAME_S, PLINE_NAME_S ,count(SERIAL_NUMBER_S)  jointCountcl
+from   at_OM_lotwip  lp 
+where OP_NAME_S = 'joint'  and   lp.lot_status_i =10   and pdt_status_s = 'completed' 
+${if(len(SHOP)==0,""," and SHOP_NAME_S in ('"+SHOP+"' )")}
+${if(len(PLINE_NAME)==0,""," and PLINE_NAME_S in ( '"+PLINE_NAME+"') ")}
+group by  SHOP_NAME_S, PLINE_NAME_S
+order  by  SHOP_NAME_S, PLINE_NAME_S]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+</TableDataMap>
+<ElementCaseMobileAttr>
+<ElementCaseMobileAttrProvider horizontal="1" vertical="1" zoom="true" refresh="false" isUseHTML="false" isMobileCanvasSize="false" appearRefresh="false" allowFullScreen="false"/>
+</ElementCaseMobileAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="2"/>
+<FR/>
+<HC F="0" T="2"/>
+<FC/>
+<UPFCR COLUMN="true" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1676400,0,1152000,1152000,1152000,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[4907280,2346960,3596640,3657600,3657600,4084320,4206240,2651760,5242560,2834640,5791200,9144000,4389120,4389120,3200400,5257800,4358640,4358640,4358640,4358640,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="20" s="0">
+<O>
+<![CDATA[车间在制品报表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="20" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="21" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="22" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="23" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="24" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="25" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="26" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="27" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="28" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="29" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="30" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[车间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[片区]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[在线长度]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" cs="3" s="1">
+<O>
+<![CDATA[备料区]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" cs="2" s="1">
+<O>
+<![CDATA[切片在线]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" cs="4" s="1">
+<O>
+<![CDATA[清洗区域在线]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="1">
+<O>
+<![CDATA[检测在线]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="1" s="1">
+<O>
+<![CDATA[板数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="1" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="1">
+<O>
+<![CDATA[车间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="1">
+<O>
+<![CDATA[片区]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="1">
+<O>
+<![CDATA[在线长度]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" s="1">
+<O>
+<![CDATA[拼棒开始]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" cs="2" s="1">
+<O>
+<![CDATA[粘胶未出料]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" s="1">
+<O>
+<![CDATA[已出料未切片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="1">
+<O>
+<![CDATA[切片上料]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="1">
+<O>
+<![CDATA[已切片下料未脱胶]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2" s="1">
+<O>
+<![CDATA[脱胶上料]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="2" s="1">
+<O>
+<![CDATA[脱胶下料未清洗]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="2" s="1">
+<O>
+<![CDATA[插片清洗上料未过分选]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="2" s="1">
+<O>
+<![CDATA[已分选未检验]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="2" s="1">
+<O>
+<![CDATA[外观检完成]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="2" s="3">
+<O>
+<![CDATA[总在制数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="2" s="4">
+<O>
+<![CDATA[返检完成未进日报]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="2" s="1">
+<O>
+<![CDATA[A级品在线(片)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="2" s="1">
+<O>
+<![CDATA[A-1级(片)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="2" s="1">
+<O>
+<![CDATA[B级在线(片)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="2" s="1">
+<O>
+<![CDATA[C级在线(片)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="total_ds" columnName="SHOP_NAME_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="total_ds" columnName="PLINE_NAME_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="total_ds" columnName="TOTALLENGTH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="joint" columnName="JOINTCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线报表明细-拼棒">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[joint]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[started]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1200" height="500"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线报表明细-拼料]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="4" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="joint_completed" columnName="JOINTCOUNTCL"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线报表明细-拼棒">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[joint]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[completed]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1200" height="500"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线报表明细-拼料]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="5" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="viscose_started" columnName="VISCOSESTARTEDCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线明细报表-粘胶未出料">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[viscose]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[started]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1200" height="500"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线明细报表-粘胶未出料]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="6" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="viscose_completed" columnName="VISCOSECOMPLETEDCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线报表明细-已出料未切片">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[viscose]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[completed]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="columnName"/>
+<O>
+<![CDATA[ 粘胶出料时间]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1400" height="500"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail_start.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线报表明细-已出料未切片]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="7" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="section_started" columnName="SECTIONSTARTEDCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线报表明细-切片">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[section]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[started]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1400" height="600"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail_start.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线报表明细-切片]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="8" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="section_completed" columnName="SECTIONCOMPLETEDCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线表明细-已切片下料未脱胶">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[section]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[completed]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1400" height="600"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail_start.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线报表明细-已切片下料未脱胶]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="9" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="deguming_started" columnName="DEGUMINGSTARTEDCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线报表明细-脱胶">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[deguming]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[started]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1400" height="600"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail_start.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线报表明细-脱胶]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="10" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="deguming_completed" columnName="DEGUMINGCOMPLETEDCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线表明细-待清洗(板)">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[deguming]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[completed]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1200" height="600"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail_start.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线报表明细-待清洗]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="11" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="clean_started" columnName="CLEANSTARTEDCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线表明细-清洗在线">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[clean]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[started]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1400" height="600"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail_start.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线报表明细-清洗在线]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="12" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="sort_completed" columnName="SORTCOMPLETEDCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线报表明细-已分选未包装">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[sort]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[completed]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1400" height="600"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail_start.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线明细报表-已分选未包装]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="13" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="inspect_completed" columnName="INSPECTCOMPLETEDCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线报表明细-外观检完成">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="OP_NAME"/>
+<O>
+<![CDATA[inspect]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="pdt_status_s"/>
+<O>
+<![CDATA[completed]]></O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1400" height="600"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail_start.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线明细报表-外观检完成]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="14" r="3" s="7">
+<O t="DSColumn">
+<Attributes dsName="total_ds" columnName="LOTCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="工序在线报表明细-板数">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="PLINE_NAME"/>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=B4]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="1500" height="500"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_detail_total.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[工序在线报表明细-总数]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand leftParentDefault="false" left="B4"/>
+</C>
+<C c="15" r="3" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="grade_ds" columnName="QRY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[GRADE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[A]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="17" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="grade_ds" columnName="QRY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[GRADE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[A-1]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="18" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="grade_ds" columnName="QRY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[GRADE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[B]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="19" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="grade_ds" columnName="QRY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[SHOP_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="0" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[PLINE_NAME_S]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="3"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[GRADE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[C]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="0" r="4" s="5">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" s="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(C4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(D4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="4" cs="2" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(E4) + sum(F4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(G4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(H4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(I4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(J4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(K4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(L4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(M4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(N4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="4" s="9">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(O4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="4" s="7">
+<O t="DSColumn">
+<Attributes dsName="norireport" columnName="COUNT(T.SERIAL_NUMBER_S)"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="未进日报">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters/>
+<TargetFrame>
+<![CDATA[_dialog]]></TargetFrame>
+<Features width="800" height="600"/>
+<ReportletName showPI="true">
+<![CDATA[/production/lg_report_OM_processOnLine_norireport.cpt]]></ReportletName>
+<Attr>
+<DialogAttr class="com.fr.js.ReportletHyperlinkDialogAttr">
+<O>
+<![CDATA[]]></O>
+<Location center="true"/>
+</DialogAttr>
+</Attr>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="16" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(Q4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(R4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(S4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="4" s="5">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(T4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="5" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="6" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="7" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="8" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="9" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="10" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="11" s="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="11" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="12" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="13" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="14" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="15">
+<O>
+<![CDATA[ ]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="15" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="285120000" height="50400000"/>
+<Margin top="1008000" left="1008000" bottom="1008000" right="1008000"/>
+</PaperSetting>
+<Background name="ColorBackground" color="-1"/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0" useParamsTemplate="true"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" color="-723724" borderRadius="0" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-526086"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="Search"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="661" y="25" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="PLINE_NAME"/>
+<LabelName name="PLINE_NAME:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="P_LINE_NAME" viName="PLINENAME"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[pLine_ds]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr delimiter="&apos;,&apos;" isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="428" y="25" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelPLINE_NAME"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[片区:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="348" y="25" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="SHOP"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DirectEdit>
+<![CDATA[false]]></DirectEdit>
+<CustomData>
+<![CDATA[false]]></CustomData>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="AREA_NAME" viName="SHOP"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[area_ds]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr delimiter="&apos;,&apos;" isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="130" y="25" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="LabelSHOP"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[车间:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="50" y="25" width="80" height="21"/>
+</Widget>
+<Sorted sorted="false"/>
+<MobileWidgetList>
+<Widget widgetName="SHOP"/>
+<Widget widgetName="PLINE_NAME"/>
+<Widget widgetName="Search"/>
+</MobileWidgetList>
+<Display display="true"/>
+<DelayDisplayContent delay="true"/>
+<UseParamsTemplate use="true"/>
+<Position position="0"/>
+<Design_Width design_width="960"/>
+<NameTagModified>
+<TagModified tag="SHOP" modified="true"/>
+<TagModified tag="PLINE_NAME" modified="true"/>
+</NameTagModified>
+<WidgetNameTagMap>
+<NameTag name="SHOP" tag="车间:"/>
+<NameTag name="PLINE_NAME" tag="PLINE_NAME:"/>
+</WidgetNameTagMap>
+<ParamAttr class="com.fr.report.mobile.DefaultMobileParamStyle"/>
+</Layout>
+<DesignAttr width="960" height="80"/>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="1" size="128" foreground="-1"/>
+<Background name="ColorBackground" color="-11561760"/>
+<Border>
+<Top style="1" color="-11561760"/>
+<Bottom style="1" color="-11561760"/>
+<Left style="1" color="-11561760"/>
+<Right style="1" color="-11561760"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="80"/>
+<Background name="ColorBackground" color="-1"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-1"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="ColorBackground" color="-1"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="72"/>
+<Background name="ColorBackground" color="-1"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top color="-3024920"/>
+<Bottom color="-3024920"/>
+<Left color="-3024920"/>
+<Right color="-3024920"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="KAA"/>
+<PreviewType PreviewType="0"/>
+<TemplateIdAttMark class="com.fr.base.iofile.attr.TemplateIdAttrMark">
+<TemplateIdAttMark TemplateId="d6a7929c-ebf1-470d-9938-de458ca3513b"/>
+</TemplateIdAttMark>
+</WorkBook>

@@ -1,0 +1,957 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20170720" releaseVersion="10.0.0">
+<TableDataMap>
+<TableData name="LotDataCollection" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="enddate"/>
+<O>
+<![CDATA[2019-12-02]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="shop_name_s"/>
+<O>
+<![CDATA[101]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pline_name_s"/>
+<O>
+<![CDATA[101A,101B]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startdate"/>
+<O>
+<![CDATA[2019-12-01]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select a.shop_name_s,
+       a.pline_name_s,
+       count(*) nums,
+       --to_char(b.creation_time,'yyyy-mm-dd hh24:mi:ss') 上一刀上料时间,
+       --to_char(a.creation_time, 'yyyy-mm-dd hh24:mi:ss') 本刀上料时间,
+       --to_char(b.complete_time_t,'yyyy-mm-dd hh24:mi:ss')上一刀下料时间,
+       --to_char(a.complete_time_t,'yyyy-mm-dd hh24:mi:ss')本刀下料时间,\
+       to_char(a.start_time_t, 'dd hh24') dt,
+       sum(ceil((to_date(to_char(a.start_time_t, 'yyyy-mm-dd hh24:mi:ss'),
+                         'yyyy-mm-dd hh24:mi:ss') -
+                to_date(to_char(b.complete_time_t, 'yyyy-mm-dd hh24:mi:ss'),
+                         'yyyy-mm-dd hh24:mi:ss')) * 24 * 60)) res,
+       sum(a.steel_wire_run_qty_f - a.line_used_f) sumsteel_run_ex
+
+  from (select rownum cnt,
+               start_time_t,
+               complete_time_t,
+               shop_name_s,
+               pline_name_s,
+               Equip_Name_s,
+               serial_number_s,
+               steel_wire_run_qty_f,
+               line_used_f
+          from (select lot.start_time_t,
+                       lot.complete_time_t,
+                       lot.shop_name_s,
+                       lot.pline_name_s,
+                       lot.Equip_Name_s,
+                       lot.serial_number_s,
+                       dc.steel_wire_run_qty_f,
+                       production.line_used_f
+                  from at_om_lothistory lot
+                  join at_om_datacollection dc
+                    on lot.serial_number_s = dc.serial_number_s
+                  join (select l.LOT_NAME as SerilNum, job.line_used_f
+                              from lot_uv l
+                              left join (SELECT p.part_number,
+                                               up.model_S,
+                                               up.SPECIFICATIONS_S,
+                                               up.ITEM_ID_I
+                                          FROM PART p
+                                         INNER JOIN UDA_PART up
+                                            ON part_key = Object_key) p
+                                on l.part_number = p.part_number
+                              left join AT_OM_PRODUCTCATEGORY pa
+                                on pa.INVENTORY_ITEM_ID_I = p.ITEM_ID_I
+                              left join at_om_Jobno job
+                                on job.product_type_old_s =
+                                   pa.PRODUCT_TYPE_NEW_S
+                             where job.job_type_s like '%常规%第一刀%') production
+                    on lot.serial_number_s = production.SerilNum
+                 where lot.start_time_t >=
+                       to_date('${startdate}', 'yyyy-mm-dd hh24:mi:ss')-1/24
+                   and lot.start_time_t <=
+                       to_date('${enddate}', 'yyyy-mm-dd hh24:mi:ss')
+                   and lot.op_name_s = 'section'
+                 ${if(len(shop_name_s) = 0,
+                            "",
+                            "and lot.shop_name_s in('" +
+                               replace(shop_name_s, ",", "','") + "')") }
+                 ${if(len(pline_name_s) = 0,
+                            "",
+                            "and lot.pline_name_s in('" +
+                               replace(pline_name_s, ",", "','") + "')") }
+                 order by lot.equip_name_s, lot.start_time_t)) a,
+       (select rownum cnt,
+               start_time_t,
+               complete_time_t,
+               shop_name_s,
+               pline_name_s,
+               Equip_Name_s,
+               serial_number_s,
+               steel_wire_run_qty_f,
+               line_used_f
+          from (select lot.start_time_t,
+                       lot.complete_time_t,
+                       lot.shop_name_s,
+                       lot.pline_name_s,
+                       lot.Equip_Name_s,
+                       lot.serial_number_s,
+                       dc.steel_wire_run_qty_f,
+                       production.line_used_f
+                  from at_om_lothistory lot
+                  join at_om_datacollection dc
+                    on lot.serial_number_s = dc.serial_number_s
+                  join (select l.LOT_NAME as SerilNum, job.line_used_f
+                              from lot_uv l
+                              left join (SELECT p.part_number,
+                                               up.model_S,
+                                               up.SPECIFICATIONS_S,
+                                               up.ITEM_ID_I
+                                          FROM PART p
+                                         INNER JOIN UDA_PART up
+                                            ON part_key = Object_key) p
+                                on l.part_number = p.part_number
+                              left join AT_OM_PRODUCTCATEGORY pa
+                                on pa.INVENTORY_ITEM_ID_I = p.ITEM_ID_I
+                              left join at_om_Jobno job
+                                on job.product_type_old_s =
+                                   pa.PRODUCT_TYPE_NEW_S
+                             where job.job_type_s like '%常规%第一刀%') production
+                    on lot.serial_number_s = production.SerilNum
+                 where lot.start_time_t >=
+                       to_date('${startdate}', 'yyyy-mm-dd hh24:mi:ss')-1/24
+                   and lot.start_time_t <=
+                       to_date('${enddate}', 'yyyy-mm-dd hh24:mi:ss')
+                   and lot.op_name_s = 'section'
+                
+                 ${if(len(shop_name_s) = 0,
+                            "",
+                            "and lot.shop_name_s in('" +
+                               replace(shop_name_s, ",", "','") + "')") }
+                 ${if(len(pline_name_s) = 0,
+                            "",
+                            "and lot.pline_name_s in('" +
+                               replace(pline_name_s, ",", "','") + "')") }
+                 order by lot.equip_name_s, lot.start_time_t)) b
+ where b.cnt + 1 = a.cnt
+   and a.Equip_Name_s = b.equip_name_s
+ group by a.shop_name_s, a.pline_name_s, to_char(a.start_time_t, 'dd hh24')
+ order by a.shop_name_s, a.pline_name_s, to_char(a.start_time_t, 'dd hh24')
+--车间，片区，时间间隔，刀数,实际用线量
+]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="MaintainOrder" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="enddate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="shop_name_s"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pline_name_s"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startdate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select to_char(actual_start_time_t, 'dd hh24') StartTime,
+       production_line_s,
+       sum(actual_duration_f) sumres
+  from at_EM_MaintainOrder a
+ where actual_start_time_t >= to_date('${startdate}', 'yyyy-mm-dd hh24:mi:ss')
+ and actual_start_time_t <= to_date('${enddate}', 'yyyy-mm-dd hh24:mi:ss')
+ and equip_id_s like '%Q%'
+${if(len(shop_name_s)=0,"","and Area_s in('"+replace(shop_name_s,",","','")+"')")}
+${if(len(pline_name_s)=0,"","and Production_line_s in('"+replace(pline_name_s,",","','")+"')")}
+group by production_line_s,to_char(actual_start_time_t, 'dd hh24')
+--保养时间]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="RepairOrder" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="enddate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="shop_name_s"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pline_name_s"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startdate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select to_char(repair_starttime_t, 'dd hh24') repairestart,production_line_s,
+      sum(ceil((to_date(to_char(repair_endtime_t, 'yyyy-mm-dd hh24:mi:ss'),
+                         'yyyy-mm-dd hh24:mi:ss') -
+                to_date(to_char(stop_time_t, 'yyyy-mm-dd hh24:mi:ss'),
+                         'yyyy-mm-dd hh24:mi:ss')) * 24 * 60)) sumrepaire
+  from at_em_repairorder b
+ where repair_starttime_t >= to_date('${startdate}', 'yyyy-mm-dd hh24:mi:ss')
+ and repair_starttime_t <= to_date('${enddate}', 'yyyy-mm-dd hh24:mi:ss')
+ ${if(len(shop_name_s)=0,"","and Area_s in('"+replace(shop_name_s,",","','")+"')")}
+${if(len(pline_name_s)=0,"","and Production_line_s in('"+replace(pline_name_s,",","','")+"')")}
+   and equip_id_s like '%Q%'
+     and is_stop_y=1
+   group by production_line_s,to_char(repair_starttime_t, 'dd hh24')
+--维修时间
+]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="Shop_name_s" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT DISTINCT area_name,description FROM area order by area_name]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="Pline_name_s" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP_NAME_S"/>
+<O>
+<![CDATA[101]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_PROD]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT a.Area_name,a.description,c.P_line_name,c.description FROM area a
+LEFT JOIN area_production_line b
+ON a.area_key = b.parent_key
+LEFT JOIN production_line c
+ON b.child_key = c.p_line_key
+WHERE 1=1
+${IF(LEN(SHOP_NAME_S)=0,"","and a.Area_name in ('"+replace(SHOP_NAME_S,",","','")+"')")}
+ORDER BY a.Area_name,c.P_line_name]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+</TableDataMap>
+<ElementCaseMobileAttr>
+<ElementCaseMobileAttrProvider horizontal="1" vertical="1" zoom="true" refresh="false" isUseHTML="false" isMobileCanvasSize="false" appearRefresh="false" allowFullScreen="false"/>
+</ElementCaseMobileAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1728000,1152000,723900,723900,723900,1143000,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[3456000,3456000,3456000,3456000,3456000,3456000,3456000,0,0,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="7" s="0">
+<O>
+<![CDATA[切片工序间隔时间及线耗统计表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[时间段]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[车间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[片区]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[刀数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[时间间隔累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[异常线耗]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[异常时间累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="LotDataCollection" columnName="DT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[=mid(DT,4,2)+":00~"+mid(DT,4,2)+":59"]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2=0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-657158"/>
+</HighlightAction>
+</Highlight>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性2]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[A3="00:00~00:59"]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0" leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="1" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="LotDataCollection" columnName="SHOP_NAME_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2=0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-657158"/>
+</HighlightAction>
+</Highlight>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性2]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[A3="00:00~00:59"]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0" leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="2" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="LotDataCollection" columnName="PLINE_NAME_S"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2=0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-657158"/>
+</HighlightAction>
+</Highlight>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性2]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[A3="00:00~00:59"]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0" leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="3" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="LotDataCollection" columnName="NUMS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2=0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-657158"/>
+</HighlightAction>
+</Highlight>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性2]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[A3="00:00~00:59"]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="LotDataCollection" columnName="RES"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2=0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-657158"/>
+</HighlightAction>
+</Highlight>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性2]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[A3="00:00~00:59"]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0" leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="5" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="LotDataCollection" columnName="SUMSTEEL_RUN_EX"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2=0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-657158"/>
+</HighlightAction>
+</Highlight>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性2]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[A3="00:00~00:59"]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="2">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=h3+i3]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2=0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-657158"/>
+</HighlightAction>
+</Highlight>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性2]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[A3="00:00~00:59"]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Background name="ColorBackground" color="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0" leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="7" r="2">
+<O t="DSColumn">
+<Attributes dsName="MaintainOrder" columnName="SUMRES"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNAME>
+<![CDATA[PRODUCTION_LINE_S]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="LotDataCollection" columnName="PLINE_NAME_S"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNAME>
+<![CDATA[STARTTIME]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="LotDataCollection" columnName="DT"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="C3" upParentDefault="false"/>
+</C>
+<C c="8" r="2">
+<O t="DSColumn">
+<Attributes dsName="RepairOrder" columnName="SUMREPAIRE"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNAME>
+<![CDATA[PRODUCTION_LINE_S]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="LotDataCollection" columnName="PLINE_NAME_S"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNAME>
+<![CDATA[REPAIRESTART]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="LotDataCollection" columnName="DT"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="C3" upParentDefault="false"/>
+</C>
+<C c="0" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="30240000" height="122400000"/>
+<Margin top="1008000" left="2160000" bottom="1008000" right="2160000"/>
+</PaperSetting>
+<Background name="ColorBackground" color="-1"/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="false" windowPosition="1" align="0" useParamsTemplate="true"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" color="-723724" borderRadius="0" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-526086"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="pline_name_s"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="P_LINE_NAME" viName="DESCRIPTION"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[Pline_name_s]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="403" y="45" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelpline_name_s"/>
+<LabelName name="车间:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[片区:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="323" y="45" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="shop_name_s"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="AREA_NAME" viName="AREA_NAME"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[Shop_name_s]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="130" y="45" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelshop_name_s"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[车间:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="50" y="45" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="enddate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=now()]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="403" y="18" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelenddate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[截至日期:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="323" y="18" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="Search"/>
+<LabelName name="enddate:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="762" y="24" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="startdate"/>
+<LabelName name="enddate:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=DATEDELTA(now(),-1)]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="130" y="19" width="150" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelstartdate"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[开始时间:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="50" y="19" width="80" height="21"/>
+</Widget>
+<Sorted sorted="false"/>
+<MobileWidgetList>
+<Widget widgetName="enddate"/>
+<Widget widgetName="startdate"/>
+<Widget widgetName="Search"/>
+<Widget widgetName="shop_name_s"/>
+<Widget widgetName="pline_name_s"/>
+</MobileWidgetList>
+<Display display="true"/>
+<DelayDisplayContent delay="false"/>
+<UseParamsTemplate use="true"/>
+<Position position="0"/>
+<Design_Width design_width="960"/>
+<NameTagModified>
+<TagModified tag="enddate" modified="true"/>
+<TagModified tag="Search" modified="true"/>
+<TagModified tag="shop_name_s" modified="true"/>
+<TagModified tag="pline_name_s" modified="true"/>
+<TagModified tag="startdate" modified="true"/>
+</NameTagModified>
+<WidgetNameTagMap>
+<NameTag name="enddate" tag="enddate:"/>
+<NameTag name="Search" tag="enddate:"/>
+<NameTag name="shop_name_s" tag="shop_name_s:"/>
+<NameTag name="pline_name_s" tag="pline_name_s:"/>
+<NameTag name="startdate" tag="enddate:"/>
+</WidgetNameTagMap>
+<ParamAttr class="com.fr.report.mobile.DefaultMobileParamStyle"/>
+</Layout>
+<DesignAttr width="960" height="80"/>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="微软雅黑" style="1" size="128" foreground="-1"/>
+<Background name="ColorBackground" color="-11561760"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="微软雅黑" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="微软雅黑" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00]]></Format>
+<FRFont name="微软雅黑" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3024920"/>
+<Bottom style="1" color="-3024920"/>
+<Left style="1" color="-3024920"/>
+<Right style="1" color="-3024920"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="KAA"/>
+<PreviewType PreviewType="0"/>
+<TemplateIdAttMark class="com.fr.base.iofile.attr.TemplateIdAttrMark">
+<TemplateIdAttMark TemplateId="56a75c37-fc47-47c5-ab18-d9eb08ba6f31"/>
+</TemplateIdAttMark>
+</WorkBook>

@@ -1,0 +1,1660 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20170720" releaseVersion="10.0.0">
+<TableDataMap>
+<TableData name="dsSteel" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="pdt_date"/>
+<O>
+<![CDATA[2020-01-08]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  distinct count(distinct sec_equip_name) over (partition  by pdt_date,steel_wire_diameter) as equip,steel_wire_diameter,
+sum(cut_count) over (partition  by pdt_date,steel_wire_diameter) as cut_count,
+round((sum(cut_count) over (partition  by pdt_date,steel_wire_diameter)/(count (distinct sec_equip_name) over (partition  by pdt_date,steel_wire_diameter))),2) as single_cut_count,
+round((count(case when  is_break = '是' then 1  end ) over (partition  by pdt_date,steel_wire_diameter))/(sum(cut_count) over (partition  by pdt_date,steel_wire_diameter)),4)*100 ||'%'  as break_count_rate,
+round((sum(line_used_qty) over (partition  by pdt_date,steel_wire_diameter))/(sum(cut_count) over (partition  by pdt_date,steel_wire_diameter)),2) as piece_wire_custom,
+to_char(nvl(round(decode(sum(abandon_length) over (partition  by pdt_date,steel_wire_diameter),0,null)/home_roll_gap/(sum(theory_qty) over (partition  by pdt_date,steel_wire_diameter)),4)*100,0),'fm999999990.099999999') ||'%' as break_abandon_rate,
+to_char(round(sum(total_a_qty) over (partition  by pdt_date,steel_wire_diameter)/(sum(theory_qty) over (partition  by pdt_date,steel_wire_diameter)),4)*100,'fm999999990.099999999') || '%' as cut_success_rate,
+--nvl(round(sum(total_a_qty) over (partition  by pdt_date,steel_wire_diameter)/decode(sum(ok_weight) over (partition  by pdt_date,steel_wire_diameter),0,null),2),0) as a_piece_rate,
+--nvl(round((sum(total_a_qty) over (partition  by pdt_date,steel_wire_diameter)+(sum(total_a1_qty) over (partition  by pdt_date,steel_wire_diameter))*0.6+(sum(total_b_qty) over (partition  by pdt_date,steel_wire_diameter))*0.4+(sum(total_substd_qty) over (partition  by pdt_date,steel_wire_diameter))*0.2)/decode(sum(ok_weight) over (partition  by pdt_date,steel_wire_diameter),0,null),2),0) as value_piece_rate,
+nvl(round(sum(total_a_qty) over (partition  by pdt_date,steel_wire_diameter)/sum(ok_weight) over (partition  by pdt_date,steel_wire_diameter),2),0) as a_piece_rate,
+nvl(round((sum(total_a_qty) over (partition  by pdt_date,steel_wire_diameter)+(sum(total_a1_qty) over (partition  by pdt_date,steel_wire_diameter))*0.6
++(sum(total_b_qty) over (partition  by pdt_date,steel_wire_diameter))*0.4+(sum(total_substd_qty) over (partition  by pdt_date,steel_wire_diameter))*0.2)/sum(ok_weight) over (partition  by pdt_date,steel_wire_diameter),2),0)
+as value_piece_rate,
+ to_char(round((sum(theory_qty) over (partition  by pdt_date,steel_wire_diameter)-(sum(total_a_qty) over (partition  by pdt_date,steel_wire_diameter)
++sum(total_a1_qty) over (partition  by pdt_date,steel_wire_diameter)+sum(total_b_qty) over (partition  by pdt_date,steel_wire_diameter)
++sum(total_substd_qty) over (partition  by pdt_date,steel_wire_diameter)))/(sum(theory_qty) over (partition  by pdt_date,steel_wire_diameter)),4)*100,'fm999999990.099999999') ||'%' as break_piece_rate,
+sum(total_a_qty) over (partition  by pdt_date,steel_wire_diameter) as total_a_qty,
+to_char(round((sum(b_margin) over (partition  by pdt_date,steel_wire_diameter)+ sum(b_poour_collapse) over (partition  by pdt_date,steel_wire_diameter)+ sum(b_sticky_collapse) over (partition  by pdt_date,steel_wire_diameter)
++ sum(b_in_collapse) over (partition  by pdt_date,steel_wire_diameter)+ sum(b_arc) over (partition  by pdt_date,steel_wire_diameter)+ sum(b_side_collapse) over (partition  by pdt_date,steel_wire_diameter)
++ sum(b_silicon_drop) over (partition  by pdt_date,steel_wire_diameter)) 
+/(sum(theory_qty) over (partition  by pdt_date,steel_wire_diameter)) ,4)*100,'fm999999990.099999999') ||'%' as Edge_surface_defects,
+to_char(nvl(round((sum(a1_slice) over (partition  by pdt_date,steel_wire_diameter) + sum(b_slice) over (partition  by pdt_date,steel_wire_diameter)
++ sum(c_ttv50_75) over (partition  by pdt_date,steel_wire_diameter) + sum(o_ttv_c) over (partition  by pdt_date,steel_wire_diameter) + sum(a1_line_mark) over (partition  by pdt_date,steel_wire_diameter)
++ sum(b_line_mark) over (partition  by pdt_date,steel_wire_diameter))/(sum(theory_qty) over (partition  by pdt_date,steel_wire_diameter)),4),0.0)*100,'fm999999990.099999999') ||'%' as ttv_trace,
+to_char(round(sum(c_missing_angle) over (partition  by pdt_date,steel_wire_diameter)/(sum(theory_qty) over (partition  by pdt_date,steel_wire_diameter)),4)*100,'fm999999990.099999999') ||'%' as lack_angle,
+to_char(round((sum(c_subfissure) over (partition  by pdt_date,steel_wire_diameter)+ sum(o_subfissure) over (partition  by pdt_date,steel_wire_diameter)
++ sum(b_dirty_piece) over (partition  by pdt_date,steel_wire_diameter))/(sum(theory_qty) over (partition  by pdt_date,steel_wire_diameter)),4)*100,'fm999999990.099999999') ||'%' as other_defects
+from ETL_OM_PdtDailyDetail
+where 1=1
+${if(len(pdt_date)==0,""," and substr(pdt_date,1,9) = to_date('"+pdt_date+"','yyyy-MM-dd hh24:mi:ss')")}
+and sec_equip_name !='0'
+and  cut_count != 0
+and theory_qty != 0.0f
+and ok_weight != 0.0f
+and  home_roll_gap != 0.0f
+and steel_wire_diameter !=0.0f]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="dsSteelDate" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="pdt_date"/>
+<O>
+<![CDATA[2020-01-08]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  distinct count(distinct sec_equip_name) over (partition  by pdt_date) as equip,steel_wire_diameter,
+sum(cut_count) over (partition  by pdt_date) as cut_count,
+round((sum(cut_count) over (partition  by pdt_date)/(count (distinct sec_equip_name) over (partition  by pdt_date))),2) as single_cut_count,
+round((count(case when  is_break = '是' then 1  end ) over (partition  by pdt_date))/(sum(cut_count) over (partition  by pdt_date)),4)*100 ||'%'  as break_count_rate,
+round((sum(line_used_qty) over (partition  by pdt_date))/(sum(cut_count) over (partition  by pdt_date)),2) as piece_wire_custom,
+to_char(nvl(round(decode(sum(abandon_length) over (partition  by pdt_date),0,null)/home_roll_gap/(sum(theory_qty) over (partition  by pdt_date)),4)*100,0),'fm999999990.099999999') ||'%' as break_abandon_rate,
+round(sum(total_a_qty) over (partition  by pdt_date)/(sum(theory_qty) over (partition  by pdt_date)),4)*100 || '%' as cut_success_rate,
+--nvl(round(sum(total_a_qty) over (partition  by pdt_date)/decode(sum(ok_weight) over (partition  by pdt_date),0,null),2),0) as a_piece_rate,
+--nvl(round((sum(total_a_qty) over (partition  by pdt_date)+(sum(total_a1_qty) over (partition  by pdt_date))*0.6+(sum(total_b_qty) over (partition  by pdt_date))*0.4+(sum(total_substd_qty) over (partition  by pdt_date))*0.2)/decode(sum(ok_weight) over (partition  by pdt_date),0,null),2),0) as value_piece_rate,
+nvl(round(sum(total_a_qty) over (partition  by pdt_date)/sum(ok_weight) over (partition  by pdt_date),2),0) as a_piece_rate,
+nvl(round((sum(total_a_qty) over (partition  by pdt_date)+(sum(total_a1_qty) over (partition  by pdt_date))*0.6 +(sum(total_b_qty) over (partition  by pdt_date))*0.4+(sum(total_substd_qty) over (partition  by pdt_date))*0.2)/sum(ok_weight) over (partition  by pdt_date),2),0) as value_piece_rate,
+round((sum(theory_qty) over (partition  by pdt_date)-(sum(total_a_qty) over (partition  by pdt_date)
++sum(total_a1_qty) over (partition  by pdt_date)+sum(total_b_qty) over (partition  by pdt_date)
++sum(total_substd_qty) over (partition  by pdt_date)))/(sum(theory_qty) over (partition  by pdt_date)),4)*100 ||'%' as break_piece_rate,
+sum(total_a_qty) over (partition  by pdt_date) as total_a_qty,
+to_char(round((sum(b_margin) over (partition  by pdt_date)+ sum(b_poour_collapse) over (partition  by pdt_date)+ sum(b_sticky_collapse) over (partition  by pdt_date)
++ sum(b_in_collapse) over (partition  by pdt_date)+ sum(b_arc) over (partition  by pdt_date)+ sum(b_side_collapse) over (partition  by pdt_date)
++ sum(b_silicon_drop) over (partition  by pdt_date)) 
+/(sum(theory_qty) over (partition  by pdt_date)) ,4)*100,'fm999999990.099999999') ||'%' as Edge_surface_defects,
+to_char(nvl(round((sum(a1_slice) over (partition  by pdt_date) + sum(b_slice) over (partition  by pdt_date)
++ sum(c_ttv50_75) over (partition  by pdt_date) + sum(o_ttv_c) over (partition  by pdt_date) + sum(a1_line_mark) over (partition  by pdt_date)
++ sum(b_line_mark) over (partition  by pdt_date))/(sum(theory_qty) over (partition  by pdt_date)),4),0.0)*100,'fm999999990.099999999') ||'%' as ttv_trace,
+to_char(round(sum(c_missing_angle) over (partition  by pdt_date)/(sum(theory_qty) over (partition  by pdt_date)),4)*100,'fm999999990.099999999') ||'%' as lack_angle,
+to_char(round((sum(c_subfissure) over (partition  by pdt_date)+ sum(o_subfissure) over (partition  by pdt_date)
++ sum(b_dirty_piece) over (partition  by pdt_date))/(sum(theory_qty) over (partition  by pdt_date)),4)*100,'fm999999990.099999999') ||'%' as other_defects
+from ETL_OM_PdtDailyDetail
+where 1=1
+${if(len(pdt_date)==0,""," and substr(pdt_date,1,9) = to_date('"+pdt_date+"','yyyy-MM-dd hh24:mi:ss')")}
+and substr(pdt_date,1,9) = to_date('2020-01-08','yyyy-MM-dd hh24:mi:ss')
+and sec_equip_name !='0'
+and  cut_count != 0
+and theory_qty != 0.0f
+and ok_weight != 0.0f
+and  home_roll_gap != 0.0f
+and steel_wire_diameter !=0.0f]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="dsSteelMonth" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="pdt_date"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  distinct count(distinct sec_equip_name) over (partition  by month,steel_wire_diameter) as equip,steel_wire_diameter,month,
+nvl(substr(to_char(pdt_date,'yyyy-MM-dd'),6,2),'暂无')||'月份月度汇总数据' as selected_month,
+sum(cut_count) over (partition  by month,steel_wire_diameter) as cut_count,
+round((sum(cut_count) over (partition  by month,steel_wire_diameter)/(count (distinct sec_equip_name) over (partition  by month,steel_wire_diameter))),2) as single_cut_count,
+round((count(case when  is_break = '是' then 1  end ) over (partition  by month,steel_wire_diameter))/(sum(cut_count) over (partition  by month,steel_wire_diameter)),4)*100 ||'%'  as break_count_rate,
+round((sum(line_used_qty) over (partition  by month,steel_wire_diameter))/(sum(cut_count) over (partition  by month,steel_wire_diameter)),2) as piece_wire_custom,
+to_char(nvl(round(decode(sum(abandon_length) over (partition  by month,steel_wire_diameter),0,null)/home_roll_gap/(sum(theory_qty) over (partition  by month,steel_wire_diameter)),4)*100,0),'fm999999990.099999999') ||'%' as break_abandon_rate,
+round(sum(total_a_qty) over (partition  by month,steel_wire_diameter)/(sum(theory_qty) over (partition  by month,steel_wire_diameter)),4)*100 || '%' as cut_success_rate,
+--nvl(round(sum(total_a_qty) over (partition  by month,steel_wire_diameter)/decode(sum(ok_weight) over (partition  by month,steel_wire_diameter),0,null),2),0) as a_piece_rate,
+--nvl(round((sum(total_a_qty) over (partition  by month,steel_wire_diameter)+(sum(total_a1_qty) over (partition  by month,steel_wire_diameter))*0.6+(sum(total_b_qty) over (partition  by month,steel_wire_diameter))*0.4+(sum(total_substd_qty) over (partition  by month,steel_wire_diameter))*0.2)/decode(sum(ok_weight) over (partition  by month,steel_wire_diameter),0,null),2),0)as value_piece_rate,
+nvl(round(sum(total_a_qty) over (partition  by month,steel_wire_diameter)/sum(ok_weight) over (partition  by month,steel_wire_diameter),2),0) as a_piece_rate,
+nvl(round((sum(total_a_qty) over (partition  by month,steel_wire_diameter)+(sum(total_a1_qty) over (partition  by month,steel_wire_diameter))*0.6
++(sum(total_b_qty) over (partition  by month,steel_wire_diameter))*0.4+(sum(total_substd_qty) over (partition  by month,steel_wire_diameter))*0.2)/sum(ok_weight) over (partition  by month,steel_wire_diameter),2),0)
+as value_piece_rate,
+to_char(round((sum(theory_qty) over (partition  by month,steel_wire_diameter)-(sum(total_a_qty) over (partition  by month,steel_wire_diameter)
++sum(total_a1_qty) over (partition  by month,steel_wire_diameter)+sum(total_b_qty) over (partition  by month,steel_wire_diameter)
++sum(total_substd_qty) over (partition  by month,steel_wire_diameter)))/(sum(theory_qty) over (partition  by month,steel_wire_diameter)),4)*100,'fm999999990.099999999')  ||'%' as break_piece_rate,
+sum(total_a_qty) over (partition  by month,steel_wire_diameter) as total_a_qty,
+to_char(round((sum(b_margin) over (partition  by month,steel_wire_diameter)+ sum(b_poour_collapse) over (partition  by month,steel_wire_diameter)+ sum(b_sticky_collapse) over (partition  by month,steel_wire_diameter)
++ sum(b_in_collapse) over (partition  by month,steel_wire_diameter)+ sum(b_arc) over (partition  by month,steel_wire_diameter)+ sum(b_side_collapse) over (partition  by month,steel_wire_diameter)
++ sum(b_silicon_drop) over (partition  by month,steel_wire_diameter)) 
+/(sum(theory_qty) over (partition  by month,steel_wire_diameter)) ,4)*100,'fm999999990.099999999') ||'%' as Edge_surface_defects,
+to_char(nvl(round((sum(a1_slice) over (partition  by month,steel_wire_diameter) + sum(b_slice) over (partition  by month,steel_wire_diameter)
++ sum(c_ttv50_75) over (partition  by month,steel_wire_diameter) + sum(o_ttv_c) over (partition  by month,steel_wire_diameter) + sum(a1_line_mark) over (partition  by month,steel_wire_diameter)
++ sum(b_line_mark) over (partition  by month,steel_wire_diameter))/(sum(theory_qty) over (partition  by month,steel_wire_diameter)),4),0.0)*100,'fm999999990.099999999') ||'%' as ttv_trace,
+to_char(round(sum(c_missing_angle) over (partition  by month,steel_wire_diameter)/(sum(theory_qty) over (partition  by month,steel_wire_diameter)),4)*100,'fm999999990.099999999') ||'%' as lack_angle,
+to_char(round((sum(c_subfissure) over (partition  by month,steel_wire_diameter)+ sum(o_subfissure) over (partition  by month,steel_wire_diameter)
++ sum(b_dirty_piece) over (partition  by month,steel_wire_diameter))/(sum(theory_qty) over (partition  by month,steel_wire_diameter)),4)*100,'fm999999990.099999999') ||'%' as other_defects
+from ETL_OM_PdtDailyDetail
+where 1=1 
+${if(len(pdt_date)==0,""," and substr(pdt_date,1,9) = to_date('"+pdt_date+"','yyyy-MM-dd hh24:mi:ss')")}
+and sec_equip_name !='0'
+and  cut_count != 0
+and theory_qty != 0.0f
+and ok_weight != 0.0f
+and  home_roll_gap != 0.0f
+and steel_wire_diameter !=0.0f
+order by selected_month
+]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="dsMachineTypeDate" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="pdt_date"/>
+<O>
+<![CDATA[2020-01-08]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  distinct count(distinct sec_equip_name) over (partition  by pdt_date,sec_equip_type) as equip,sec_equip_type,
+sum(cut_count) over (partition  by pdt_date,sec_equip_type) as cut_count,
+round((sum(cut_count) over (partition  by pdt_date,sec_equip_type)/(count (distinct sec_equip_name) over (partition  by pdt_date,sec_equip_type))),2) as single_cut_count,
+round((count(case when  is_break = '是' then 1  end ) over (partition  by pdt_date,sec_equip_type))/(sum(cut_count) over (partition  by pdt_date,sec_equip_type)),4)*100 ||'%'  as break_count_rate,
+round((sum(line_used_qty) over (partition  by pdt_date,sec_equip_type))/(sum(cut_count) over (partition  by pdt_date,sec_equip_type)),2) as piece_wire_custom,
+to_char(nvl(round(decode(sum(abandon_length) over (partition  by pdt_date,sec_equip_type),0,null)/home_roll_gap/(sum(theory_qty) over (partition  by pdt_date,sec_equip_type)),4)*100,0),'fm999999990.099999999') ||'%' as break_abandon_rate,
+round(sum(total_a_qty) over (partition  by pdt_date,sec_equip_type)/(sum(theory_qty) over (partition  by pdt_date,sec_equip_type)),4)*100 || '%' as cut_success_rate,
+--nvl(round(sum(total_a_qty) over (partition  by pdt_date,sec_equip_type)/decode(sum(ok_weight) over (partition  by pdt_date,sec_equip_type),0,null),2),0) as a_piece_rate,
+--nvl(round((sum(total_a_qty) over (partition  by pdt_date,sec_equip_type)+(sum(total_a1_qty) over (partition  by pdt_date,sec_equip_type))*0.6+(sum(total_b_qty) over (partition  by pdt_date,sec_equip_type))*0.4+(sum(total_substd_qty) over (partition  by pdt_date,sec_equip_type))*0.2)/decode(sum(ok_weight) over (partition  by pdt_date,sec_equip_type),0,null),2),0) as value_piece_rate,
+nvl(round(sum(total_a_qty) over (partition  by pdt_date,sec_equip_type)/sum(ok_weight) over (partition  by pdt_date,sec_equip_type),2),0) as a_piece_rate,
+nvl(round((sum(total_a_qty) over (partition  by pdt_date,sec_equip_type)+(sum(total_a1_qty) over (partition  by pdt_date,sec_equip_type))*0.6
++(sum(total_b_qty) over (partition  by pdt_date,sec_equip_type))*0.4+(sum(total_substd_qty) over (partition  by pdt_date,sec_equip_type))*0.2)/sum(ok_weight) over (partition  by pdt_date,sec_equip_type),2),0)
+as value_piece_rate,
+to_char(round((sum(theory_qty) over (partition  by pdt_date,sec_equip_type)-(sum(total_a_qty) over (partition  by pdt_date,sec_equip_type)
++sum(total_a1_qty) over (partition  by pdt_date,sec_equip_type)+sum(total_b_qty) over (partition  by pdt_date,sec_equip_type)
++sum(total_substd_qty) over (partition  by pdt_date,sec_equip_type)))/(sum(theory_qty) over (partition  by pdt_date,sec_equip_type)),4)*100,'fm999999990.099999999') ||'%' as break_piece_rate,
+sum(total_a_qty) over (partition  by pdt_date,sec_equip_type) as total_a_qty,
+to_char(round((sum(b_margin) over (partition  by pdt_date,sec_equip_type)+ sum(b_poour_collapse) over (partition  by pdt_date,sec_equip_type)+ sum(b_sticky_collapse) over (partition  by pdt_date,sec_equip_type)
++ sum(b_in_collapse) over (partition  by pdt_date,sec_equip_type)+ sum(b_arc) over (partition  by pdt_date,sec_equip_type)+ sum(b_side_collapse) over (partition  by pdt_date,sec_equip_type)
++ sum(b_silicon_drop) over (partition  by pdt_date,sec_equip_type)) 
+/(sum(theory_qty) over (partition  by pdt_date,sec_equip_type)) ,4)*100,'fm999999990.099999999') ||'%' as Edge_surface_defects,
+to_char(nvl(round((sum(a1_slice) over (partition  by pdt_date,sec_equip_type) + sum(b_slice) over (partition  by pdt_date,sec_equip_type)
++ sum(c_ttv50_75) over (partition  by pdt_date,sec_equip_type) + sum(o_ttv_c) over (partition  by pdt_date,sec_equip_type) + sum(a1_line_mark) over (partition  by pdt_date,sec_equip_type)
++ sum(b_line_mark) over (partition  by pdt_date,sec_equip_type))/(sum(theory_qty) over (partition  by pdt_date,sec_equip_type)),4),0.0)*100,'fm999999990.099999999') ||'%' as ttv_trace,
+to_char(round(sum(c_missing_angle) over (partition  by pdt_date,sec_equip_type)/(sum(theory_qty) over (partition  by pdt_date,sec_equip_type)),4)*100,'fm999999990.099999999') ||'%' as lack_angle,
+to_char(round((sum(c_subfissure) over (partition  by pdt_date,sec_equip_type)+ sum(o_subfissure) over (partition  by pdt_date,sec_equip_type)
++ sum(b_dirty_piece) over (partition  by pdt_date,sec_equip_type))/(sum(theory_qty) over (partition  by pdt_date,sec_equip_type)),4)*100,'fm999999990.099999999') ||'%' as other_defects,
+(sum(theory_qty) over (partition  by pdt_date,sec_equip_type))
+from ETL_OM_PdtDailyDetail
+where 1=1
+${if(len(pdt_date)==0,""," and substr(pdt_date,1,9) = to_date('"+pdt_date+"','yyyy-MM-dd hh24:mi:ss')")}
+and sec_equip_name !='0'
+and  cut_count != 0
+and theory_qty != 0.0f
+and ok_weight != 0.0f
+and  home_roll_gap != 0.0f
+and steel_wire_diameter !=0.0f]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="dsMachineTypeMonth" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="pdt_date"/>
+<O>
+<![CDATA[2020-01-08]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  distinct count(distinct sec_equip_name) over (partition  by month,sec_equip_type) as equip,sec_equip_type,
+sum(cut_count) over (partition  by month,sec_equip_type) as cut_count,
+round((sum(cut_count) over (partition  by month,sec_equip_type)/(count (distinct sec_equip_name) over (partition  by month,sec_equip_type))),2) as single_cut_count,
+round((count(case when  is_break = '是' then 1  end ) over (partition  by month,sec_equip_type))/(sum(cut_count) over (partition  by month,sec_equip_type)),4)*100 ||'%'  as break_count_rate,
+round((sum(line_used_qty) over (partition  by month,sec_equip_type))/(sum(cut_count) over (partition  by month,sec_equip_type)),2) as piece_wire_custom,
+to_char(nvl(round(decode(sum(abandon_length) over (partition  by month,sec_equip_type),0,null)/home_roll_gap/(sum(theory_qty) over (partition  by month,sec_equip_type)),4)*100,0),'fm999999990.099999999') ||'%' as break_abandon_rate,
+round(sum(total_a_qty) over (partition  by month,sec_equip_type)/(sum(theory_qty) over (partition  by month,sec_equip_type)),4)*100 || '%' as cut_success_rate,
+--nvl(round(sum(total_a_qty) over (partition  by month,sec_equip_type)/decode(sum(ok_weight) over (partition  by month,sec_equip_type),0,null),2),0) as a_piece_rate,
+--nvl(round((sum(total_a_qty) over (partition  by month,sec_equip_type)+(sum(total_a1_qty) over (partition  by month,sec_equip_type))*0.6+(sum(total_b_qty) over (partition  by month,sec_equip_type))*0.4+(sum(total_substd_qty) over (partition  by month,sec_equip_type))*0.2)/decode(sum(ok_weight) over (partition  by month,sec_equip_type),0,null),2),0)as value_piece_rate,
+nvl(round(sum(total_a_qty) over (partition  by month,sec_equip_type)/sum(ok_weight) over (partition  by month,sec_equip_type),2),0) as a_piece_rate,
+nvl(round((sum(total_a_qty) over (partition  by month,sec_equip_type)+(sum(total_a1_qty) over (partition  by month,sec_equip_type))*0.6
++(sum(total_b_qty) over (partition  by month,sec_equip_type))*0.4+(sum(total_substd_qty) over (partition  by month,sec_equip_type))*0.2)/sum(ok_weight) over (partition  by month,sec_equip_type),2),0) as value_piece_rate,
+to_char(round((sum(theory_qty) over (partition  by month,sec_equip_type)-(sum(total_a_qty) over (partition  by month,sec_equip_type)
++sum(total_a1_qty) over (partition  by month,sec_equip_type)+sum(total_b_qty) over (partition  by month,sec_equip_type)
++sum(total_substd_qty) over (partition  by month,sec_equip_type)))/(sum(theory_qty) over (partition  by month,sec_equip_type)),4)*100,'fm999999990.099999999') ||'%' as break_piece_rate,
+sum(total_a_qty) over (partition  by month,sec_equip_type) as total_a_qty,
+to_char(round((sum(b_margin) over (partition  by month,sec_equip_type)+ sum(b_poour_collapse) over (partition  by month,sec_equip_type)+ sum(b_sticky_collapse) over (partition  by month,sec_equip_type)
++ sum(b_in_collapse) over (partition  by month,sec_equip_type)+ sum(b_arc) over (partition  by month,sec_equip_type)+ sum(b_side_collapse) over (partition  by month,sec_equip_type)
++ sum(b_silicon_drop) over (partition  by month,sec_equip_type)) 
+/(sum(theory_qty) over (partition  by month,sec_equip_type)) ,4)*100,'fm999999990.099999999') ||'%' as Edge_surface_defects,
+to_char(nvl(round((sum(a1_slice) over (partition  by month,sec_equip_type) + sum(b_slice) over (partition  by month,sec_equip_type)
++ sum(c_ttv50_75) over (partition  by month,sec_equip_type) + sum(o_ttv_c) over (partition  by month,sec_equip_type) + sum(a1_line_mark) over (partition  by month,sec_equip_type)
++ sum(b_line_mark) over (partition  by month,sec_equip_type))/(sum(theory_qty) over (partition  by month,sec_equip_type)),4),0.0)*100,'fm999999990.099999999') ||'%' as ttv_trace,
+to_char(round(sum(c_missing_angle) over (partition  by month,sec_equip_type)/(sum(theory_qty) over (partition  by month,sec_equip_type)),4)*100,'fm999999990.099999999') ||'%' as lack_angle,
+to_char(round((sum(c_subfissure) over (partition  by month,sec_equip_type)+ sum(o_subfissure) over (partition  by month,sec_equip_type)
++ sum(b_dirty_piece) over (partition  by month,sec_equip_type))/(sum(theory_qty) over (partition  by month,sec_equip_type)),4)*100,'fm999999990.099999999') ||'%' as other_defects
+from ETL_OM_PdtDailyDetail
+where 1=1 
+${if(len(pdt_date)==0,""," and month = (select month from ETL_OM_PdtDailyDetail where substr(pdt_date,1,9) = to_date('"+pdt_date+"' ,'yyyy-MM-dd hh24:mi:ss') group by month) ")}
+and sec_equip_name !='0'
+and  cut_count != 0
+and theory_qty != 0.0f
+and ok_weight != 0.0f
+and  home_roll_gap != 0.0f
+and steel_wire_diameter !=0.0f]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="dsOnlyMonth" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="pdt_date"/>
+<O>
+<![CDATA[2019-12-17]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  distinct count(distinct sec_equip_name) over (partition  by month) as equip,--steel_wire_diameter,month,
+--nvl(substr(to_char(pdt_date,'yyyy-MM-dd'),6,2),'暂无')||'月份月度汇总数据' as selected_month,
+sum(cut_count) over (partition  by month) as cut_count,
+round((sum(cut_count) over (partition  by month)/(count (distinct sec_equip_name) over (partition  by month))),2) as single_cut_count,
+round((count(case when  is_break = '是' then 1  end ) over (partition  by month))/(sum(cut_count) over (partition  by month)),4)*100 ||'%'  as break_count_rate,
+round((sum(line_used_qty) over (partition  by month))/(sum(cut_count) over (partition  by month)),2) as piece_wire_custom,
+to_char(nvl(round(decode(sum(abandon_length) over (partition  by month),0,null)/home_roll_gap/(sum(theory_qty) over (partition  by month)),4)*100,0),'fm999999990.099999999') ||'%' as break_abandon_rate,
+round(sum(total_a_qty) over (partition  by month)/(sum(theory_qty) over (partition  by month)),4)*100 || '%' as cut_success_rate,
+round(sum(total_a_qty) over (partition  by month)/(sum(ok_weight) over (partition  by month)),2) as a_piece_rate,
+round((sum(total_a_qty) over (partition  by month)+(sum(total_a1_qty) over (partition  by month))*0.6
++(sum(total_b_qty) over (partition  by month))*0.4+(sum(total_substd_qty) over (partition  by month))*0.2)/(sum(ok_weight) over (partition  by month)),2) 
+as value_piece_rate,
+to_char(round((sum(theory_qty) over (partition  by month)-(sum(total_a_qty) over (partition  by month)
++sum(total_a1_qty) over (partition  by month)+sum(total_b_qty) over (partition  by month)
++sum(total_substd_qty) over (partition  by month)))/(sum(theory_qty) over (partition  by month)),4)*100 ,'fm999999990.099999999') ||'%' as break_piece_rate,
+sum(total_a_qty) over (partition  by month) as total_a_qty,
+to_char(round((sum(b_margin) over (partition  by month)+ sum(b_poour_collapse) over (partition  by month)+ sum(b_sticky_collapse) over (partition  by month)
++ sum(b_in_collapse) over (partition  by month)+ sum(b_arc) over (partition  by month)+ sum(b_side_collapse) over (partition  by month)
++ sum(b_silicon_drop) over (partition  by month)) 
+/(sum(theory_qty) over (partition  by month)) ,4)*100,'fm999999990.099999999') ||'%' as Edge_surface_defects,
+to_char(nvl(round((sum(a1_slice) over (partition  by month) + sum(b_slice) over (partition  by month)
++ sum(c_ttv50_75) over (partition  by month) + sum(o_ttv_c) over (partition  by month) + sum(a1_line_mark) over (partition  by month)
++ sum(b_line_mark) over (partition  by month))/(sum(theory_qty) over (partition  by month)),4),0.0)*100,'fm999999990.099999999') ||'%' as ttv_trace,
+to_char(round(sum(c_missing_angle) over (partition  by month)/(sum(theory_qty) over (partition  by month)),4)*100,'fm999999990.099999999') ||'%' as lack_angle,
+to_char(round((sum(c_subfissure) over (partition  by month)+ sum(o_subfissure) over (partition  by month)
++ sum(b_dirty_piece) over (partition  by month))/(sum(theory_qty) over (partition  by month)),4)*100,'fm999999990.099999999') ||'%' as other_defects
+from ETL_OM_PdtDailyDetail
+where 1=1  
+${if(len(pdt_date)==0,""," and month = (select month from ETL_OM_PdtDailyDetail where substr(pdt_date,1,9) = to_date('"+pdt_date+"' ,'yyyy-MM-dd hh24:mi:ss') group by month) ")}
+and sec_equip_name !='0'
+and  cut_count != 0
+and theory_qty != 0.0f
+and ok_weight != 0.0f
+and  home_roll_gap != 0.0f
+and steel_wire_diameter !=0.0f]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+</TableDataMap>
+<ElementCaseMobileAttr>
+<ElementCaseMobileAttrProvider horizontal="1" vertical="1" zoom="true" refresh="false" isUseHTML="false" isMobileCanvasSize="false" appearRefresh="false" allowFullScreen="false" allowDoubleClickOrZoom="true" functionalWhenUnactivated="false"/>
+</ElementCaseMobileAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1728000,1152000,1152000,1152000,1152000,1152000,1152000,1152000,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[2743200,2743200,2743200,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="17" s="0">
+<O>
+<![CDATA[计划部生产日报表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[项目]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[类型]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[运行机台数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[上料刀数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[单刀机数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[总断线率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[单片用线量   米/片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[断线舍弃碎片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[成品率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[A级出片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[价值片出片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="1">
+<O>
+<![CDATA[碎片率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="1">
+<O>
+<![CDATA[A级片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="1" s="1">
+<O>
+<![CDATA[棱面不良]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="1" s="1">
+<O>
+<![CDATA[线痕+TTV]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="1" s="1">
+<O>
+<![CDATA[缺角]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="1" s="1">
+<O>
+<![CDATA[其他不良（脏污/隐裂等）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" rs="2" s="1">
+<O>
+<![CDATA[线径分类每日数据]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="STEEL_WIRE_DIAMETER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2==0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-1118482"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="EQUIP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2==0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-1118482"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="SINGLE_CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="BREAK_COUNT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="PIECE_WIRE_CUSTOM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="BREAK_ABANDON_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="CUT_SUCCESS_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="A_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="VALUE_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="BREAK_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="TOTAL_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="EDGE_SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="TTV_TRACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="LACK_ANGLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteel" columnName="OTHER_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="3" s="1">
+<O>
+<![CDATA[日汇总]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="EQUIP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="3" s="1">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(D3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="SINGLE_CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="BREAK_COUNT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="PIECE_WIRE_CUSTOM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="BREAK_ABANDON_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="CUT_SUCCESS_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="A_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="VALUE_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="BREAK_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="TOTAL_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="EDGE_SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="TTV_TRACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="LACK_ANGLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelDate" columnName="OTHER_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="4" s="1">
+<O>
+<![CDATA[切片机型分类每日数据]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="SEC_EQUIP_TYPE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2==0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-1118482"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="2" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="EQUIP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="SINGLE_CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="BREAK_COUNT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="PIECE_WIRE_CUSTOM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="BREAK_ABANDON_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="CUT_SUCCESS_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="A_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="VALUE_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="BREAK_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="TOTAL_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="EDGE_SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="TTV_TRACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="LACK_ANGLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeDate" columnName="OTHER_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="5" s="1">
+<O>
+<![CDATA[切片机型分类月度汇总数据]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="SEC_EQUIP_TYPE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2==0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-1118482"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="2" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="EQUIP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="SINGLE_CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="BREAK_COUNT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="PIECE_WIRE_CUSTOM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="BREAK_ABANDON_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="CUT_SUCCESS_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="A_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="VALUE_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="BREAK_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="TOTAL_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="EDGE_SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="TTV_TRACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="LACK_ANGLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="5" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsMachineTypeMonth" columnName="OTHER_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="SELECTED_MONTH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="STEEL_WIRE_DIAMETER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[row()%2==0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-1118482"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="2" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="EQUIP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="SINGLE_CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="BREAK_COUNT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="PIECE_WIRE_CUSTOM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="BREAK_ABANDON_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="CUT_SUCCESS_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="A_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="VALUE_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="BREAK_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="TOTAL_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="EDGE_SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="TTV_TRACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="LACK_ANGLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsSteelMonth" columnName="OTHER_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="7" cs="2" s="1">
+<O>
+<![CDATA[总体]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="EQUIP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="SINGLE_CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="BREAK_COUNT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="PIECE_WIRE_CUSTOM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="BREAK_ABANDON_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="CUT_SUCCESS_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="A_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="VALUE_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="BREAK_PIECE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="TOTAL_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="EDGE_SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="TTV_TRACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="LACK_ANGLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="7" s="1">
+<O t="DSColumn">
+<Attributes dsName="dsOnlyMonth" columnName="OTHER_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="144000000" height="72000000"/>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+<Background name="ColorBackground" color="-1"/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0" useParamsTemplate="true"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" color="-723724" borderRadius="0" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-526086"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.FreeButton">
+<Listener event="click">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[$.each(this.options.form.name_widgets, function(i, item) {
+    if(item.options.type !== 'label') {
+        item.setValue("");
+        item.setText("");
+        item.reset();
+    }
+});]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="button0_c_c"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[重置]]></Text>
+</InnerWidget>
+<BoundsAttr x="715" y="55" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="Search"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="615" y="55" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="pdt_date"/>
+<LabelName name="日期:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=today()-1]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="130" y="25" width="150" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelpdt_date"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[日期:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="50" y="25" width="80" height="25"/>
+</Widget>
+<Sorted sorted="false"/>
+<MobileWidgetList>
+<Widget widgetName="pdt_date"/>
+<Widget widgetName="Search"/>
+<Widget widgetName="button0_c_c"/>
+</MobileWidgetList>
+<FrozenWidgets/>
+<Display display="true"/>
+<DelayDisplayContent delay="true"/>
+<UseParamsTemplate use="true"/>
+<Position position="0"/>
+<Design_Width design_width="960"/>
+<NameTagModified>
+<TagModified tag="pdt_date" modified="true"/>
+</NameTagModified>
+<WidgetNameTagMap>
+<NameTag name="pdt_date" tag="日期:"/>
+</WidgetNameTagMap>
+<ParamAttr class="com.fr.report.mobile.DefaultMobileParamStyle"/>
+</Layout>
+<DesignAttr width="960" height="98"/>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="Microsoft YaHei UI" style="0" size="128"/>
+<Background name="ColorBackground" color="-6697729"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-1118482"/>
+<Bottom style="1" color="-1118482"/>
+<Left style="1" color="-1118482"/>
+<Right style="1" color="-1118482"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="KAA"/>
+<PreviewType PreviewType="0"/>
+<TemplateIdAttMark class="com.fr.base.iofile.attr.TemplateIdAttrMark">
+<TemplateIdAttMark TemplateId="8df97d18-79cf-4d55-a6c7-1ddf5b2d61f9"/>
+</TemplateIdAttMark>
+</WorkBook>

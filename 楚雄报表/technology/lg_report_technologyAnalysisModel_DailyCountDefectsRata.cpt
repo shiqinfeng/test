@@ -1,0 +1,2161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20170720" releaseVersion="10.0.0">
+<TableDataMap>
+<TableData name="ds_all" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="start_time"/>
+<O>
+<![CDATA[2020-02-21]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="end_time"/>
+<O>
+<![CDATA[2020-02-21]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pline"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select month,
+to_char(pdt_date,'yyyy-MM-dd') as time_selected,
+shop_name,
+pline_name,
+sum(lot_count) over (partition by pdt_date,shop_name,pline_name) as cut_count,
+to_char(round(sum(total_a_qty) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00') ||'%' as a_value_rate,
+to_char(round((sum(total_a_qty) over (partition by pdt_date,shop_name,pline_name)+ (sum(total_a1_qty) over (partition by pdt_date,shop_name,pline_name))*0.6 
++ (sum(total_b_qty) over (partition by pdt_date,shop_name,pline_name))*0.4 + (sum(total_substd_qty) over (partition by pdt_date,shop_name,pline_name))*0.2)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4),'fm999999990.00') as value_rate,
+sum(theory_qty) over (partition by pdt_date,shop_name,pline_name) as theory_qty,
+sum(break_count) over (partition by pdt_date,shop_name,pline_name) as break_count,
+to_char(round(sum(break_count) over (partition by pdt_date,shop_name,pline_name)/(sum(lot_count) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as break_rate,
+round(avg(avg_rod_length) over (partition by pdt_date,shop_name,pline_name),2) as avg_rod_length,
+sum(total_a_qty) over (partition by pdt_date,shop_name,pline_name) as total_a_qty,
+to_char(round((sum(act_diff) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name))),4)*100,'fm999999990.00')||'%' as material_balance,
+to_char(round(sum(thry_fgmt_qty) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as thry_fgmt_rate,
+to_char(nvl(round((sum(a1_slice) over (partition by pdt_date,shop_name,pline_name) + sum(b_slice) over (partition by pdt_date,shop_name,pline_name) + sum(c_ttv50_75) over (partition by pdt_date,shop_name,pline_name)
++ sum(o_ttv_c) over (partition by pdt_date,shop_name,pline_name) + sum(a1_line_mark) over (partition by pdt_date,shop_name,pline_name) 
++ sum(b_line_mark) over (partition by pdt_date,shop_name,pline_name))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4),0.0)*100,'fm999999990.00')||'%' as ttv_trace,
+to_char(round((sum(b_margin) over (partition by pdt_date,shop_name,pline_name) + sum(b_poour_collapse) over (partition by pdt_date,shop_name,pline_name) + sum(b_sticky_collapse) over (partition by pdt_date,shop_name,pline_name)
++ sum(b_in_collapse) over (partition by pdt_date,shop_name,pline_name) + sum(b_arc) over (partition by pdt_date,shop_name,pline_name) + sum(b_side_collapse) over (partition by pdt_date,shop_name,pline_name)
++ sum(b_silicon_drop) over (partition by pdt_date,shop_name,pline_name))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as Edge_surface_defects,
+to_char(nvl(round((sum(c_subfissure) over (partition by pdt_date,shop_name,pline_name) + sum(o_subfissure) over (partition by pdt_date,shop_name,pline_name)
++ sum(c_missing_angle) over (partition by pdt_date,shop_name,pline_name) + sum(c_stairs) over (partition by pdt_date,shop_name,pline_name) )/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4),0.0)*100,'fm999999990.00')||'%' as subfissure_defects,
+to_char(round((sum(a1_chromatic_aberration) over (partition by pdt_date,shop_name,pline_name) + sum(a1_lightspot) over (partition by pdt_date,shop_name,pline_name)
++ sum(a1_knife_slice) over (partition by pdt_date,shop_name,pline_name))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as surface_defects,
+to_char(round(sum(o_unrecognized) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as unrecognized,
+to_char(round((sum(abandon_length) over (partition by pdt_date,shop_name,pline_name)/(avg(avr_gap) over (partition by pdt_date,shop_name,pline_name)))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as wire_break,
+to_char(round((sum(a1_line_mark) over (partition by pdt_date,shop_name,pline_name) + sum(b_line_mark) over (partition by pdt_date,shop_name,pline_name))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as line_mark ,
+to_char(round((sum(b_poour_collapse) over (partition by pdt_date,shop_name,pline_name) + sum(b_sticky_collapse) over (partition by pdt_date,shop_name,pline_name) 
++ sum(b_in_collapse) over (partition by pdt_date,shop_name,pline_name) + sum(b_side_collapse) over (partition by pdt_date,shop_name,pline_name) + sum(b_arc) over (partition by pdt_date,shop_name,pline_name))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as side_damage,
+to_char(round(sum(c_missing_angle) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as lack_angle,
+to_char(round(sum(a1_chromatic_aberration) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as colour_difference,
+to_char(nvl(round(sum(bp_fgmt_weight) over (partition by pdt_date,shop_name,pline_name)/decode(sum(ok_weight) over (partition by pdt_date,shop_name,pline_name),0.0f,0.1f,sum(ok_weight) over (partition by pdt_date,shop_name,pline_name))/1000,4)*100,0),'fm999999990.00')||'%' as edge_leather,
+to_char(round(nvl((sum(a1_slice) over (partition by pdt_date,shop_name,pline_name) + sum(b_slice) over (partition by pdt_date,shop_name,pline_name) 
++ sum(c_ttv50_75) over (partition by pdt_date,shop_name,pline_name) + sum(o_ttv_c) over (partition by pdt_date,shop_name,pline_name))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),0.0),4)*100,'fm999999990.00')||'%' as TTV,
+to_char(round(sum(b_margin) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00') ||'%' as edge,
+to_char(round(nvl((sum(c_subfissure) over (partition by pdt_date,shop_name,pline_name) + sum(o_subfissure) over (partition by pdt_date,shop_name,pline_name))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),0.0),4)*100,'fm999999990.00') ||'%' as subfissure,
+to_char(round(sum(a1_lightspot) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00') ||'%' as line_point_rate,
+to_char(round(sum(pdre_fgmt_qty) over (partition by pdt_date,shop_name,pline_name) / (sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%'  as processing_broken,
+to_char(round(sum(b_silicon_drop) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00') ||'%' as silicon_drop,
+to_char(round((sum(c_pore) over (partition by pdt_date,shop_name,pline_name) + sum(b_bow) over (partition by pdt_date,shop_name,pline_name) + sum(b_hot_bak) over (partition by pdt_date,shop_name,pline_name) + sum(b_size) over (partition by pdt_date,shop_name,pline_name)
++ sum(c_resistivity_bad) over (partition by pdt_date,shop_name,pline_name) + sum(c_stress_piece) over (partition by pdt_date,shop_name,pline_name))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00') ||'%' as defective_silicon_rod,
+to_char(round(sum(a1_knife_slice) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00') ||'%' as thin_piece,
+to_char(round((sum(b_dirty_piece) over (partition by pdt_date,shop_name,pline_name) + sum(b_silica_gel) over (partition by pdt_date,shop_name,pline_name))/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as cleaning_defects,
+to_char(round(sum(a1_poor_prism) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as a1_edge_surface,
+to_char(round(sum(c_stairs) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as step,
+to_char(round(sum(b_dirty_piece) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as dirty,
+to_char(round(sum(b_piebald) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00') ||'%' as piebald,
+to_char(round(sum(b_silica_gel) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as silica_gel,
+to_char(round(sum(b_silicon_drop) over (partition by pdt_date,shop_name,pline_name)/(sum(theory_qty) over (partition by pdt_date,shop_name,pline_name)),4)*100,'fm999999990.00')||'%' as b_silicon_drop,
+to_char(round((sum(total_a_qty) over (partition by pdt_date))/(sum(theory_qty) over (partition by pdt_date)),4)*100,'fm999999990.999999999') ||'%'as a_total_value_rate,
+to_char(round((sum(total_a_qty) over (partition by pdt_date) + (sum(total_a1_qty) over (partition by pdt_date))*0.6 + 
+(sum(total_b_qty) over (partition by pdt_date))*0.4 + (sum(total_c_qty) over (partition by pdt_date))*0.2)/(sum(theory_qty) over (partition by pdt_date)),4)*100)
+||'%' as total_value_rate,
+to_char(round((sum(break_count) over (partition by pdt_date))/(sum(lot_count) over (partition by pdt_date))*100,4),'fm999999990.999999999')||'%' as total_break_rate,
+round(avg(avg_rod_length) over (partition by pdt_date),2) as total_avg_rod_length,
+to_char(round((sum(thry_fgmt_qty) over (partition by pdt_date))/(sum(theory_qty) over (partition by pdt_date)),4)*100,'fm999999990.999999999')||'%' as total_thry_fgmt_rate,
+ to_char(nvl(round((sum(a1_slice)  over (partition by pdt_date)+ 
+sum(b_slice)  over (partition by pdt_date)+ 
+sum(c_ttv50_75)  over (partition by pdt_date)+ 
+sum(o_ttv_c)  over (partition by pdt_date)+ 
+sum(a1_line_mark)  over (partition by pdt_date)+ 
+sum(b_line_mark)  over (partition by pdt_date))/(sum(theory_qty)  over (partition by pdt_date)),4)*100,0.0),'fm999999990.999999999')||'%' as total_ttv_trace,
+to_char(round((sum(b_margin) over (partition by pdt_date)
++ sum(b_poour_collapse) over (partition by pdt_date) +
+sum(b_sticky_collapse) over (partition by pdt_date) +
+sum(b_in_collapse) over (partition by pdt_date) +
+sum(b_arc) over (partition by pdt_date)
++ sum(b_side_collapse) over (partition by pdt_date) +
+sum(b_silicon_drop) over (partition by pdt_date))/(sum(theory_qty) over (partition by pdt_date)),4)*100,'fm999999990.999999999')
+||'%' as total_Edge_surface_defects,
+to_char(nvl(round((sum(c_subfissure) over (partition by pdt_date) + 
+sum(o_subfissure) over (partition by pdt_date) + 
+sum(c_missing_angle) over (partition by pdt_date) + 
+sum(c_stairs) over (partition by pdt_date) )/(sum(theory_qty) over (partition by pdt_date)),4)*100,0.0),'fm999999990.00') ||'%'
+as total_subfissure_defects,
+to_char(round((sum(a1_chromatic_aberration) over (partition by pdt_date) +
+sum(a1_lightspot) over (partition by pdt_date) + 
+sum(a1_knife_slice) over (partition by pdt_date))/(sum(theory_qty) over (partition by pdt_date)),4)*100,'fm999999990.00')||'%' 
+as total_surface_defects,
+to_char(round(( sum(b_dirty_piece) over (partition by pdt_date) +
+sum(b_silica_gel) over (partition by pdt_date) +
+sum(duplicate_qty)over (partition by pdt_date))/(sum(theory_qty) over (partition by pdt_date)),4)*100,'fm999999990.00')||'%' 
+as total_cleaning_defects,
+to_char(round((sum(c_pore) over (partition by pdt_date) +
+sum(b_bow) over (partition by pdt_date) + 
+sum(b_hot_bak) over (partition by pdt_date) +
+sum(b_size) over (partition by pdt_date) + 
+sum(c_resistivity_bad) over (partition by pdt_date) +
+sum(c_stress_piece) over (partition by pdt_date))/(sum(theory_qty) over (partition by pdt_date)),4)*100,'fm999999990.00' )||'%'
+as total_defective_silicon_rod,
+to_char(round((sum(o_unrecognized) over (partition by pdt_date))/(sum(theory_qty) over (partition by pdt_date)),4)*100,'fm999999990.00')||'%' 
+as total_unrecognized,
+to_char(round((sum(a1_poor_prism) over (partition by pdt_date))/(sum(theory_qty) over (partition by pdt_date)),4)*100,'fm999999990.00')||'%' 
+as total_a1_edge_surface
+from ETL_OM_PdtDailyCount
+where 1=1
+and  lot_count != 0
+and theory_qty != 0.0
+and ok_weight != 0.0
+${if(len(start_time)==0,""," and pdt_date >= to_date('"+start_time+"','yyyy-MM-dd hh24:mi:ss')")}
+${if(len(end_time)==0,""," and pdt_date <= to_date('"+end_time+"','yyyy-MM-dd hh24:mi:ss')")}
+${if(len(SHOP)==0,""," and shop_name in ('"+SHOP+"' )")}
+${if(len(pline)==0,""," and pline_name in ('"+pline+"' )")}
+order by time_selected desc]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="ds_dataDictonary_shop" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select * from 
+(select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineDescription  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key)]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="ds_dataDactinary_pline" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="shop"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select * from 
+(select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineDescription  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key)
+where 1=1
+${if(len(shop)==0,""," and area_name in ('"+shop+"' )")}
+order by  p_line_name]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="ds_total" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="SHOP"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="start_time"/>
+<O>
+<![CDATA[2020-01-01]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="end_time"/>
+<O>
+<![CDATA[2020-01-08]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="pline"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[MES_ODS]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select distinct month,
+--time_selected,
+--shop_name,pline_name,
+a_total_value_rate,total_value_rate,total_break_rate,total_avg_rod_length,total_material_balance,total_thry_fgmt_rate,total_ttv_trace,
+total_Edge_surface_defects,total_subfissure_defects,total_surface_defects,total_cleaning_defects,total_defective_silicon_rod,total_unrecognized,total_a1_edge_surface from
+(select month,
+to_char(pdt_date,'yyyy-MM-dd') as time_selected,
+shop_name,
+pline_name,
+to_char(round((sum(total_a_qty) over (partition by month))/(sum(theory_qty) over (partition by month)),4)*100,'fm999999990.999999999') ||'%'as a_total_value_rate,
+to_char(round((sum(total_a_qty) over (partition by month) + (sum(total_a1_qty) over (partition by month))*0.6 + 
+(sum(total_b_qty) over (partition by month))*0.4 + (sum(total_c_qty) over (partition by month))*0.2)/(sum(theory_qty) over (partition by month)),4)*100)
+||'%' as total_value_rate,
+to_char(round((sum(break_count) over (partition by month))/(sum(lot_count) over (partition by month)),4)*100,'fm999999990.999999999')||'%' as total_break_rate,
+round(avg(avg_rod_length) over (partition by month),2) as total_avg_rod_length,
+to_char(round((sum(act_diff) over (partition by month)/(sum(theory_qty) over (partition by month))),4)*100,'fm999999990.099999999')||'%' as total_material_balance,
+to_char(round((sum(thry_fgmt_qty) over (partition by month))/(sum(theory_qty) over (partition by month)),4)*100,'fm999999990.999999999')||'%' as total_thry_fgmt_rate,
+ to_char(nvl(round((sum(a1_slice)  over (partition by month)+ 
+sum(b_slice)  over (partition by month)+ 
+sum(c_ttv50_75)  over (partition by month)+ 
+sum(o_ttv_c)  over (partition by month)+ 
+sum(a1_line_mark)  over (partition by month)+ 
+sum(b_line_mark)  over (partition by month))/(sum(theory_qty)  over (partition by month)),4)*100,0.0),'fm999999990.999999999')||'%' as total_ttv_trace,
+to_char(round((sum(b_margin) over (partition by month)
++ sum(b_poour_collapse) over (partition by month) +
+sum(b_sticky_collapse) over (partition by month) +
+sum(b_in_collapse) over (partition by month) +
+sum(b_arc) over (partition by month)
++ sum(b_side_collapse) over (partition by month) +
+sum(b_silicon_drop) over (partition by month))/(sum(theory_qty) over (partition by month)),4)*100,'fm999999990.999999999')
+||'%' as total_Edge_surface_defects,
+to_char(nvl(round((sum(c_subfissure) over (partition by month) + 
+sum(o_subfissure) over (partition by month) + 
+sum(c_missing_angle) over (partition by month) + 
+sum(c_stairs) over (partition by month) )/(sum(theory_qty) over (partition by month)),4)*100,0.0),'fm999999990.099999999') ||'%'
+as total_subfissure_defects,
+to_char(round((sum(a1_chromatic_aberration) over (partition by month) +
+sum(a1_lightspot) over (partition by month) + 
+sum(a1_knife_slice) over (partition by month))/(sum(theory_qty) over (partition by month)),4)*100,'fm999999990.099999999')||'%' 
+as total_surface_defects,
+to_char(round(( sum(b_dirty_piece) over (partition by month) +
+sum(b_silica_gel) over (partition by month) +
+sum(duplicate_qty)over (partition by month))/(sum(theory_qty) over (partition by month)),4)*100,'fm999999990.099999999')||'%' 
+as total_cleaning_defects,
+to_char(round((sum(c_pore) over (partition by month) +
+sum(b_bow) over (partition by month) + 
+sum(b_hot_bak) over (partition by month) +
+sum(b_size) over (partition by month) + 
+sum(c_resistivity_bad) over (partition by month) +
+sum(c_stress_piece) over (partition by month))/(sum(theory_qty) over (partition by month)),4)*100,'fm999999990.099999999' )||'%'
+as total_defective_silicon_rod,
+to_char(round((sum(o_unrecognized) over (partition by month))/(sum(theory_qty) over (partition by month)),4)*100,'fm999999990.099999999')||'%' 
+as total_unrecognized,
+to_char(round((sum(a1_poor_prism) over (partition by month))/(sum(theory_qty) over (partition by month)),4)*100,'fm999999990.099999999')||'%' 
+as total_a1_edge_surface
+from ETL_OM_PdtDailyCount
+where 1=1
+${if(len(start_time)==0,""," and pdt_date >= to_date('"+start_time+"','yyyy-MM-dd hh24:mi:ss')")}
+${if(len(end_time)==0,""," and pdt_date <= to_date('"+end_time+"','yyyy-MM-dd hh24:mi:ss')")}
+${if(len(SHOP)==0,""," and shop_name in ('"+SHOP+"' )")}
+${if(len(pline)==0,""," and pline_name in ('"+pline+"' )")})]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+</TableDataMap>
+<ElementCaseMobileAttr>
+<ElementCaseMobileAttrProvider horizontal="1" vertical="1" zoom="true" refresh="false" isUseHTML="false" isMobileCanvasSize="false" appearRefresh="false" allowFullScreen="false" allowDoubleClickOrZoom="true" functionalWhenUnactivated="false"/>
+</ElementCaseMobileAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1143000,1143000,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[2743200,2743200,2743200,2743200,0,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,3025832,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="22" s="0">
+<O>
+<![CDATA[工艺分析组-日切割不良率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[时间]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>5%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[车间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[片区]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[切割刀数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[A级成品率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[价值率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="2">
+<O>
+<![CDATA[A级成品率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[理论片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[A级片数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[平均棒长]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[断线刀数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="1">
+<O>
+<![CDATA[断线率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="2">
+<O>
+<![CDATA[物料不平衡]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="1" s="1">
+<O>
+<![CDATA[理论碎片]]></O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="1" s="1">
+<O>
+<![CDATA[TTV线痕]]></O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="1" s="1">
+<O>
+<![CDATA[棱面不良]]></O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="1" s="1">
+<O>
+<![CDATA[缺角隐裂台阶]]></O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="17" r="1" s="1">
+<O>
+<![CDATA[表面不良]]></O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="18" r="1" s="1">
+<O>
+<![CDATA[清洗不良]]></O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="19" r="1" s="1">
+<O>
+<![CDATA[硅棒不良]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="20" r="1" s="1">
+<O>
+<![CDATA[无法识别]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="21" r="1" s="1">
+<O>
+<![CDATA[A-1棱面]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" rs="7" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="TIME_SELECTED"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>5%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" rs="7" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="SHOP_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" rs="7" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="PLINE_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" rs="7" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="CUT_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" rs="7" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="A_VALUE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$<98%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" rs="7" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="VALUE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$<95%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" rs="7" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="A_VALUE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$<98%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" rs="7" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="THEORY_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" rs="7" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="TOTAL_A_QTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" rs="7" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="AVG_ROD_LENGTH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" rs="7" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="BREAK_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="2" rs="7" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="BREAK_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>3%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="1" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="12" r="2" rs="7" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="MATERIAL_BALANCE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="THRY_FGMT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[>1%]]></Formula>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+</JoinCondition>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="14" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="TTV_TRACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="15" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="EDGE_SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="16" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="SUBFISSURE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="17" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr showAsHTML="true"/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="18" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="CLEANING_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="19" r="2" rs="7" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="DEFECTIVE_SILICON_ROD"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="20" r="2" rs="7" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="UNRECOGNIZED"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="21" r="2" rs="7" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="A1_EDGE_SURFACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="13" r="3" s="2">
+<O>
+<![CDATA[断线碎]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="3" s="2">
+<O>
+<![CDATA[TTV]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="3" s="2">
+<O>
+<![CDATA[崩边]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="3" s="2">
+<O>
+<![CDATA[缺角]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="3" s="2">
+<O>
+<![CDATA[色差]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="3" s="2">
+<O>
+<![CDATA[脏污]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="WIRE_BREAK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="14" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="TTV"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="15" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="SIDE_DAMAGE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="16" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="LACK_ANGLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="17" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="COLOUR_DIFFERENCE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="18" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="DIRTY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="13" r="5" s="2">
+<O>
+<![CDATA[边皮]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="5" s="2">
+<O>
+<![CDATA[线痕]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="5" s="2">
+<O>
+<![CDATA[边缘]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="5" s="2">
+<O>
+<![CDATA[隐裂]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="5" s="2">
+<O>
+<![CDATA[亮线/点]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="5" s="2">
+<O>
+<![CDATA[花斑]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="6" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="EDGE_LEATHER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[>0.5%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="14" r="6" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="LINE_MARK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[M7>0.1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="15" r="6" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="EDGE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="16" r="6" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="SUBFISSURE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="17" r="6" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="LINE_POINT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="18" r="6" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="PIEBALD"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="13" r="7" s="2">
+<O>
+<![CDATA[制程碎]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="7" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="7" s="2">
+<O>
+<![CDATA[硅脱]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="7" s="2">
+<O>
+<![CDATA[台阶]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="7" s="2">
+<O>
+<![CDATA[进刀薄片]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="7" s="2">
+<O>
+<![CDATA[硅胶]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="8" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="PROCESSING_BROKEN"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="14" r="8" s="2">
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand/>
+</C>
+<C c="15" r="8" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="B_SILICON_DROP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="16" r="8" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="STEP"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0" leftParentDefault="false" left="P8"/>
+</C>
+<C c="17" r="8" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="THIN_PIECE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0" leftParentDefault="false" left="Q8"/>
+</C>
+<C c="18" r="8" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_all" columnName="SILICA_GEL"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="0" r="9">
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>5%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand/>
+</C>
+<C c="1" r="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="9" s="2">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" s="2">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(D3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="A_TOTAL_VALUE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$<98%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="5" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_VALUE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$<95%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="6" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="A_TOTAL_VALUE_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$<98%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="7" r="9" s="2">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(H3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="9" s="2">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(I3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="9" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_AVG_ROD_LENGTH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="9" s="2">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=sum(K3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_BREAK_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>3%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="1" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="12" r="9" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_MATERIAL_BALANCE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_THRY_FGMT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="14" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_TTV_TRACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="15" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_EDGE_SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="16" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_SUBFISSURE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="17" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_SURFACE_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="18" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_CLEANING_DEFECTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="19" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_DEFECTIVE_SILICON_ROD"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="20" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_UNRECOGNIZED"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="21" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds_total" columnName="TOTAL_A1_EDGE_SURFACE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$>1%]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.FRFontHighlightAction">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="2" r="15">
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="17">
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="144000000" height="42768000"/>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+<Background name="ColorBackground" color="-1"/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0" useParamsTemplate="true"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" color="-723724" borderRadius="0" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-526086"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.FreeButton">
+<Listener event="click">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[$.each(this.options.form.name_widgets, function(i, item) {
+    if(item.options.type !== 'label') {
+        item.setValue("");
+        item.setText("");
+        item.reset();
+    }
+});]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="button0_c"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[重置]]></Text>
+</InnerWidget>
+<BoundsAttr x="755" y="25" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="pline"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="P_LINE_NAME" viName="PLINEDESCRIPTION"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[ds_dataDactinary_pline]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr delimiter="&apos;,&apos;" isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="411" y="75" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelpline"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[片区]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="331" y="75" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="shop"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="AREA_NAME" viName="SHOP"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[ds_dataDictonary_shop]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr delimiter="&apos;,&apos;" isArray="false"/>
+</InnerWidget>
+<BoundsAttr x="136" y="75" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelshop"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[车间]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="56" y="75" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="end_time"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=now()]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="411" y="25" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelend_time"/>
+<LabelName name="开始时间"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[结束时间]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="331" y="25" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="Search"/>
+<LabelName name="start_time:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="633" y="25" width="80" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="start_time"/>
+<LabelName name="start_time:"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=now()-7]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="133" y="25" width="100" height="25"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Labelstart_time"/>
+<WidgetAttr description="">
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[开始时间]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="56" y="25" width="80" height="25"/>
+</Widget>
+<Sorted sorted="false"/>
+<MobileWidgetList>
+<Widget widgetName="start_time"/>
+<Widget widgetName="end_time"/>
+<Widget widgetName="Search"/>
+<Widget widgetName="button0_c"/>
+<Widget widgetName="shop"/>
+<Widget widgetName="pline"/>
+</MobileWidgetList>
+<FrozenWidgets/>
+<Display display="true"/>
+<DelayDisplayContent delay="true"/>
+<UseParamsTemplate use="true"/>
+<Position position="0"/>
+<Design_Width design_width="960"/>
+<NameTagModified>
+<TagModified tag="start_time" modified="true"/>
+<TagModified tag="shop" modified="true"/>
+<TagModified tag="Search" modified="true"/>
+<TagModified tag="end_time" modified="true"/>
+<TagModified tag="pline" modified="true"/>
+</NameTagModified>
+<WidgetNameTagMap>
+<NameTag name="start_time" tag="start_time:"/>
+<NameTag name="shop" tag="shop:"/>
+<NameTag name="Search" tag="start_time:"/>
+<NameTag name="end_time" tag="end_time:"/>
+<NameTag name="pline" tag="pline:"/>
+</WidgetNameTagMap>
+<ParamAttr class="com.fr.report.mobile.DefaultMobileParamStyle"/>
+</Layout>
+<DesignAttr width="960" height="123"/>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-1"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="KAA"/>
+<PreviewType PreviewType="0"/>
+<TemplateIdAttMark class="com.fr.base.iofile.attr.TemplateIdAttrMark">
+<TemplateIdAttMark TemplateId="0b72d29b-b246-4cb7-b1cd-076c23356fcd"/>
+</TemplateIdAttMark>
+</WorkBook>
