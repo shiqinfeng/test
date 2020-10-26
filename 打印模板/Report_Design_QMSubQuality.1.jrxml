@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report_Design_QMSubQuality.1" printOrder="Horizontal" pageWidth="595" pageHeight="421" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="567" leftMargin="14" rightMargin="14" topMargin="14" bottomMargin="14" whenResourceMissingType="Empty" uuid="b8fc5f67-cf0d-4d9c-b110-4f7ed7f21a72">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.8181818181818215"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="144"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="DESIGN" class="com.datasweep.compatibility.client.ReportDesign" isForPrompting="false">
+		<parameterDescription><![CDATA[Used report design]]></parameterDescription>
+	</parameter>
+	<parameter name="STATION" class="com.datasweep.compatibility.client.Station" isForPrompting="false">
+		<parameterDescription><![CDATA[Info about current station]]></parameterDescription>
+	</parameter>
+	<parameter name="GUID" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Unique report identifier]]></parameterDescription>
+	</parameter>
+	<parameter name="USER" class="com.datasweep.compatibility.client.User" isForPrompting="false">
+		<parameterDescription><![CDATA[User, who prints report]]></parameterDescription>
+	</parameter>
+	<parameter name="DATE" class="java.util.Date" isForPrompting="false">
+		<parameterDescription><![CDATA[Timestamp of printout]]></parameterDescription>
+	</parameter>
+	<parameter name="DATABASE" class="com.datasweep.compatibility.client.DBInfo" isForPrompting="false">
+		<parameterDescription><![CDATA[Info about used database]]></parameterDescription>
+	</parameter>
+	<parameter name="orderStepItem" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[工艺路径明细]]></parameterDescription>
+	</parameter>
+	<parameter name="close_date" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[关闭日期]]></parameterDescription>
+	</parameter>
+	<parameter name="review_technology" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[工艺评审人员]]></parameterDescription>
+	</parameter>
+	<parameter name="lot_name" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[产品批号]]></parameterDescription>
+	</parameter>
+	<parameter name="cause" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[原因分析]]></parameterDescription>
+	</parameter>
+	<parameter name="route_step_key" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[发生工序]]></parameterDescription>
+	</parameter>
+	<parameter name="pallent_name" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[流转单号]]></parameterDescription>
+	</parameter>
+	<parameter name="problem_level" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[问题等级]]></parameterDescription>
+	</parameter>
+	<parameter name="review_quality" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[质量评审人员]]></parameterDescription>
+	</parameter>
+	<parameter name="report_date" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[发现日期]]></parameterDescription>
+	</parameter>
+	<parameter name="question_topic" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[问题主题]]></parameterDescription>
+	</parameter>
+	<parameter name="quality_category" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[质量类别]]></parameterDescription>
+	</parameter>
+	<parameter name="reporter" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[检验员（提交人员）]]></parameterDescription>
+	</parameter>
+	<parameter name="review_production" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[生产评审人员]]></parameterDescription>
+	</parameter>
+	<parameter name="review_date" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[评审日期]]></parameterDescription>
+	</parameter>
+	<parameter name="measure" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[措施结论]]></parameterDescription>
+	</parameter>
+	<parameter name="deal_user" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[处理人员]]></parameterDescription>
+	</parameter>
+	<parameter name="qty" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[涉及数量]]></parameterDescription>
+	</parameter>
+	<parameter name="process_status" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[处理状态]]></parameterDescription>
+	</parameter>
+	<parameter name="part_name" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[产品型号]]></parameterDescription>
+	</parameter>
+	<title>
+		<band height="80">
+			<staticText>
+				<reportElement style="table_TD" x="41" y="8" width="472" height="26" uuid="bc136e48-2921-477b-933f-a351e260a90c"/>
+				<textElement textAlignment="Center">
+					<font fontName="宋体" size="20" isBold="true" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[东睦新材料集团股份有限公司  不良品评审记录]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="0" y="50" width="55" height="30" uuid="a3bf33a5-b8a9-4d2c-9db0-c1ec7b9f4b20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[QA/NBTM:]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="55" y="50" width="100" height="30" uuid="4d5f47cd-80ec-44ec-996c-f259e64eda14"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{pallent_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="310">
+			<textField>
+				<reportElement style="table_TD" x="55" y="0" width="85" height="30" uuid="6df71726-fed8-4fe9-a12a-11a405492cea"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{lot_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="0" y="0" width="55" height="30" uuid="5623cb22-dec4-4d1a-8f01-69511645df2e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[产品批号]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="140" y="0" width="45" height="30" uuid="d3f5ab59-9c40-4fa6-a671-9c63c6b876d5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[产品代号]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="185" y="0" width="85" height="30" uuid="1a495b5a-62db-4674-a026-25c67e404f07"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{part_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="270" y="0" width="40" height="30" uuid="21121892-075c-473b-a6c0-f81ae565fd28"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[工序]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="310" y="0" width="40" height="30" uuid="7545fdf9-d5b9-496b-bb8b-d53254e81e8d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{route_step_key}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="350" y="0" width="45" height="30" uuid="15dfc84d-a6d4-4109-a1da-9773cdc03d07"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[不合格数]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="395" y="0" width="40" height="30" uuid="77c8f8c0-b7cb-4d04-ab08-a6d46b075ef0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{qty}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="435" y="0" width="100" height="30" uuid="b719e558-f943-4731-ac09-12f169ba2f04"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[原因分析]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="0" y="30" width="55" height="80" uuid="7dd37859-023c-41de-a053-2b44caaec139"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[不合格品情况]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="55" y="30" width="120" height="20" uuid="be357cc0-55f3-4472-b7b6-846e1ff8a7b0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[不合格项]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="175" y="30" width="130" height="20" uuid="319d3768-a407-455a-92e3-d20b9d09d86e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[技术要求]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="305" y="30" width="130" height="20" uuid="816304ce-69c2-4e21-b16d-5f1ecc56fbcf"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[实例结果]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="table_TD" stretchType="RelativeToTallestObject" x="435" y="30" width="100" height="60" uuid="cf8dd3c1-af0b-40ac-b720-6e6288dcc178"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{cause}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="table_TD" x="55" y="50" width="120" height="40" uuid="d0015411-df39-4be7-8fc1-111ed684229f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{quality_category}+"  "+$P{problem_level}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="table_TD" x="175" y="50" width="130" height="40" uuid="9a48f42f-542b-4bab-b13e-dec64ef5d697"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{orderStepItem}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="table_TD" x="305" y="50" width="130" height="40" uuid="f3c04994-f0d8-487c-9928-e43c21c8fc90"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{question_topic}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="55" y="90" width="60" height="20" uuid="d0fa6b2e-e704-4ebf-8be7-e5c7a3ffd354"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[检验员]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="115" y="90" width="45" height="20" uuid="aafc8276-cd5d-4707-9781-eec1c2bb692f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{reporter}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="160" y="90" width="60" height="20" uuid="70f98c5b-a3c7-42fd-bd88-a56df1ff8230"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[日期]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="220" y="90" width="75" height="20" uuid="137bd7d6-6ff3-4d56-b426-ab01338c3ff0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{report_date}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="295" y="90" width="65" height="20" uuid="6be057c2-7a60-4ac3-b9d7-bdb97f99b5d3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[工艺员]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="360" y="90" width="50" height="20" uuid="53e606ee-c34f-4ac7-bd65-71f3fcd7d0a4"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{review_technology}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="410" y="90" width="50" height="20" uuid="f0463194-1140-4ba8-af6d-bed1d95a673f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[日期]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="460" y="90" width="75" height="20" uuid="476debec-c2fd-49d0-88a3-fdfc1328e577"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{review_date}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="0" y="110" width="55" height="80" uuid="b6e6cad8-83da-41a1-bb54-e33d8c6be7d4"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[评价记录]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="55" y="110" width="480" height="60" uuid="7b6ed05f-a86e-41b1-8b4a-5df98ad050c7"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA["问题等级："+$P{problem_level}+"  ;"+
+"措施结论："+$P{measure}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="55" y="170" width="60" height="20" uuid="0fb29730-158b-4cd2-93f3-458a1c8774ce"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[评价人]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="115" y="170" width="185" height="20" uuid="340a4cd8-6730-43db-9a78-de7313a5dbbc"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{review_production}+"、"+ $P{review_quality} +"、"+$P{review_technology}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="300" y="170" width="60" height="20" uuid="a36ea2ca-eeed-4c43-b735-0cfda1f46b6e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="10" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[日期]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="360" y="170" width="175" height="20" uuid="ea037766-f6fe-4777-9f9f-00cc341dc570"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{review_date}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="0" y="190" width="55" height="20" uuid="361ed246-6542-4be6-809c-c0c7c963af42"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[评价类别]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="55" y="190" width="80" height="20" uuid="97cd48cd-41e6-41ea-a5b1-069f74112c08"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[报废]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="135" y="190" width="80" height="20" uuid="af586bac-1a72-4aed-98f4-1aac5657cf75"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[返工]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="215" y="190" width="80" height="20" uuid="8cc5dbeb-70e6-4f7c-8388-61bcb7b3ec50"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[返修]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="295" y="190" width="80" height="20" uuid="acb0439e-42db-440e-a116-499c62777ae3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[特许让步]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="375" y="190" width="80" height="20" uuid="45916738-55bd-48d1-889b-8744fb525fe5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[降价]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="455" y="190" width="80" height="20" uuid="d43d9fff-6fc5-4dd9-a208-5f324b441b79"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[退货]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="0" y="210" width="55" height="20" uuid="a5069c64-1e28-48d0-bb52-3aea4f735b04"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[数量]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="55" y="210" width="80" height="20" uuid="8a1eb4a6-ee49-4274-9728-bc198b8db050"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="135" y="210" width="80" height="20" uuid="18faf3d5-e69f-4c94-91d3-0811fb116f94"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="215" y="210" width="80" height="20" uuid="e9e17b92-ef8d-4d3d-b485-543dd66a1a94"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="295" y="210" width="80" height="20" uuid="d67f75e7-eebb-4242-81fa-2d8d705481d3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="375" y="210" width="80" height="20" uuid="eb398a32-38f4-44db-9e99-9a29fc0bef5d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="455" y="210" width="80" height="20" uuid="c1b6369e-6237-4dfe-a54d-c0c3e703c0a2"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="0" y="230" width="55" height="80" uuid="724ca923-8a51-4b8a-987b-2fc4de9e37e6"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[处理意见]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="55" y="230" width="480" height="60" uuid="65e03abd-4e32-47d0-8f64-58e538f98960"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{measure}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="55" y="290" width="80" height="20" uuid="3c050c06-b976-4def-8db9-dd3affe8434a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[批准人]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="135" y="290" width="160" height="20" uuid="d75c1b80-e085-49b0-bbfd-60852609df15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{deal_user}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="295" y="290" width="80" height="20" uuid="c242ea23-b753-4827-9fa3-620a339af2b8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true" pdfEncoding="Cp1252"/>
+				</textElement>
+				<text><![CDATA[日期]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="375" y="290" width="160" height="20" uuid="60e7e1ed-67e6-43a8-9279-c3ff1ac9fc7c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1252"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{close_date}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+</jasperReport>

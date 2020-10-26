@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report_Design_trackNum.1" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="c00e0630-1dcc-46b0-89e9-34e714fc4430">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="DATE" class="java.util.Date" isForPrompting="false">
+		<parameterDescription><![CDATA[Timestamp of printout]]></parameterDescription>
+	</parameter>
+	<parameter name="DESIGN" class="com.datasweep.compatibility.client.ReportDesign" isForPrompting="false">
+		<parameterDescription><![CDATA[Used report design]]></parameterDescription>
+	</parameter>
+	<parameter name="STATION" class="com.datasweep.compatibility.client.Station" isForPrompting="false">
+		<parameterDescription><![CDATA[Info about current station]]></parameterDescription>
+	</parameter>
+	<parameter name="DATABASE" class="com.datasweep.compatibility.client.DBInfo" isForPrompting="false">
+		<parameterDescription><![CDATA[Info about used database]]></parameterDescription>
+	</parameter>
+	<parameter name="GUID" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Unique report identifier]]></parameterDescription>
+	</parameter>
+	<parameter name="USER" class="com.datasweep.compatibility.client.User" isForPrompting="false">
+		<parameterDescription><![CDATA[User, who prints report]]></parameterDescription>
+	</parameter>
+	<parameter name="productModel" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="batchNo" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="orderNum" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="productName" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="palletName" class="java.lang.String" isForPrompting="false"/>
+	<queryString language="SQL">
+		<![CDATA[]]>
+	</queryString>
+	<field name="op" class="java.lang.String"/>
+	<field name="route_name" class="java.lang.String"/>
+	<field name="address" class="java.lang.String"/>
+	<field name="wc" class="java.lang.String"/>
+	<field name="ys_no_task" class="java.lang.String"/>
+	<field name="qty" class="java.lang.String"/>
+	<field name="remark" class="java.lang.String"/>
+	<title>
+		<band height="81">
+			<staticText>
+				<reportElement style="table_TD" x="0" y="0" width="413" height="26" uuid="cdee91ee-0485-4ee7-bb26-34e94f47e237"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[后续加工跟踪流转单]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="0" y="53" width="97" height="28" uuid="2f1dafdd-9f8e-43ea-a3f6-fb398fdf44ef"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[生产批次号]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="212" y="26" width="87" height="27" uuid="2a718f1f-ae19-4d8d-a0f6-ab33a7ce34db"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[产品型号]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="0" y="26" width="97" height="27" uuid="350f2104-0f56-4b93-ae19-1cbf79b61d4d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[工单号]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="299" y="26" width="114" height="27" uuid="15105efd-c612-495c-a4dc-b1206b734397"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="97" y="26" width="115" height="27" uuid="251bb0fb-bb0f-41e6-a0c7-43502808902a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="97" y="53" width="115" height="28" uuid="8722df4f-4d6e-4e8d-88cd-3bdf1dbb206c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="413" y="26" width="122" height="55" uuid="b01bdc6c-2d21-4933-9b3c-e04e2e5b3e45"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement positionType="Float" x="448" y="31" width="58" height="46" uuid="26f56697-0a08-4217-96b0-16a959a9bbf2"/>
+				<jr:DataMatrix xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom">
+					<jr:codeExpression><![CDATA[$P{productModel}]]></jr:codeExpression>
+				</jr:DataMatrix>
+			</componentElement>
+			<staticText>
+				<reportElement style="table_TD" x="212" y="53" width="87" height="28" uuid="ea40a89c-3789-4790-8b97-a194838d9392"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[产品名称]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="97" y="26" width="115" height="27" uuid="c1e97c21-1408-46fb-8fca-883c00f1ab63"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{orderNum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="299" y="26" width="113" height="27" uuid="5656e506-43d6-4108-8e35-93d89dbb197f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{productModel}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="97" y="53" width="115" height="28" uuid="c014bb62-ef16-4ff4-9741-d364e6b1228c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{batchNo}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="299" y="53" width="114" height="28" uuid="79ce6af1-5ef6-44f9-8299-1116ff579987"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{productName}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="413" y="0" width="122" height="26" uuid="71cc0907-d8c8-4313-85ce-8b2dc0e76641"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement x="413" y="0" width="122" height="26" uuid="2b7171a1-d8a1-4136-b44c-51641dcbfdfc"/>
+				<jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom">
+					<jr:codeExpression><![CDATA[$P{palletName}]]></jr:codeExpression>
+				</jr:Code128>
+			</componentElement>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="20">
+			<staticText>
+				<reportElement style="table_TH" x="0" y="0" width="97" height="20" uuid="7932cbf6-2188-4e1e-b28f-4d0dc8e80d20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[op]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TH" x="97" y="0" width="69" height="20" uuid="e85195f3-0666-4ab3-b421-feee751daff3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[工序名称]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TH" x="166" y="0" width="94" height="20" uuid="8c5c3783-7dad-4b16-b6ec-cac8c276609f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[生产地址]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TH" x="260" y="0" width="101" height="20" uuid="79da5afc-a718-49b0-8a67-ec894e25ccb5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[工作中心]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TH" x="361" y="0" width="52" height="20" uuid="9f50e38f-b521-45de-a466-ecefd0260e35"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[是否报工]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TH" x="475" y="0" width="60" height="20" uuid="bed6336c-c237-4fa4-8471-256b2689f6cd"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[合格证]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TH" x="413" y="0" width="62" height="20" uuid="4f421407-165a-4dea-9d2b-281e023f8500"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[数量]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="260" y="0" width="101" height="20" uuid="0c758aa2-5abd-48f6-a4c3-4846f3937150"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{wc}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="361" y="0" width="52" height="20" uuid="0978f630-4bcc-489f-8afb-64e6263a8dfc"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{ys_no_task}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="0" y="0" width="97" height="20" uuid="6f2a2a6b-5e8e-480c-89a5-0a0b0e0c8bc9"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{op}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="97" y="0" width="69" height="20" uuid="492a3cbd-dad2-4ba9-a99e-541fd4975b29"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{route_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="166" y="0" width="94" height="20" uuid="fa3cd25b-d97a-4040-8dc4-35c2e4c7179c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="413" y="0" width="62" height="20" uuid="3c504dac-f86c-4112-9e17-1acfb1758044"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="413" y="0" width="62" height="20" uuid="d0449982-686b-4c44-a785-60928cc8d92e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" x="475" y="0" width="60" height="20" uuid="7514abd0-1f53-4efb-a46b-e1c1f35df75e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="475" y="0" width="60" height="20" uuid="dc8745a7-1c9a-4a71-8a07-7b41af58edda"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{remark}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="20"/>
+	</pageFooter>
+</jasperReport>

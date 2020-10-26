@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report_Design_OM_BOM.1" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="c00e0630-1dcc-46b0-89e9-34e714fc4430">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.948717100000005"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="DATE" class="java.util.Date" isForPrompting="false">
+		<parameterDescription><![CDATA[Timestamp of printout]]></parameterDescription>
+	</parameter>
+	<parameter name="DESIGN" class="com.datasweep.compatibility.client.ReportDesign" isForPrompting="false">
+		<parameterDescription><![CDATA[Used report design]]></parameterDescription>
+	</parameter>
+	<parameter name="STATION" class="com.datasweep.compatibility.client.Station" isForPrompting="false">
+		<parameterDescription><![CDATA[Info about current station]]></parameterDescription>
+	</parameter>
+	<parameter name="DATABASE" class="com.datasweep.compatibility.client.DBInfo" isForPrompting="false">
+		<parameterDescription><![CDATA[Info about used database]]></parameterDescription>
+	</parameter>
+	<parameter name="GUID" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Unique report identifier]]></parameterDescription>
+	</parameter>
+	<parameter name="USER" class="com.datasweep.compatibility.client.User" isForPrompting="false">
+		<parameterDescription><![CDATA[User, who prints report]]></parameterDescription>
+	</parameter>
+	<parameter name="supplier_person" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[供应商确认人员]]></parameterDescription>
+	</parameter>
+	<parameter name="printer" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[打印人]]></parameterDescription>
+	</parameter>
+	<parameter name="client_person" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[外协办确认人员]]></parameterDescription>
+	</parameter>
+	<parameter name="printing_times" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[打印次数]]></parameterDescription>
+	</parameter>
+	<parameter name="material_number" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[发料单号]]></parameterDescription>
+	</parameter>
+	<parameter name="print_time" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[打印时间]]></parameterDescription>
+	</parameter>
+	<parameter name="supplier_name" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[加工单位]]></parameterDescription>
+	</parameter>
+	<queryString language="SQL">
+		<![CDATA[]]>
+	</queryString>
+	<field name="product_type" class="java.lang.String">
+		<fieldDescription><![CDATA[产品型号]]></fieldDescription>
+	</field>
+	<field name="qty" class="java.lang.String">
+		<fieldDescription><![CDATA[数量]]></fieldDescription>
+	</field>
+	<field name="tray_number" class="java.lang.String">
+		<fieldDescription><![CDATA[托盘编号]]></fieldDescription>
+	</field>
+	<field name="product_name" class="java.lang.String">
+		<fieldDescription><![CDATA[产品名称]]></fieldDescription>
+	</field>
+	<field name="different_qty" class="java.lang.String">
+		<fieldDescription><![CDATA[差异数量]]></fieldDescription>
+	</field>
+	<field name="lot_number" class="java.lang.String">
+		<fieldDescription><![CDATA[生产批次]]></fieldDescription>
+	</field>
+	<field name="seq" class="java.lang.String">
+		<fieldDescription><![CDATA[序号]]></fieldDescription>
+	</field>
+	<title>
+		<band height="80">
+			<staticText>
+				<reportElement style="table_TD" x="29" y="0" width="472" height="32" uuid="6b5472e6-2ba2-4d48-bc30-df84d3238f4b"/>
+				<textElement textAlignment="Center">
+					<font fontName="SansSerif" size="20" isBold="true" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[东睦新材料集团股份有限公司]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="0" y="53" width="535" height="27" backcolor="#FFFFFF" uuid="a71f23c2-5d15-4e27-8bbd-c9ce85ae539c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="16" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[外协发料计划单]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="45">
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="0" y="0" width="120" height="25" backcolor="#FFFFFF" uuid="8312025d-88f2-4481-be21-0fa1c7fd6c49"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[加工单位]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="120" y="0" width="145" height="25" uuid="a96071c9-cc8d-465c-aab0-23e13b0a3dab"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{supplier_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="-1" y="25" width="56" height="20" forecolor="#FFFFFF" backcolor="#003333" uuid="c73f4755-6976-403a-8eed-b17b4462e21a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[序号]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="55" y="25" width="80" height="20" forecolor="#FFFFFF" backcolor="#003333" uuid="edc8b05a-5e82-416b-aeaa-c20c05bb2e96"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[托盘号]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="135" y="25" width="80" height="20" forecolor="#FFFFFF" backcolor="#003333" uuid="0242d9a5-b700-422e-83d4-bfa906bbc6a9"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[生产批次]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="215" y="25" width="80" height="20" forecolor="#FFFFFF" backcolor="#003333" uuid="3feb0dea-21ae-4f2a-b95e-d36032cf69e5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[产品型号]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="295" y="25" width="80" height="20" forecolor="#FFFFFF" backcolor="#003333" uuid="a97148ca-f56a-4a5e-9429-3a4bbb735e81"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[产品名称]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="375" y="25" width="80" height="20" forecolor="#FFFFFF" backcolor="#003333" uuid="7c057f83-c863-4402-9929-22dc90973e88"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[数量]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="455" y="25" width="80" height="20" isRemoveLineWhenBlank="true" forecolor="#FFFFFF" backcolor="#003333" uuid="bae71fcb-7152-4cf0-93f0-69db3120bbe6"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[差异数量]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="265" y="0" width="120" height="25" backcolor="#FFFFFF" uuid="c645f4b1-320e-4a8e-a71d-f34273f1d888"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[发料单号]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="385" y="0" width="150" height="25" uuid="67b94cc2-fb86-4f28-a1ba-86e1616a8976"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{material_number}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="25">
+			<textField>
+				<reportElement style="table_TH" x="55" y="0" width="80" height="25" uuid="5d4d2491-e075-44b8-ab71-9f556991cc71"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{tray_number}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="table_TH" x="135" y="0" width="80" height="25" uuid="7110e7e9-f5b0-45c1-99dd-19de6e58f758"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{lot_number}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="table_TH" x="295" y="0" width="80" height="25" uuid="fa5035af-6b20-4a28-86fc-34bf4e4b088a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{product_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TH" x="375" y="0" width="80" height="25" uuid="aa3a4aff-9ea4-4602-acf2-9f2c1636e892"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TH" positionType="FixRelativeToBottom" x="455" y="0" width="80" height="25" uuid="6a978893-81af-4fda-91b7-9312fe4dd6e6"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+			</textField>
+			<textField>
+				<reportElement style="table_TH" x="215" y="0" width="80" height="25" uuid="1562961e-74a4-43dc-866e-9ed1b1c3c16e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{product_type}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="table_TH" x="0" y="0" width="55" height="25" uuid="dd33119f-c37a-4a65-8635-7479ebee8581"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{seq}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="56">
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="0" y="0" width="120" height="30" backcolor="#FFFFFF" uuid="0bf7ba94-826e-487f-98bf-703cddda0faa"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[供应商确认：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="0" y="30" width="120" height="20" backcolor="#FFFFFF" uuid="266c495c-3925-4e22-b9d8-868ad8d04075"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[打印时间]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="120" y="0" width="150" height="30" uuid="c7c63f82-980e-455d-8f1d-123c3e96c4a0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+			</textField>
+			<textField>
+				<reportElement style="table_TD" x="120" y="30" width="150" height="20" uuid="df2c364d-435f-43b9-87ab-4e97b3a375fd"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{print_time}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="270" y="0" width="120" height="30" backcolor="#FFFFFF" uuid="18d9c146-2304-4e40-a493-619ca8e79f89"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[外协办确认：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="270" y="30" width="60" height="20" backcolor="#FFFFFF" uuid="34b284cf-c323-413d-8208-3d2be0e74a1f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[打印次数]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="330" y="30" width="60" height="20" uuid="727ede25-7448-4523-b616-7c63296b1d08"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{printing_times}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="table_TD" x="390" y="0" width="145" height="30" uuid="8521b8f8-cfa3-4b9e-a68b-09f6ca10abda"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+			</textField>
+			<staticText>
+				<reportElement style="table_TD" mode="Opaque" x="390" y="30" width="60" height="20" backcolor="#FFFFFF" uuid="539e4919-f358-480f-bd33-b40793900ac8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[打印人员]]></text>
+			</staticText>
+			<textField>
+				<reportElement style="table_TD" x="450" y="30" width="85" height="20" uuid="55b49ada-10e8-4e91-821b-2652bf6d3ede"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{printer}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+</jasperReport>
