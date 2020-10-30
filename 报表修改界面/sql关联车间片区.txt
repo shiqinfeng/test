@@ -1,0 +1,101 @@
+切片机与车间片区
+
+
+ select 
+--    a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineName ,
+  DISTINCT e1. equipclass_ID_S,e1.equipclass_name_s, e1.description
+     from  area   a  
+     left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+     left join   production_line   pl  on  pl.p_line_key = apl.child_key 
+     left join   equipment_uv  e1 on   e1.creator_key = a.last_modifier_key  
+where   1=1 
+--and  e1.description ='连城切片机' or e1.description='高测切片机'
+and   e1.equipclass_name_s like '%切片机%'
+${if(len(车间)==0,""," and  area_S in  ('"+车间+"')")}
+${if(len(片区)==0,""," and  e1.product_line_S in  ('"+片区+"')")}
+--order by e1.equip_name
+
+
+
+
+
+车间与切片机型与切片机台
+
+
+select distinct  equip_name from  equipment_uv 
+where 1=1 
+${if(len(车间)==0,""," and  area_s in  ('"+车间+"')")}
+${if(len(片区)==0,""," and  product_line_s in  ('"+片区+"')")}
+${if(len(切片机型)==0,""," and  equipclass_ID_S in  ('"+切片机型+"')")}
+--and  description  ='连城切片机' or description='高测切片机'
+order by equip_name
+
+
+
+车间片区与清洗机台
+  select 
+--a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineName ,
+  DISTINCT  e1.equip_name
+     from  area   a  
+     left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+     left join   production_line   pl  on  pl.p_line_key = apl.child_key 
+     left join   equipment_uv  e1 on   e1.creator_key = a.last_modifier_key  
+where   1=1 
+and  e1.description = '插片清洗一体机'
+${if(len(车间)==0,""," and  area_S in  ('"+车间+"')")}
+${if(len(片区)==0,""," and  e1.product_line_S in  ('"+片区+"')")}
+order by e1.equip_name
+
+
+车间片区与脱胶机
+
+   select 
+--    a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineName ,
+  DISTINCT  e1.equip_name
+     from  area   a  
+     left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+     left join   production_line   pl  on  pl.p_line_key = apl.child_key 
+     left join   equipment_uv  e1 on   e1.creator_key = a.last_modifier_key  
+where   1=1 
+and  e1.description = '脱胶机'
+${if(len(车间)==0,""," and  area_S in  ('"+车间+"')")}
+${if(len(片区)==0,""," and  e1.product_line_S in  ('"+片区+"')")}
+order by e1.equip_name
+
+
+
+车间
+select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineName  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key 
+--WHERE 1=1  ${if(len(车间)==0,""," and A.AREA_NAME in  ('"+车间+"')")}
+
+
+片区
+
+select  a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineName  from  area   a   left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+left join   production_line   pl  on  pl.p_line_key = apl.child_key 
+WHERE 1=1  ${if(len(车间)==0,""," and A.AREA_NAME in  ('"+车间+"')")}
+
+
+
+分选机  车间片区
+  select 
+--    a.area_name , a. description as   shop   ,pl. p_line_name , pl.description   as  pLineName ,
+  DISTINCT  e1.equip_name
+     from  area   a  
+     left  join  area_production_line    apl  on    a.area_key = apl.parent_key 
+     left join   production_line   pl  on  pl.p_line_key = apl.child_key 
+     left join   equipment_uv  e1 on   e1.creator_key = a.last_modifier_key  
+where   1=1 
+and  e1.description in( '应材分选机'，'奥特维分选机','天准分选机')
+${if(len(车间)==0,""," and  area_S in  ('"+车间+"')")}
+${if(len(片区)==0,""," and  e1.product_line_S in  ('"+片区+"')")}
+order by e1.equip_name
+
+
+车间与钢线直径
+select  DISTINCT  steel_wire_diameter from ETL_OM_PdtDailyDetail  
+where 1=1
+${if(len(车间)==0,""," and shop_name in  ('"+车间+"')")}
+${if(len(片区)==0,""," and pline_name in  ('"+片区+"')")}
+order  by  steel_wire_diameter

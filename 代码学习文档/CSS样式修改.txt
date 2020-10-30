@@ -1,0 +1,187 @@
+/*  General Section  */
+/************************/
+* {
+font-family: Dialog;
+label-font-family: Dialog;
+header-fontfamily: Dialog;
+grid-fontfamily: Dialog;
+row-select-fontfamily: Dialog;
+background-color: rgb(255,255,255);
+disabled-color: rgb(255,255,255);
+}
+/* Use Arial font for label reprint */
+LabelReprintRenderer {
+font-family: Arial;
+}
+/* bg-color of forms -not sure if neccessary */
+Form {
+background-color: rgb(255,255,255);
+}
+FlatLabel {
+background-color: rgb(255,255,255);
+font-style:bold;
+}
+FlatButton {
+background-color: rgb(51,153,255);
+foreground-color: rgb(255,255,255);
+border-style: none;
+style: superflat;
+font-style: bold;
+}
+FlatCheckBox {
+background-color: rgb(255,255,255);
+foreground-color: rgb(0,0,0);
+}
+Edit {
+border-color: rgb(203,203,203);
+}
+ComboBox {
+background-color: rgb(255,255,255);
+}
+/* Highlight important labels and fields. Starting with prefix IMP- */
+*.IMP- {
+font-style: bold;
+}
+/* Color scheme for tables */
+DsGrid {
+border-style:round;
+border-color:rgb(51,153,255);
+header-backgroundcolor: rgb(242,242,242);
+background-color: rgb(255,255,255);
+foreground-color: rgb(0,0,0);
+alternate-rowcolors: true;
+alt-rowcolor: rgb(245,245,245);
+row-selection-background: rgb(51,153,255);
+row-height: 60;
+cell-selection-background: rgb(51,153,255);
+row-selection-foreground: rgb(0,0,0);
+cell-selection-foreground: rgb(0,0,0);
+gridline-color: rgb(174,174,174);
+cell-selection-bordercolor: rgb(174,174,174);
+row-selection-bordercolor: rgb(174,174,174);
+row-selection-foreground: rgb(255,255,255);
+header-fontsize: 19.0pt;
+header-fontstyle:bold;
+header-forecolor: rgb(0,255,255);
+grid-fontsize: 19.0pt;
+row-select-fontsize: 17.0pt;
+grid-textcolor:black;
+grid-fontstyle:bold;
+}
+GridActivity {
+header-backgroundcolor: rgb(221,221,227);
+background-color: rgb(241,244,246);
+alternate-rowcolors: true;
+alt-rowcolor: rgb(204,204,204);
+foreground-color: rgb(0,0,0);
+grid-textcolor: rgb(0,0,0);
+row-selection-background: rgb(51,153,255);
+row-height: 60;
+cell-selection-background: rgb(51,153,255);
+row-selection-foreground: rgb(255,255,255);
+gridline-color: rgb(174,174,174);
+header-fontsize: 19.0pt;
+grid-fontsize: 19.0pt;
+row-select-fontsize: 17.0pt;
+grid-textcolor:black;
+grid-fontstyle:bold;
+}
+/*****************************/
+/*  Individual properties  */
+/*****************************/
+/* +++ General +++ */
+/* settings for work area */
+EmbeddedForm#workArea {
+background-color: rgb(255,255,255);
+}
+/* +++ Bars on top +++ */
+/* Status bar */
+Form#pmc-StatusBar, Form#pmc-StatusBar > FlatLabel {
+background-color: rgb(107,255,134);
+}
+/* Toolbar */
+Panel#transactionPanel {
+background-color: rgb(179,255,179);
+}
+Panel{
+background-color: rgb(255,255,255);
+}
+/* yellow bg color for tabs */
+TabControl {
+background-color: rgb(179,255,179);
+}
+/* Font color for task pane - navigator tab */
+TabPage {
+foreground-color: rgb(0,0,0);
+background-color: rgb(179,255,179);
+}
+/* Font color for task pane - tree view tab*/
+TreeView {
+foreground-color: rgb(0,0,0);
+background-color: rgb(179,255,179);
+}
+/* +++ Group Boxes +++ */
+GroupBox {
+border-color: rgb(0,115,0);
+background-color: rgb(255,255,255);
+foreground-color: rgb(0,0,0);
+disabled-color: rgb(255,255,255);
+font-style:bold;
+}
+/* coloring for input fields */
+GroupBox > Edit {
+background-color: rgb(255,255,255);
+}
+GroupBox > ComboBox {
+background-color: rgb(255,255,255);
+}
+/* coloring for groupbox labels */
+GroupBox > FlatLabel {
+background-color: rgb(255,255,255);
+}
+/* rollover color for buttons from transaction panel */
+FlatLabel#transactionPanelRolloverColor{
+background-color: rgb(107,255,134);
+}
+/* +++ Task Pane +++ */
+/* bg-color task pane */
+TaskPaneControl{
+background-color: rgb(179,255,179);
+}
+TaskPaneControl#taskPane{
+background-color: rgb(179,255,179);
+taskpanegroup-backcolor: rgb(241,244,246);
+}
+/* TaskPaneGroup titlebar colors*/
+FlatLabel#taskPaneGroupTitleBar{
+background-color: rgb(179,255,179);
+foreground-color: rgb(0,0,0);
+}
+/* TaskPaneGroup titlebar foreground on mouseover color*/
+FlatLabel#taskPaneGroupSelectionColor {
+foreground-color: rgb(62,62,62);
+}
+/* +++ Coloring of mandatory, error and warning fields +++ */
+PropertyPaneControl, ObjectBinderEnhanced {
+back-color-warning: rgb(107,255,134);
+back-color-error: rgb(255,107,134);
+}
+ReferenceSelector {
+back-color-warning: rgb(255,204,204);
+}
+/* +++ Background color behind the tabs +++ */
+Panel#mainPanel {
+background-color: rgb(179,255,179);
+}
+Form#pmc-Logout > Edit {
+border-color:rgb(255,255,255);
+border-style: none;
+}
+Form#pmc-Logout > Edit#infoEdit {
+font-size: 18.0pt;
+}
+SmartEdit {
+label-back-color: rgb(255,255,255);
+border-color: rgb(203,203,203);
+border-style: none;
+}

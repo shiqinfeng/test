@@ -1,0 +1,91 @@
+
+CREATE TABLE wyc_test(
+
+	id INT(32) NOT NULL AUTO_INCREMENT,
+
+	NAME VARCHAR(80) DEFAULT NULL,
+
+	DATE DATE DEFAULT NULL,
+
+	scount INT(32),
+
+	PRIMARY KEY (id)
+
+);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (1,'小说','2013-09-01',10000);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (2,'微信','2013-09-01',20000);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (3,'小说','2013-09-02',30000);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (4,'微信','2013-09-02',35000);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (5,'小说','2013-09-03',31000);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (6,'微信','2013-09-03',36000);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (7,'小说','2013-09-04',35000);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (8,'微信','2013-09-04',38000);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (9,'小说','2013-09-01',80000);
+
+INSERT INTO `wyc_test` (`id`,`name`,`date`,`scount`) VALUES (10,'微信','2013-09-01',70000);
+
+
+SELECT * FROM wyc_test
+
+
+#行转列
+
+SELECT 
+
+    a.date,
+
+    SUM(CASE a.name
+
+        WHEN '小说' THEN a.scount
+
+        ELSE 0
+
+    END) 'sum_小说',
+
+    MAX(CASE a.name
+
+        WHEN '小说' THEN a.scount
+
+        ELSE 0
+
+    END) 'max_小说',
+
+    SUM(CASE a.name
+
+        WHEN '微信' THEN a.scount
+
+        ELSE 0
+
+    END) '微信',
+
+    MAX(CASE a.name
+
+        WHEN '小说' THEN a.scount
+
+        ELSE 0
+
+    END) 'max_微信',
+    
+     MAX(CASE a.name
+
+        WHEN '小说' THEN SUM(a.scount)
+
+        ELSE 0
+
+    END) '总计_微信'
+
+FROM
+
+    wyc_test a
+
+GROUP BY DATE;
+
