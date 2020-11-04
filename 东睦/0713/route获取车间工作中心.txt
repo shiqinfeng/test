@@ -1,0 +1,43 @@
+通过routeStep获取车间，工作中心
+
+    //工作中心
+        objRoute = getRoute(order.getUDA("route_names"))
+        route_key= objRoute.getKey()
+        step = objRoute.getStep(obj[0])
+        stepKey =  step.getKey()
+        
+        sql = "  select  ro.uda_0,ro.uda_1,rou.uda_0,rou.uda_1 from   ROUTE_STEP  ro
+        	  left join route  rou on  rou.route_key = ro.route_key
+        	  where 1=1"
+        	  
+        array = querySql(sql + "  and  ro.route_key= '" + route_key + "'"  + "  and  route_step_key = '" + stepKey + "'")
+        workCenter = getWorkCenterByName(array[0][1])
+//查询工步下的所有工作中心
+//     step = objRoute.getStep(obj[0])
+//     Step =  step.getWorkCenters()
+
+//     stringP = ""
+//     plines  =  Step
+//     foreach pline(plines)
+//     {
+//         stringP +=  pline+","
+//     }
+//     if(stringP.length() > 1)
+//     {
+//         stringP = stringP.substring(0,stringP.length()-1)
+//     }
+//     workcenter = stringP
+    itemOrder.setUDA(workCenter.toString(),"work_center")
+        //工作中心对应的车间
+    route_key= objRoute.getKey()
+    step = objRoute.getStep(obj[0])
+    stepKey =  step.getKey()
+    sql = "  select  ro.uda_0,ro.uda_1 from   ROUTE_STEP  ro
+            left join route  rou on  rou.route_key = ro.route_key
+            where 1=1"
+    
+    array = querySql(sql + "  and  ro.route_key= '" + route_key + "'"  + "  and  route_step_key = '" + stepKey + "'")
+    workCenter = getWorkCenterByName(array[0][1])
+    productionLine=workCenter.getProductionLines()    
+    productionLine1=productionLine[0].toString()
+    itemOrder.setUDA(productionLine1,"p_line_key")     

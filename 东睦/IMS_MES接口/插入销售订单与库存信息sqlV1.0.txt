@@ -1,0 +1,264 @@
+use  MESPDB
+create  table IM_ImportSell
+(
+   sell_Key int IDENTITY (1,1) PRIMARY KEY,
+   sale_order  varchar(80),----订单编号
+   sale_order_old  varchar(80),-----旧订单编号
+   customer_name varchar(80),------客户名称
+   po_indate  datetime,-------订单录入日期
+   sale_order_desc varchar(80),-----ERP订单编号
+   sale_order_date  datetime,----订单日期
+   part_number  varchar(80),---产品型号
+   erp_part_number varchar(80),---------ERP物料编码
+   sale_qty  Float,------------销售数量
+   sale_price  Float,--------------销售单价
+   safe_qty Float,-----------------安全库存
+   plan_qty Float, --------------计划数量
+   plan_date  datetime,-------------计划日期
+   deliver_date  datetime,--------------交货日期
+   seller varchar(80),---------------业务员
+   customer_id  varchar(80),-----------------客户编码
+   order_remark varchar(80),-----------订单备注
+   order_totle  int ,
+   po_progress varchar(80),
+   audit_status int , -------------审核状态
+   last_send Float,----------------上期发货
+   so_thmsend int,
+   produce_addr varchar(255),-------------生产地址
+   send_history varchar(80),----------------发货历史
+   last_modified_time datetime,------------修改日期
+   po_otype int,
+   po_txperson varchar(80),---------------订单录入人员
+   po_shperson varchar(80),----------------订单审核人员
+   po_fhperson varchar(80),-------------------订单发货人员
+   po_zlperson varchar(80),-----------------线长
+   po_txdate datetime ,-----------------填写日期
+   po_shdate datetime,---------------订单收货日期
+   po_fhdate datetime ,---------------------订单发货日期
+   po_zldate  datetime,----------------------订单转入日期
+   erp_customer_id varchar(80) , ----------ERP客户编号
+   order_type int, ------------------------订单类型
+   so_line varchar(80),-------------------ERP订单行
+   so_mark varchar(80),----------------ERP订单号
+   po_gotdaynote varchar(80),------订单周期备注
+   obid varchar(80),------------------ERP行OBID
+   last_send_qty float,--------------------上期发货
+   this_send_qty float,---------------当期发货
+   so_line_status  int ,----------------ERP订单行状态
+   create_time datetime------------------创建日期
+
+)
+
+
+
+select  * from  IM_ImportStock;
+
+select * from   IM_ImportSell;
+
+select * from   IM_ImportPlan;
+
+
+==============================================查询库存信息表数据==================================================
+
+select distinct '',
+               Company_Code_S ,Product_Type_S ,Material_Code_S,Store_Start_I, Store_In_I,
+Store_Back_I,Store_Out_I,Cust_Back_I,Store_At_I
+from  AT_OM_ImportStock where 1=1 
+
+select  distinct '', IM_stock_Key,site_name,part_number,store_start,store_in,store_back,
+store_out,cust_back,store_at,create_time  from   IM_ImportStock  where   1=1 
+
+=============================================删除表数据==========================================================
+truncate  table  IM_ImportStock
+
+=============================================删除表==============================================================
+drop table  IM_ImportSell;
+
+========================================================创建库存信息表字段=======================================
+create  table  IM_ImportStock
+(  
+    stock_Key int IDENTITY (1,1) PRIMARY KEY,
+    site_name  NVARCHAR(80) ,
+    part_number  varchar(80),
+    store_start  Float,
+    store_in  float,
+    store_back  float,
+    store_out float,
+    cust_back float,
+    store_at float,
+    create_time datetime ------IMS-MES导入时间
+)
+
+
+============================================插入库存信息数据=======================================================
+
+
+insert into IM_ImportStock( site_name,part_number,store_start,store_in,store_back,
+store_out,cust_back,store_at,create_time) values (N'宁波东睦','A1000000004',10000,20000,3000,5000,60000,2000,getdate())
+
+
+
+
+select  distinct '',site_name,part_number,store_start,store_in,store_back,
+store_out,cust_back,store_at,create_time  from   IM_ImportStock  where 1=1    and part_number = 'A1000000005'  
+
+==========================更换库存信息字段==============================================================================
+
+update IM_ImportStock set site_name = N'宁波东睦' where  part_number = 'A1000000004'
+
+
+======================================查询数据库排序规则===========================================
+SELECT  
+DATABASEPROPERTYEX('test','COLLATION') AS [指定数据库对应的排序规则]
+,DATABASEPROPERTYEX(DB_NAME(),'COLLATION') AS [当前数据库对应的排序规则]
+ 
+--获取数据库引擎下所有数据库对应的排序规则
+SELECT name, collation_name FROM sys.databases   
+
+
+==================================================创建销售订单表sq==============================================
+create  table IM_ImportSell
+(
+
+sell_Key int IDENTITY (1,1) PRIMARY KEY,
+sale_order	varchar(80),
+sale_order_old	varchar(80),
+customer_name	NVARCHAR(80),
+po_indate	datetime,
+sale_order_desc	varchar(80),
+sale_order_date	datetime,
+part_number	varchar(80),
+erp_part_number	varchar(80),
+sale_qty	Float,
+sale_price	Float,
+safe_qty	Float,
+plan_qty	Float,
+plan_date	datetime,
+deliver_date	datetime,
+seller	NVARCHAR(80),
+customer_id	varchar(80),
+order_remark	NVARCHAR(255),
+order_totle	int null,
+po_progress	varchar(80),
+audit_status	int,
+last_send	Float,
+so_thmsend	int null,
+produce_addr NVARCHAR(255),
+send_history	varchar(80),
+last_modified_time	datetime,
+po_otype	int,
+po_txperson	NVARCHAR(80),
+po_shperson	NVARCHAR(80),
+po_fhperson	NVARCHAR(80),
+po_zlperson	NVARCHAR(80),
+po_txdate	datetime,
+po_shdate	datetime,
+po_fhdate	datetime,
+po_zldate	datetime,
+erp_customer_id	varchar(80),
+order_type	int,
+so_line	varchar(80),
+so_mark	varchar(80),
+po_gotdaynote	NVARCHAR(80),
+obid	varchar(80),
+last_send_qty	float,
+this_send_qty	float,
+so_line_status	int,
+create_time	datetime
+
+)
+
+select  * from  IM_ImportSell
+===================================查询销售订单信息明细表中的所有数据==========================================
+
+select sell_Key,sale_order,sale_order_old,customer_name,po_indate,sale_order_desc,
+sale_order_date,part_number,erp_part_number,sale_qty,sale_price,safe_qty,plan_qty,
+plan_date,deliver_date,seller,customer_id,order_remark,order_totle,po_progress,
+audit_status,last_send,so_thmsend,produce_addr,send_history,last_modified_time,
+po_otype,po_txperson,po_shperson,po_fhperson,po_zlperson,po_txdate,po_shdate,
+po_fhdate,po_zldate,erp_customer_id,order_type,so_line,so_mark,po_gotdaynote,
+obid,last_send_qty,this_send_qty,so_line_status,create_time
+from  IM_ImportSell
+
+============================================from中查询销售订单的数据信息==============================================
+
+select sell_Key,
+sale_order,sale_order_old,customer_name,
+(SUBSTRING(CONVERT(nvarchar, po_indate, 120), 1, 10))po_indate,sale_order_desc,
+(SUBSTRING(CONVERT(nvarchar, sale_order_date, 120), 1, 10))sale_order_date,
+part_number,erp_part_number,sale_qty,sale_price,safe_qty,plan_qty,
+(SUBSTRING(CONVERT(nvarchar, plan_date, 120), 1, 10))plan_date,
+(SUBSTRING(CONVERT(nvarchar, deliver_date, 120), 1, 10))deliver_date,
+seller,customer_id,order_remark,order_totle,po_progress,audit_status,last_send,
+so_thmsend,produce_addr,send_history,
+(SUBSTRING(CONVERT(nvarchar, last_modified_time, 120), 1, 10))last_modified_time,
+po_otype,po_txperson,po_shperson,po_fhperson,po_zlperson,
+(SUBSTRING(CONVERT(nvarchar, po_txdate, 120), 1, 10))po_txdate,
+(SUBSTRING(CONVERT(nvarchar, po_shdate, 120), 1, 10))po_shdate,
+(SUBSTRING(CONVERT(nvarchar, po_fhdate, 120), 1, 10))po_fhdate,
+(SUBSTRING(CONVERT(nvarchar, po_zldate, 120), 1, 10))po_zldate,
+erp_customer_id,order_type,so_line,so_mark,po_gotdaynote,obid,last_send_qty,this_send_qty,so_line_status,
+(SUBSTRING(CONVERT(nvarchar, create_time, 120), 1, 10))create_time
+from IM_ImportSell  where  1=1 
+
+
+
+
+insert into IM_ImportSell
+(
+sale_order,sale_order_old,customer_name,po_indate,sale_order_desc,
+sale_order_date,part_number,erp_part_number,sale_qty,sale_price,safe_qty,plan_qty,
+plan_date,deliver_date,seller,customer_id,order_remark,order_totle,po_progress,
+audit_status,last_send,so_thmsend,produce_addr,send_history,last_modified_time,
+po_otype,po_txperson,po_shperson,po_fhperson,po_zlperson,po_txdate,po_shdate,
+po_fhdate,po_zldate,erp_customer_id,order_type,so_line,so_mark,po_gotdaynote,
+obid,last_send_qty,this_send_qty,so_line_status,create_time
+
+)
+values(
+'A0001',
+'A0000001',
+N'南京测试',
+getdate(),
+'A1000000004',
+getdate()+1,
+'A1000000004',
+'BA1100',
+'100000',
+'12.1',
+'200000',
+'80000',
+getdate()+4,
+getdate(),
+N'杨静',
+'B00001',
+N'这是一个测试订单',
+'12',
+'12',
+'1',
+'1000000',
+' ',
+N'东睦股份',
+'123',
+getdate(),
+' ',
+N'张三',
+N'李四',
+N'王五',
+N'刘三',
+getdate(),
+getdate()-1,
+getdate()+1,
+getdate(),
+'A230983409238',
+'2',
+'1212',
+'234234',
+N'测试',
+'1212',
+'234322',
+'2343212',
+'1',
+getdate()
+
+)

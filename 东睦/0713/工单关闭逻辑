@@ -1,0 +1,74 @@
+//工单关闭逻辑
+function  DeleteRuteStep()
+{
+    defaultObj = activityGridResult.getSelectedRowObject()
+    if(isNullOrEmpty(defaultObj))
+    {
+        handleErrorMsg("MES_MAINFROM_MSG_TRX", "SELECT_A_LINE", null, null, HANDLER_OPTION_DEFAULT, null)
+        return
+    }
+    rows = activityGridResult.getNumberOfRows()   
+   if(rows == 0)
+   {
+       dialogError("请选择一行记录！")
+       return
+   }else{
+        for(i=0;i<rows;i++)
+        {
+            checked = activityGridResult.getCellObject(i, 0)
+            if(checked == false){
+                continue
+            }else
+            {
+                order = getWorkOrder(editPlanNo.getText().trim())
+                itemOrder = order.getOrderItem(activityGridResult.getCellText(i,3))
+                if(Long(itemOrder.getUDA("order_status")) == 50)
+                {
+                    dialogError("工单已关闭，禁止任何操作")
+                    return            
+                }
+                else
+                {
+                  itemOrder.setUDA(Long(50),"order_status")
+                  order.save()
+                 //通过选择的数据拿到OrderRoutStep_atrk
+//                  sql = "
+//                         select ap.atr_key from  AT_OM_OrderRouteStep  ap
+//                         left  join  AT_OM_OrderRoute ae on ae.atr_key = ap.order_route_key_I
+//                         where 1=1 "
+// //                  array = querySql(sql+"  and  order_number_S = '" + order.toString() + "'"+"  and  orderstep_seq_I = '" + Long(itemOrder.getUDA("orderstep_seq")) + "'")
+//                 array = querySql(sql+"  and  order_number_S = '" + order.toString() + "'")
+//                  atr_key = array[0][0]
+//                  atrow = createATHandler("OM_OrderRouteStep").getATRowByKey(long(atr_key),true)
+//                  atrow.setValue("route_step_status",Long(20))
+//                  atrow.save(null,null,null)  
+                 //判断该工单下其他工序是否已经关闭
+               
+                }
+            }
+        }
+         order = getWorkOrder(editPlanNo.getText().trim())
+          vectorsteporder = order.getOrderItems()
+                 j=0
+                 for(i=0;i<vectorsteporder.size();i++)
+                 {
+                     obj = vectorsteporder[i]
+                     if(obj.getUDA("order_status")==50)
+                     {
+                        j=j+1
+                     }
+                  }
+                  if(j==vectorsteporder.size())
+                  {
+                       order.setUDA(Long(50),"order_status")
+                       order.save()
+                       //将主计划关闭
+                       sql = "select  atr_key from  AT_Om_planManager where 1=1 "
+                       atrk = querySql(sql+"  and   plan_number_S = '" + order.toString() + "'")
+                       atrow = createATHandler("OM_planManager").getATRowByKey(Long(atrk[0][0]),true)
+                       atrow.setValue("status",Long(50))
+                       atrow.save(null,null,null) 
+                  }
+   }  
+   frmQuery()
+}

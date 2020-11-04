@@ -1,0 +1,3 @@
+主计划接收sql
+select product_no_S,Plan_Number_S,plan_quantity_I,plan_starttime_T,plan_finishtime_T,Plan_Type_S_I,Plan_State_S_I,
+finish_shop_S,work_center_S,remark_S from AT_OM_ImportPlan;

@@ -1,0 +1,50 @@
+1：开发测试版本把OM_plan的模块加进去
+
+[::""]//"seq"
+plannumber
+produceaddr
+partnumber
+workshopfrom
+workshopto
+opname
+planqty
+[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getPlanstarttime(), "yyyy-MM-dd HH") ]//"planstarttime"
+[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getPlanfinishtime(), "yyyy-MM-dd HH") ]//"planfinishtime"
+[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getRfinishtime(), "yyyy-MM-dd HH") ]//"rfinishtime"
+[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getPlanimportt(), "yyyy-MM-dd HH") ]//"planimportt"
+planimportn
+status
+planversion
+planauditn
+planauditstatus
+[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getPlanaudittime(), "yyyy-MM-dd HH") ]//"planaudittime"
+orderstatus
+planauditn
+routename
+plantype
+equipmentid
+pppowdercode
+pprunturn
+ppprint
+ppbill
+backoutppmainbill
+ppu9back
+ppscrap
+remark
+
+
+com.rockwell.discrete.mes.order.model.PlanManager.MESOMPlanManager
+
+activityGridResult
+
+
+
+======================================================
+6.5  工序工单的状态需要向主计划更新状态
+
+==============================================================================
+
+
+修改计划参数
+   在计划参数界面增加日最大产量字段 用来计算计划的结束时间
+   计划的开始时间默认当前时间+1天

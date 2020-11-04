@@ -1,0 +1,80 @@
+//工单排台界面关闭
+//工单关闭
+function  frmOrderClose()
+{
+    defaultObj = gridArrange.getSelectedRowObject()
+    if(isNullOrEmpty(defaultObj))
+    {
+        handleErrorMsg("MES_MAINFROM_MSG_TRX", "SELECT_A_LINE", null, null, HANDLER_OPTION_DEFAULT, null)
+        return
+    }
+    rows = gridArrange.getNumberOfRows()   
+    form = getForm("MES_OM_AddOrdeSetpClose")
+    closeFlag = showAsDialog(form)
+    defaultObj = getProperty("objectADD")
+    for(i=0;i<rows;i++)
+    {
+        checked = gridArrange.getCellObject(i, 0)
+        if(checked == false){
+            continue
+        }else
+        {
+            order = getWorkOrder(gridArrange.getCellText(i,3))
+            orderItem = order.getOrderItem(gridArrange.getCellText(i,21))
+            if(Long(orderItem.getUDA("order_status"))== 50)
+            {
+                dialogError("计划已经关闭，禁止任何操作！")
+            }else
+                {
+//                     form = getForm("MES_OM_AddOrdeSetpClose")
+//                     closeFlag = showAsDialog(form)
+//                     defaultObj = getProperty("objectADD")
+                    if(defaultObj == null)
+                    {
+                        return
+                    }else
+                    {
+                        orderItem.setUDA(Long(defaultObj[0]),"order_Statusdesc")
+                        orderItem.setUDA(Long(50),"order_status")
+                        orderItem.setUDA(Long(0),"seq_number")
+                        order.save() 
+                       
+                        OrderChangeHis(orderItem)
+                        workcenter = orderItem.getUDA("work_center")
+                        CloseChangeSeq(workcenter)
+                        OrderChangeHis(orderItem)
+                    }
+                }
+            }
+        }
+         //判断主工单下的所欲工单是否关闭
+                        
+                        //关闭主工单
+                        //关闭计划
+         defaultObj = gridArrange.getSelectedRowObject()
+         order = getWorkOrder(defaultObj[2])
+         vectorsteporder = order.getOrderItems()
+         j=0
+         for(i=0;i<vectorsteporder.size();i++)
+         {
+             obj = vectorsteporder[i]
+             if(obj.getUDA("order_status")==50)
+             {
+                j=j+1
+             }
+          }
+          if(j==vectorsteporder.size())
+          {
+               order.setUDA(Long(50),"order_status")
+               order.save()
+               //将主计划关闭
+               sql = "select  atr_key from  AT_Om_planManager where 1=1 "
+               atrk = querySql(sql+"  and   plan_number_S = '" + order.toString() + "'")
+               atrow = createATHandler("OM_planManager").getATRowByKey(Long(atrk[0][0]),true)
+               atrow.setValue("status",Long(50))
+               atrow.save(null,null,null) 
+          }
+      
+     Query() 
+ 
+}

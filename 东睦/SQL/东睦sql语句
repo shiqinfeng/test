@@ -1,0 +1,109 @@
+主计划接收sql
+select product_no_S,Plan_Number_S,plan_quantity_I,(SUBSTRING(CONVERT(nvarchar, plan_starttime_T, 120), 1, 10))plan_starttime_T,(SUBSTRING(CONVERT(nvarchar, plan_finishtime_T, 120), 1, 10))plan_finishtime_T,Plan_Type_S_I,(case Plan_State_S_I
+ when 1  then N'待创建'
+ when 2 then N'已取消' 
+ ELSE N'已创建' END )Plan_State_S_I,
+finish_shop_S,work_center_S,remark_S from AT_OM_ImportPlan;
+
+
+
+
+销售订单信息
+
+
+select '',
+              Order_No_S,Name_S,Material_Code_S,Product_Type_S,(SUBSTRING(CONVERT(nvarchar, Order_Date_T, 120), 1, 10))Order_Date_T,Sell_Quantity_I,
+Safety_Stock_I,Plan_Quantity_I,(SUBSTRING(CONVERT(nvarchar, Plan_Date_T, 120), 1, 10))Plan_Date_T,(SUBSTRING(CONVERT(nvarchar, Delivery_Date_T, 120), 1, 10))Delivery_Date_T
+from AT_OM_ImportSell where 1=1
+
+库存信息明细
+sselect  '',
+   Yieldly_S,Order_No_S,(SUBSTRING(CONVERT(nvarchar, Order_Date_T, 120), 1, 10))Order_Date_T,Product_Type_S,Name_S,Name_Id_S ,Material_Code_S,Material_Desc_S ,Material_Plan_I,
+Last_Deliver_I,Sell_Quantity_I,Safety_Stock_I,Plan_Quantity_I,(SUBSTRING(CONVERT(nvarchar, Plan_Date_T, 120), 1, 10))Plan_Date_T,(SUBSTRING(CONVERT(nvarchar, Delivery_Date_T, 120), 1, 10))Delivery_Date_T,U9_No_S,Clerk_S,Operating_De_S,
+Sell_Price_F,(SUBSTRING(CONVERT(nvarchar, Sell_Time_T, 120), 1, 10))Sell_Time_T,Order_State_I,Audit_State_I
+from   AT_OM_ImportSell where  1=1
+
+
+
+12个月信息报表展示
+select   St.Store_Start_I, St.Store_Out_I, St.Store_At_I,
+Se.Plan_Quantity_I,(SUBSTRING(CONVERT(nvarchar, Se.Order_Date_T, 120), 6, 2))Order_Date_T
+FROM  AT_OM_ImportSell Se,AT_OM_ImportStock St
+WHERE  Se.Product_Type_S = St.Product_Type_S
+
+
+
+
+主计划管理界面 
+
+Plan_Number_S,Material_Code_S,Product_Number_S,
+Plan_Quantity_I,WorkShop_Form_S,WorkShop_To_S,
+Plan_Type_I,
+(case Plan_Type_I
+ when 1 then  N'计划类型一'
+ when 2 then N'计划类型二'
+  when 3 then N'计划类型三' 
+ ELSE N'其他' END )Plan_Type_I,
+(SUBSTRING(CONVERT(nvarchar, Plan_StartTime_T, 120), 1, 10))Plan_StartTime_T,
+(SUBSTRING(CONVERT(nvarchar, Plan_FinishTime_T, 120), 1, 10))Plan_FinishTime_T,Station_S,
+(case State_I
+ when 1 then  N'计划待创建'
+ when 2 then N'计划取消'
+  when 3 then N'计划创建'
+   when 4 then N'发布'
+    when 5 then N'未发布'
+	when 6 then N'冻结'
+ ELSE N'解冻' END )State_I,
+Work_Center_S,Plan_Import_N_S,(SUBSTRING(CONVERT(nvarchar, Plan_Import_T_T, 120), 1, 10))Plan_Import_T_T,
+Plan_Audit_N_S,(SUBSTRING(CONVERT(nvarchar, Plan_Audit_T_T, 120), 1, 10))Plan_Audit_T_T,
+Plan_Audit_R_S,
+Plan_Version_I,Remarks_S
+from  AT_OM_Plan where 1=1
+
+
+
+select 
+Plan_Number_S,Material_Code_S,Product_Number_S,
+Plan_Quantity_I,WorkShop_Form_S,WorkShop_To_S,
+Plan_Type_I,
+(case Plan_Type_I
+ when 1 then  N'计划类型一'
+ when 2 then N'计划类型二'
+  when 3 then N'计划类型三' 
+ ELSE N'其他' END )Plan_Type_I,
+(SUBSTRING(CONVERT(nvarchar, Plan_StartTime_T, 120), 1, 10))Plan_StartTime_T,
+(SUBSTRING(CONVERT(nvarchar, Plan_FinishTime_T, 120), 1, 10))Plan_FinishTime_T,Station_S,
+(case State_I
+ when 1 then  N'计划待创建'
+ when 2 then N'计划取消'
+  when 3 then N'计划创建'
+   when 4 then N'发布'
+    when 5 then N'未发布'
+	when 6 then N'冻结'
+ ELSE N'解冻' END )State_I,
+Work_Center_S,Plan_Import_N_S,(SUBSTRING(CONVERT(nvarchar, Plan_Import_T_T, 20), 1, 19))Plan_Import_T_T,
+Plan_Audit_N_S,(SUBSTRING(CONVERT(nvarchar, Plan_Audit_T_T, 20), 1, 19))Plan_Audit_T_T,
+Plan_Audit_R_S,
+Plan_Version_I,Remarks_S
+from  AT_OM_Plan where 1=1
+
+
+
+十二月报表
+select
+(SUBSTRING(CONVERT(nvarchar, Se.Order_Date_T, 120), 6, 2))N'月份',
+sum(St.Store_Start_I)N'产品库存', sum(St.Store_Out_I)N'生产出库',sum(St.Store_At_I)N'期末库存',
+sum(Se.Plan_Quantity_I)N'销售计划'
+FROM  AT_OM_ImportSell Se,AT_OM_ImportStock St
+WHERE  1=1  and  Se.Product_Type_S = St.Product_Type_S  
+group  by  Order_Date_T
+order by Order_Date_T
+
+
+计划审核
+
+select '',atr_key,
+              Plan_Number_S,Material_Code_S,Product_Number_S,Plan_Quantity_I,WorkShop_Form_S,
+WorkShop_To_S,Plan_Type_I,(SUBSTRING(CONVERT(nvarchar, Plan_StartTime_T, 120), 1, 10))Plan_StartTime_T,(SUBSTRING(CONVERT(nvarchar, Plan_FinishTime_T, 120), 1, 10))Plan_FinishTime_T,Station_S,
+State_I,Work_Center_S,Remarks_S,Plan_Import_N_S,(SUBSTRING(CONVERT(nvarchar, Plan_Import_T_T, 120), 1, 10))Plan_Import_T_T,Plan_Audit_N_S,Plan_Audit_R_S,(SUBSTRING(CONVERT(nvarchar, Plan_Audit_T_T, 120), 1, 10))Plan_Audit_T_T,
+Plan_Version_I from  AT_OM_Plan where 1=1 and  Plan_Audit_R_S =N'待审批'

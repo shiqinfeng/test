@@ -1,0 +1,1664 @@
+/**
+* @author：qushaowei
+* @date：2020.03.05
+* @description: chooseorder
+* @versions:1.0
+* */
+// importSubroutine("MES_QM_Common")
+importSubroutine("MES_Common_Integration")
+importSubroutine("MES_Common_UI")
+importSubroutine("MES_Common_Time")
+importSubroutine("MES_Common_Base")
+importSubroutine("MES_Common_Log")
+importSubroutine("MES_PP_Common")
+importSubroutine("MES_Common_ChoiceList")
+importSubroutine("MES_Common_Grid-2.0")
+importSubroutine("MES_Common_Privilege") 
+importSubroutine("MES_Common_Utility")
+importSubroutine("MES_Common_DataDict")
+importSubroutine("MES_Common_Transaction")
+import ("java.awt.BorderLayout")
+import("org.apache.commons.lang3.StringUtils")
+SQD_HIGH_LINE_COLOR_GREEN = class com.datasweep.compatibility.ui.Color::GREEN
+SQD_HIGH_LINE_COLOR_RED = class com.datasweep.compatibility.ui.Color::RED
+FORM_MODULE = MODULE_OM
+GRIDHEADERLABELTEXTTYPE = 1 
+sqlOrderList = "
+               select wo.order_number,woi.order_item,woi.part_number,cast(woi.quantity_ordered as decimal),cast(uoi.finished_qty_F as decimal),wc.wc_name,
+               CONVERT(varchar(100),woi.planned_start_time,120),uoi.order_status_I,uoi.seq_number_I,uoi.route_step_key_I from WORK_ORDER_ITEMS woi inner join UDA_OrderItem uoi on woi.order_item_key = uoi.object_key
+               left join WORK_ORDER wo on wo.order_key = woi.order_key
+               left join WORK_CENTER wc on uoi.wc_key_I = wc.wc_key
+               where 1=1  
+               and uoi.order_status_I <> 10 
+               and uoi.order_status_I <> 50  
+               "
+sqlloadMaterial = "
+                   select top 5 lm.pallet_name_S,lm.order_num_S,lm.lot_name_S,lm.part_number_S,cast(lm.load_material_actual_qty_F as decimal),cast(lm.load_material_qty_F as decimal),lm.equipment_S,CONVERT(varchar(100),lm.start_time_T,120),lm.operater_S  from AT_OM_LoadMaterial lm where lm.deduction_I = 10
+                  "
+sqlConsumptionPlan = "
+                    select ru.route_name,rs.route_step_name,rs.description,bpl.part_number,bpl.description,cp.target_amount  from ROUTE ru  left join ROUTE_STEP rs on ru.route_key = rs.route_key left join CONSUMPTION_PLAN cp on cp.route_step_key = rs.route_step_key
+                    left join BOM_PART_LIST bpl on cp.bom_part_list_key = bpl.bom_part_list_key left join OPERATION op on op.op_key = rs.op_key
+                    where 1=1
+                     "
+sql = "
+      select pr.product_car_code_S,pr.pallet_name_S,pr.order_item_name_S,pr.lot_name_S,pr.part_number_S,cast(pr.report_qty_F as decimal),pr.equipment_S,CONVERT(varchar(100),pr.report_time_T,120),pr.created_by_S,case pr.whether_print_I when 20 then N'已打印' else N'未打印' end  from AT_OM_ProductionReport pr where 1=1
+       "
+sqlBatch ="
+             select pa.order_key_I,pa.order_item_key_I,equipment_S,lot_name_S,quantity_finished_F  from AT_OM_Pallet pa where 1=1 
+           "
+ sqlRouteStepConsumptionPlan = "
+                                select  bpl.part_number,cp.route_step_key,cp.bom_key,cast(cp.target_amount as decimal)
+                                from CONSUMPTION_PLAN cp inner join  BOM_PART_LIST bpl on cp.bom_part_list_key = bpl.bom_part_list_key 
+                                inner join BOM bo on bo.bom_key =  bpl.bom_key where 1=1
+                               "
+sqlPersonArtShow = "
+                    select  pa.wc_key_I,pa.order_item_desc_S,pa.part_number_S,lot_name_S,null,
+                    pa.pallet_name_S,cast(pa.quantity_finished_F as decimal),pa.created_by_S,CONVERT(varchar(100),pa.creation_time,102)  from AT_OM_Pallet pa
+                    where 1=1 and pa.pallet_category_I = 20
+                    "
+sqlHideLoad = "
+          select wo.order_number,woi.order_item,uoi.wc_key_I,uoi.operation_key_I,uoi.operation_name_S,uoi.report_flag_I,uoi.orderstep_seq_I,uoi.pre_route_step_key_I,uoi.route_step_key_I,uoi.next_step_key_I  
+          from WORK_ORDER  wo left join WORK_ORDER_ITEMS  woi on wo.order_key = woi.order_key
+          left join UDA_OrderItem uoi on woi.order_item_key = uoi.object_key 
+          where 1=1  and uoi.report_flag_I = 20
+          "
+// 初始化环境
+function frmInit(){   
+    initEnvironment() 
+    radioButtonManual.setChecked(true)
+    
+    hideColumn(gridEquipStatusShow)
+    hideColumn(gridLoadMaterial)
+    hideColumn(gridPallet)
+    hideColumn(gridOrderBatch)
+    hideColumn(gridPersonArt)
+    hideColumn(gridOrderList)
+    
+    activityControlQty.setEnabled(false)//上料数量不可编辑
+    
+    // 初始化工作中心下拉框
+    initOrder()//初始化工单列表
+    
+//     localWcName = getClientOptions("selectedWcList", "wcNameq")
+//     if(!isEmptyStr(localWcName)){
+//         wc = getWorkCenterByName(localWcName)
+//         comboboxWorkCenter.setSelectedItem(wc)
+//     } 
+//     wc = getFormProperty("wcName")
+    labelUserName.setText(getCurrentUser().getName())
+//     timeHelper =class com.ftpc.common.utilities.TimeHelper::timeToString(getDBTime(),"yyyy-MM-dd HH:mm")
+//     labelTime.setText(timeHelper)
+    vectorAtrow = getProperty("ATROW")
+    if(vectorAtrow != null){
+        vectorAtrow.clear()
+    } 
+}
+
+//刷新时间
+function initShowTime(){
+    tmeNow = createTime()
+    stringTimeNow = getStringOfTimeInSql(tmeNow)
+    labelTime.setText(stringTimeNow)
+}
+
+//初始化时  初始化工单  
+function initOrder(){
+    wc = getFormProperty("wcName")
+    sqlOrderList += " and wc.wc_name = '"+ wc  +"'"
+    //sqlOrderList += " order by uoi.seq_number_I asc"
+    sqlOrderList += " ORDER BY CASE uoi.order_status_I when 30 then 1 else 2 end "
+    vectorData = querySql(sqlOrderList)
+    displayGridResult(vectorData,gridOrderList)
+}
+function displayGridResult(vec,grid){
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+   
+    for(i=0; i<vec.size(); i++){
+        obj = vec.get(i)
+        
+        grid.setCellText(i,0,i+1)
+        grid.setCellText(i,1,obj[0])
+        grid.setCellText(i,2,obj[1])
+        grid.setCellText(i,3,obj[2])
+        grid.setCellText(i,4,obj[3])
+        grid.setCellText(i,5,obj[4])
+//         grid.setCellText(i,6,getWorkCenterByName(obj[5]).getEquipment()[0].getDescription())
+        grid.setCellText(i,6,obj[5])
+        grid.setCellText(i,7,obj[6])
+        grid.setCellText(i,8,obj[7])
+        grid.setCellText(i,9,obj[8])
+        //grid.setCellText(i,10,obj[5])
+        grid.setRowObject(i,obj)
+        
+         if(obj[7] == "30"){
+             setRowColor(grid,i,SQD_HIGH_LINE_COLOR_GREEN)
+         }
+         if(obj[7] == "40"){
+            setRowColor(grid,i,SQD_HIGH_LINE_COLOR_RED)
+         }
+    }
+    grid.resizeColumnsToFit()
+    
+    runFunctionThread(setDicDataDescToGrid,[gridOrderList,vec,8,"Order_Status",60])
+}
+
+//工单切换
+function switchOrder(){
+    editOrderNum.setText(null)
+    editProType.setText(null)
+    editQty.setText(null)
+    editArtqty.setText(null)
+    edittotalBatch.setText(null)//批次累计
+    editBatch.setText(null)//生产批次号
+    editMainOrderNum.setText(null)//主工单号
+
+    row = gridOrderList.getSelectedRow()
+    if(row == -1){
+        return
+    }
+    mainOrderNum = gridOrderList.getCellText(row,1)//主工单号
+    orderNum = gridOrderList.getCellText(row,2)//车间工单号
+    partNum = gridOrderList.getCellText(row,3)//产品型号
+    qty = gridOrderList.getCellText(row,4)//计划数量
+    artQty = gridOrderList.getCellText(row,5)//报工数量
+    WC = gridOrderList.getCellText(row,6)//
+    //WC = gridOrderList.getCellText(row,10)//
+    
+    editMainOrderNum.setText(mainOrderNum)//主工单号
+    editOrderNum.setText(orderNum)
+    editProType.setText(partNum)
+    editQty.setText(qty)
+    editArtqty.setText(artQty)
+    labelEquipment.setText(WC)
+    labelWC.setText(WC)
+    labelRouteStepKey.setText(gridOrderList.getSelectedRowObject()[9])
+    
+    mainOrderObj =  getWorkOrder(mainOrderNum)//主工单
+    orderItemObj = mainOrderObj.getOrderItem(orderNum)//车间计划
+    
+    sqlBatch += " and pa.order_key_I = '"+ mainOrderObj.getOrderKey()  +"'"
+    sqlBatch += " and pa.order_item_key_I = '"+ orderItemObj.getOrderItemKey() +"'"
+    sqlBatch += " and pa.equipment_S = '"+ labelEquipment.getText() +"'"
+    sqlBatch += " order by pa.creation_time desc "
+    vectorBatch= querySql(sqlBatch)
+    if(vectorBatch.size()>0){
+        batchNo = vectorBatch.get(0)[3]
+        editBatch.setText(batchNo)//生产批次号
+        
+        filterObj = createATRowFilter("OM_Pallet")
+        filterObj.forColumnNameEqualTo("lot_name",batchNo)
+        filterObj.forColumnNameEqualTo("wc_key_desc",WC)
+        filterObj.forColumnNameEqualTo("order_item_key",orderItemObj.getKey().toString())
+        vectorProCar = createATHandler("OM_Pallet").getATRowsByFilter(filterObj,true)
+        totalQty = 0
+         for(i=0;i<vectorProCar.size();i++){
+             proCarObj = vectorProCar.get(i)
+             qty = proCarObj.getValue("quantity_finished")
+             
+             if(qty== null){
+                 qty = 0
+             }
+              qtyF = float(qty)
+              totalQty +=qtyF
+              totalQty = long(totalQty)
+        }
+        edittotalBatch.setText(totalQty.toString())//批次累计
+    }
+//     routeStep = getCurrentRouteStep()//通过产品产品型号，工作中心获取当前工序
+    routeStep = orderItemObj.getUDA("operation_name")
+    labelRouteStep.setText(routeStep)
+    
+    showloadMaterial()
+}
+//通过产品产品型号，工作中心获取当前工序
+// function getCurrentRouteStep(){
+//     sqlGetStep = "  select uoi.operation_name_S  from UDA_OrderItem uoi left join AT_OM_WC_WOI_REL wwr on uoi.object_key = wwr.order_item_key_I  where 1=1 "
+//     sqlGetStep += " and wwr.wc_key_I = '"+ getWorkCenterByName(getFormProperty("wcName")).getKey()  +"'"
+//     vectorRouteStep = querySql(sqlGetStep)
+//     routeStep = vectorRouteStep.get(0)[0]//此处代表 获取到了产品型号对应的工艺路径 的当前工步 
+//     return routeStep
+// }
+//烧结上料
+function loadMaterial(){
+    wc = getFormProperty("wcName")
+    mainOrderNum = editMainOrderNum.getText()
+    orderNum = editOrderNum.getText()
+    order =  getWorkOrder(mainOrderNum)//主工单
+    orderItem = order.getOrderItem(orderNum)//车间计划
+    partNumOrder = orderItem.getPartNumber()//下发工单的产品型号
+    bomNameOrder = orderItem.getBomName()//下发工单所需的bom
+   
+    pallatName = editPallatName.getText().trim()//产品标示卡
+    if(pallatName==null||pallatName==""){
+        dialogError("请输入产品标示卡！")
+        return
+    }
+    qty = smartEdit.getValue()//毛坯数量
+    if(qty==null||qty=="" || qty == 0){
+        dialogError("请输入正确格式的数量！")
+        return
+    }
+    orderNum = editOrderNum.getText()//工单号
+    if(orderNum==null||orderNum==""){
+        dialogError("请选择工单！")
+        return
+    }
+    //partNum = editProType.getText()//产品型号
+    
+    //检验产品车标示卡 存不存在 或者 校验是否已经上料
+    filterObj = createATRowFilter("OM_Pallet")
+    filterObj.forColumnNameEqualTo("pallet_name",pallatName)//产品车标示卡
+    filterObj.forColumnNameEqualTo("pallet_category",10)//10代表产品车标示卡
+    vectorPallet = createATHandler("OM_Pallet").getATRowsByFilter(filterObj,true)
+    if(vectorPallet.size()==0){
+        dialogError("产品车标识卡不存在，请核对！")
+        editPallatName.setText(null)
+        smartEdit.setValue(null)
+        return
+    }
+    filterObj = createATRowFilter("OM_Pallet")
+    filterObj.forColumnNameEqualTo("pallet_name",pallatName)//产品车标示卡
+    filterObj.forColumnNameEqualTo("pallet_category",10)//10代表产品车标示卡
+    filterObj.forColumnNameEqualTo("whether_load",10)//是否已经上料 未上料
+    vectorPallet = createATHandler("OM_Pallet").getATRowsByFilter(filterObj,true)
+    if(vectorPallet.size()==0){
+        dialogError("此标识卡已上料，不允许重复上料！")
+        editPallatName.setText(null)
+        smartEdit.setValue(null)
+        return
+    }
+    obj = vectorPallet.get(0)
+   //bomName = obj.getValue("bom_name")
+    partNumber = obj.getValue("part_number")//产品车上的物料号
+    palletStatus = obj.getValue("pallet_status")//托盘状态
+    if(palletStatus != 10){
+        dialogError("当前标识卡状态不正常，请确认后在上料！")
+        return
+    }
+
+    bom  = getBom(partNumOrder, "1")//通过part获取到对应的物料清单
+    vec = bom.getBomItems()//通过物料清单获取所需要消耗的物料
+    if(vec.size()>0){
+        vectorBom = vector()
+        for(i=0;i<vec.size();i++){
+            partName = vec.get(i).toString()
+            if(partName.equals(partNumber)){
+                vectorBom.add(partName)
+            }
+        }
+        if(vectorBom.size() == 0){
+            dialogError("此车物料为"+partNumber+",目前生产中的工单需要的物料为"+ vec +"！")
+            return 
+        }
+    }else{
+        if(partNumOrder.equals(partNumber)){
+            
+        }else{
+            dialogError("此车物料不符，请核对后在上料！")
+            return 
+        }
+    }
+
+    atrow = createATHandler("OM_LoadMaterial").createATRow()
+    atrow.setValue("pallet_name",pallatName)//产品车标示卡
+    atrow.setValue("order_num",orderNum)//工单号
+    atrow.setValue("order",mainOrderNum)//工单号
+    atrow.setValue("lot_name",obj.getValue("lot_name"))//批次号
+    atrow.setValue("part_number",partNumber)//产品型号
+    atrow.setValue("load_material_qty",qty)//上料数量 
+    atrow.setValue("load_material_actual_qty",qty)//实际上料上料数量 
+    atrow.setValue("wc_key",getWorkCenterByName(wc).getKey())//工作中心key
+    atrow.setValue("equipment",labelEquipment.getText())//设备编码
+    atrow.setValue("start_time",getDBTime())//上料开始时间
+    atrow.setValue("operater",getCurrentUser().getName())//上料者
+    atrow.setValue("created_by",getCurrentUser().getName())//创建人
+    atrow.setValue("created_by_desc",getCurrentUser().getDescription())//创建人描述
+    atrow.setValue("deduction",10)//上料时的标记 10代表已上料   20代表已消耗
+    atrow.setValue("step_desc",labelRouteStep.getText())
+    atrow.save(null,null,null)
+    //check = radioButtonAll1.getChecked()
+
+
+   
+   //获取当前标示卡  所在店铺名称 工作中心
+   sqlstore = " select current_storage_zone_S,wc_key_I  from AT_OM_Pallet WHERE pallet_category_I = 10 "
+   sqlstore += " and pallet_name_S = '"+ pallatName  +"'"
+   vectorStore = querySql(sqlstore)
+   
+   filterStore = createATRowFilter("OM_StoreRecordDetail")
+   filterStore.forColumnNameEqualTo("pallet_name",pallatName)//产品车标示卡
+   filterStore.forColumnNameEqualTo("store_name",vectorStore.get(0)[0])//店铺名称
+   filterStore.forColumnNameEqualTo("wc_key",vectorStore.get(0)[1])//工作中心
+   vectorStore = createATHandler("OM_StoreRecordDetail").getATRowsByFilter(filterStore,true)
+   if(vectorStore.size()>0){
+        storeObj = vectorStore.get(0)
+        storeObj.setValue("status",20)
+        storeObj.setValue("last_modified_by",getCurrentUser().getName())
+        storeObj.setValue("last_modified_by_desc",getCurrentUser().getDescription())
+        storeObj.save(null,null,null)
+   }
+   
+    obj.setValue("whether_load",20)//将产品车标示卡设置为以上料
+    obj.setValue("current_storage_zone",wc)
+    obj.save(null,null,null)
+
+   dialogOk("","上料成功！")
+
+   smartEdit.setValue(null)
+   editPallatName.setText(null)
+   
+   showloadMaterial()//刷新上料记录展示
+}
+//上料记录展示
+function showloadMaterial(){
+
+    sqlloadMaterial+= " and lm.wc_key_I = '"+ getWorkCenterByName(getFormProperty("wcName")).getKey() +"'"
+    sqlloadMaterial+= "  order by creation_time desc "
+    vectorData = querySql(sqlloadMaterial)
+    displayGridResult2(vectorData,gridLoadMaterial)
+}
+function displayGridResult2(vec,grid){
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+   
+    for(i=0; i<vec.size(); i++){
+        obj = vec.get(i)
+        grid.setCellText(i,0,i+1)
+        grid.setCellText(i,1,obj[0])
+        grid.setCellText(i,2,obj[1])
+        grid.setCellText(i,3,obj[2])
+        grid.setCellText(i,4,obj[3])
+        grid.setCellText(i,5,obj[4])
+        grid.setCellText(i,6,obj[5])
+        grid.setCellText(i,7,obj[6])
+        grid.setCellText(i,8,obj[7])
+        grid.setCellText(i,9,obj[8])
+    }
+    grid.resizeColumnsToFit()
+}
+//报工打印
+function artAndPrint(){
+    mainOrder = editMainOrderNum.getText().trim()
+    orderNum = editOrderNum.getText().trim()
+    if(orderNum == null || orderNum == ""){
+        return
+    }
+    /**校验报工数量与计划数量比列**/
+    selectCheckTheSize(orderNum)
+    
+    mainOrderObj =  getWorkOrder(mainOrder)//主工单
+    orderItemObj = mainOrderObj.getOrderItem(orderNum)//车间计划
+    partNum = orderItemObj.getPartNumber()//下发工单的产品型号
+    routeStepThis = orderItemObj.getUDA("route_step_key").toString()
+     orderStatus = orderItemObj.getUDA("order_status")
+     if(orderStatus != 30){
+         dialogError("此工单没有开工，不能进行生产！")
+         return
+     }
+    //获取当前的工步
+    equip = labelEquipment.getText()//设备名称
+    proType = editProType.getText().trim()//产品型号 proType
+    step = labelRouteStep.getText()
+    stepKey = labelRouteStepKey.getText()
+    nowPalletName = editNowPalletName.getText()//当前标示卡号   已隐藏
+//     artQty = editArtQty.getText().trim()//本次报工数量
+//     artQtyL = long(artQty)
+    operationKey = orderItemObj.getUDA("operation_key")//工序KEY
+    form=getForm("MES_OM_SinteringArt")
+    setFormProperty(form,"WC",getFormProperty("wcName"))
+    setFormProperty(form,"PROTYPE",proType)
+    setFormProperty(form,"STEP",step)
+    setFormProperty(form,"STEPKEY",stepKey)
+    setFormProperty(form,"ORDERITEM",orderNum)
+    setFormProperty(form,"ORDERITEMOBJ",orderItemObj)
+    setFormProperty(form,"NOWPALLETNAME",nowPalletName)
+    setFormProperty(form,"OPERATIONKEY",operationKey)
+    rs=showAsDialog(form)
+    if(rs == 1 || rs == 2){//1代表取消   2代表关闭
+        return
+    }
+    proCode = getFormProperty(form,"PALLETNAME")
+    editNowPalletName.setText(proCode)
+    artQtySinger = getFormProperty(form,"ARTQTY") //报工数量
+    qtyRejects = getFormProperty(form,"QTY")//不良品数量
+    artQtyL = qtyRejects + artQtySinger
+    //reason = getFormProperty(form,"REASON")
+    checked = getFormProperty(form,"CHECKED")
+    
+    workerCenter = getFormProperty("wcName")//从本地获取当前的工作中心
+    WCObj = getWorkCenterByName(getFormProperty("wcName"))  
+    
+    //获取工艺路径的key
+    sqlRouteKey = " select  route_step_key_I  from AT_OM_OrderRouteStep where 1=1"
+    sqlRouteKey += " and atr_key = "+ stepKey +""
+    vectorRouteKey = querySql(sqlRouteKey)
+    
+    //通过产品型号获取工艺路径，当前的工序
+    sqlRouteStepConsumptionPlan+= " and bo.bom_name = '"+ proType +"'"
+    sqlRouteStepConsumptionPlan+= " and cp.route_step_key = '"+ vectorRouteKey.get(0)[0] +"'"
+    vectorData = querySql(sqlRouteStepConsumptionPlan)
+    //当前机台上的物料是与计划消耗的物料保持一致（BOM消耗）
+    if(vectorData.size()>0){
+        //校验消耗数量是不是足够
+        for(i=0;i<vectorData.size();i++){
+            bomItem = vectorData.get(i)[0]//所需的物料名称
+            targetQty = vectorData.get(i)[3]//BOM的数量
+            targetQtyL = long(targetQty)
+            filterLoad = createATRowFilter("OM_LoadMaterial")
+            filterLoad.forColumnNameEqualTo("part_number",bomItem)//物料编码
+            filterLoad.forColumnNameEqualTo("equipment",equip)
+            vectorLoad = createATHandler("OM_LoadMaterial").getATRowsByFilter(filterLoad,true) 
+            if(vectorLoad.size()==0){
+                dialogError("物料"+bomItem+"不存在！")
+                editNowPalletName.setText(null)
+                return
+            }
+            if(vectorLoad.size() !=0)
+            {
+                //校验消耗的数量够不够
+                countQty = 0
+                for(y=0;y<vectorLoad.size();y++){
+                   mQty = vectorLoad.get(y).getValue("load_material_qty")
+                   countQty +=long(mQty)
+                }
+                //1.上料表总数量 2.BOM数量 3.合格品+不良品数量
+                if(countQty < targetQtyL*artQtyL){
+                    dialogError("物料"+bomItem+"数量不够本次消耗！")
+                    return
+                }    
+            }
+        }
+    }
+
+    //报工时通过计划消耗比例消耗掉对应的上料表中的物料（BOM消耗）
+    lotName = ""
+    if(vectorData.size()>0){
+        for(j=0;j<vectorData.size();j++){
+             bomName = vectorData.get(j)[0]//所需的物料编码
+             targetQty = vectorData.get(j)[3]//BOM物料扣除的数量
+             targetQtyL = long(targetQty)
+             lotName = lotName + bomName
+             if(j == vectorData.size()-1){
+                 //Subroutine方法   
+                 lotName = getLotName(mainOrder,orderNum, getFormProperty("wcName"),proType,lotName)
+             }
+             //上料表
+             filterP = createATRowFilter("OM_LoadMaterial")
+             filterP.forColumnNameEqualTo("part_number",bomName)//产品编码
+             filterP.forColumnNameEqualTo("equipment",equip)
+             filterP.addOrderATColumnBy("creation_time",short(0))
+             vectorPalleat = createATHandler("OM_LoadMaterial").getATRowsByFilter(filterP,true)
+             qty = 0//定义的数量  如果上料表中的数量小于
+             consumeQty = 0
+             totalQty = targetQtyL*artQtyL//1.BOM消耗物料扣减数2.不良品数量合格品数量总和；通过计算应该消耗的数量
+             for(k=0;k<vectorPalleat.size();k++){   
+                obj = vectorPalleat.get(k)
+                palletNameCar = obj.getValue("pallet_name")//上料表中产品车标识卡
+                qtyP = float(obj.getValue("load_material_qty"))//上料表中的剩余生料数量
+                qty += long(qtyP)//剩余上料数量
+                lotNameCoum = obj.getValue("lot_name")
+                partNum = obj.getValue("part_number")
+                if(qtyP<totalQty)
+                {
+                    obj.setValue("load_material_qty",0)
+                    obj.setValue("deduction",20)
+                    obj.save(null,null,null)
+                     /**
+                     * 写数据到消耗明细表
+                     * para 1.车间工单obj 2.物料编码 3.消耗lot 4.消耗托盘 5.消耗数量 6.产出lot 7.产出托盘 8.产出数量 
+                     * **/
+                    consumeRecord(orderItemObj,partNum,lotNameCoum,palletNameCar,float(qtyP),lotName,proCode,float(qtyP))
+                    totalQty = totalQty - qtyP
+                    continue;
+                }
+                //1.上料表剩余数量 2.消耗BOM数量*报工合格数量+不良数量
+                if(qtyP >=totalQty)
+                {
+                    obj.setValue("load_material_qty",float(qty-totalQty))//更新剩余上料数量
+                    obj.save(null,null,null)
+                     /**
+                     * 写数据到消耗明细表
+                     * para 1.车间工单obj 2.物料编码 3.消耗lot 4.消耗托盘 5.消耗数量 6.产出lot 7.产出托盘 8.产出数量 
+                     * **/
+                    consumeRecord(orderItemObj,partNum,lotNameCoum,palletNameCar,float(totalQty),lotName,proCode,float(totalQty))
+                    break;
+                }
+                //剩余上料数量多于BOM消耗物料扣减数
+//                 if(qty > totalQty){
+//                     obj.setValue("load_material_qty",float(qty-totalQty))//更新剩余上料数量
+//                     obj.save(null,null,null)
+//                     /**
+//                      * 写数据到消耗明细表
+//                      * para 1.车间工单obj 2.物料编码 3.消耗lot 4.消耗托盘 5.消耗数量 6.产出lot 7.产出托盘 8.产出数量
+//                      * **/ 
+//                     consumeRecord(orderItemObj,partNum,lotNameCoum,palletNameCar,float(totalQty - consumeQty),lotName,proCode,float(totalQty - consumeQty))
+//                     break
+//                 }
+                //上料数量等于BOM消耗物料扣减数    
+//                 if(qty == totalQty){
+//                     obj.setValue("load_material_qty",0)
+//                     obj.setValue("deduction",20)
+//                     obj.save(null,null,null)
+//                     /**
+//                      * 写数据到消耗明细表
+//                      * para 1.车间工单obj 2.物料编码 3.消耗lot 4.消耗托盘 5.消耗数量 6.产出lot 7.产出托盘 8.产出数量
+//                      * **/                   
+//                     consumeRecord(orderItemObj,partNum,lotNameCoum,palletNameCar,float(qty),lotName,proCode,float(qty))
+//                     break
+//                 }
+                //上料数量小于BOM消耗物料扣减数
+//                 if(qty < totalQty){
+//                     obj.setValue("load_material_qty",0)
+//                     obj.setValue("deduction",20)
+//                     obj.save(null,null,null)
+//                     consumeQty +=qtyP
+//                     /**
+//                      * 写数据到消耗明细表
+//                      * para 1.车间工单obj 2.物料编码 3.消耗lot 4.消耗托盘 5.消耗数量 6.产出lot 7.产出托盘 8.产出数量 
+//                      * **/
+//                     consumeRecord(orderItemObj,partNum,lotNameCoum,palletNameCar,float(qtyP),lotName,proCode,float(qtyP))
+//                     continue
+//                  }
+             }
+        }
+    }
+    
+//     if(vectorData.size()<=0)
+//     {
+//         filterLoad = createATRowFilter("OM_LoadMaterial")
+//         filterLoad.forColumnNameEqualTo("part_number",partNum)//物料编码（产品编码）
+//         filterLoad.forColumnNameEqualTo("equipment",equip)
+//         vectorLoad = createATHandler("OM_LoadMaterial").getATRowsByFilter(filterLoad,true) 
+//         if(vectorLoad.size()==0){
+//             dialogError("物料"+partNum+"不存在！")
+//             editNowPalletName.setText(null)
+//             return
+//         }
+//         
+//         
+//         
+//     }
+    //当前机台上的物料与计划消耗的物料没有保持一致（没有BOM消耗上料表自己）
+    if(vectorData.size()<=0)
+    {
+        filterP = createATRowFilter("OM_LoadMaterial")
+        filterP.forColumnNameEqualTo("deduction",10)
+        filterP.forColumnNameEqualTo("part_number",partNum)//物料编码（产品编码）
+        filterP.forColumnNameEqualTo("equipment",equip)
+        filterP.addOrderATColumnBy("creation_time",short(0))
+        vectorPalleat = createATHandler("OM_LoadMaterial").getATRowsByFilter(filterP,true)
+    if(vectorPalleat.size()==0)
+    {
+        dialogError("物料"+partNum+"不存在！")
+        editNowPalletName.setText(null)
+        return
+    }
+    qtyCount = 0  //总剩余数量
+    for(j=0;j<vectorPalleat.size();j++){
+        obj = vectorPalleat.get(j)
+        qtyP = obj.getValue("load_material_qty")//上料表中的剩余数量
+        qtyCount += long(qtyP)
+    }
+    //artQtyL 报工 合格数量+不良品数量
+    if(qtyCount<artQtyL){
+        dialogError("物料数量不够！")
+        editNowPalletName.setText(null)
+        return
+    }
+    qty = 0 
+    consumeQty = 0
+    totalQty = 1*artQtyL//只消耗自身数量
+    for(k=0;k<vectorPalleat.size();k++){
+       obj = vectorPalleat.get(k)
+       qtyP = float(obj.getValue("load_material_qty"))//上料表中的剩余数量
+       palletNameCar = obj.getValue("pallet_name")//上料表中产品车标识卡
+       qty += long(qtyP)
+       lotName = obj.getValue("lot_name")
+       
+       //1.剩余数量2.消耗数量 
+   if(qtyP >= totalQty){
+       obj.setValue("load_material_qty",float(qty-totalQty))
+       obj.save(null,null,null)
+       /**
+        * 写数据到消耗明细表
+        * para 1.车间工单obj 2.物料编码 3.消耗lot 4.消耗托盘 5.消耗数量 6.产出lot 7.产出托盘 8.产出数量 
+        * **/
+       consumeRecord(orderItemObj,proType,lotName,palletNameCar,float(totalQty),lotName,proCode,float(totalQty))
+       break
+   }
+//            if(qty == totalQty){
+//                 obj.setValue("load_material_qty",0)
+//                 obj.setValue("deduction",20)
+//                 obj.save(null,null,null)
+//                 /**
+//                  *写数据到消耗明细表 
+//                  *para 1.车间工单obj 2.物料编码 3.消耗lot 4.消耗托盘 5.消耗数量 6.产出lot 7.产出托盘 8.产出数量 
+//                  * **/ 
+//                 consumeRecord(orderItemObj,proType,lotName,palletNameCar,float(qty),lotName,proCode,float(qty))
+//                 break
+//            }
+    //1.剩余数量 2.消耗数量
+   if(qtyP < totalQty){
+       obj.setValue("load_material_qty",0)
+       obj.setValue("deduction",20)
+       obj.save(null,null,null)
+       /**
+        * 写数据到消耗明细表
+        * para 1.车间工单obj 2.物料编码 3.消耗lot 4.消耗托盘 5.消耗数量 6.产出lot 7.产出托盘 8.产出数量
+        * **/ 
+       consumeRecord(orderItemObj,proType,lotName,palletNameCar,float(qtyP),lotName,proCode,float(qtyP))
+       totalQty = totalQty - qtyP
+       continue
+    }
+    }
+    }
+    
+    
+    //获取到不良品行对象  保存批次号
+    vectorAtrowSq = getProperty("VECTORATROWSQ")
+    if(vectorAtrowSq != null){
+        for(k=0;k<vectorAtrowSq.size();k++){
+             atrowSq = vectorAtrowSq.get(k)
+             atrowSq.setValue("lot_name",lotName)
+             atrowSq.setValue("order_number",orderNum)
+             atrowSq.save(null,null,null)
+        }
+        vectorAtrowSq.clear()
+    }
+    
+    
+    //保存报废品明细记录
+    vectorAtrow = getProperty("ATROW")
+    if(vectorAtrow != null){
+        if(vectorAtrow.size()>0){
+            for(i=0;i<vectorAtrow.size();i++){
+                atrowObj = vectorAtrow.get(i)
+                atrowObj.setValue("ors_key",orderItemObj.getUDA("route_step_key"))
+                atrowObj.setValue("rejects_number_S",getFormProperty(form,"DOCSEQ"))
+                atrowObj.setValue("create_t",getDBTime())
+                atrowObj.setValue("created_by",getFormProperty("loginUser").getName())
+                atrowObj.setValue("created_by_desc",getFormProperty("loginUser").getDescription())
+                atrowObj.save(null,null,null)
+                scrapQty = atrowObj.getValue("qty")//不良品数量
+                totalScrapQty = mainOrderObj.getUDA("scrap_qty")//报废数量
+                if(totalScrapQty == null){
+                    totalScrapQty = 0
+                }
+                totalScrapQty += scrapQty
+                mainOrderObj.setUDA(totalScrapQty,"scrap_qty")
+                mainOrderObj.Save(null,null,null)
+            }
+        }
+        vectorAtrow.clear()
+    }
+    
+    
+    //获取首道报工点 和 尾道报工点
+    vectorArtFlag = getFirstArtRouteStep(mainOrder)
+    firstArtRouteStep = vectorArtFlag.get(0)[8]
+    lastArtRouteStep = vectorArtFlag.get(vectorArtFlag.size()-1)[8]
+    if(routeStepThis.equals(firstArtRouteStep)){
+        workBlankQty = mainOrderObj.getUDA("workblank_qty")//落料数量
+        if(workBlankQty == null){
+            workBlankQty = 0
+        }
+        workBlankQty += long(artQtySinger)
+        mainOrderObj.setUDA(workBlankQty,"workblank_qty")
+        mainOrderObj.Save(null,null,null)
+    }
+    if(routeStepThis.equals(lastArtRouteStep)){
+        actualQty = mainOrderObj.getUDA("actual_qty")//实际数量
+        if(actualQty == null){
+            actualQty = 0
+        }
+        actualQty += long(artQtySinger)
+        mainOrderObj.setUDA(actualQty,"actual_qty")
+        mainOrderObj.Save(null,null,null)
+    }
+    
+    if(lotName == null || lotName ==""){
+         lotName = editBatch.getText()//生产批次号
+    }
+    
+    if(checked == true){
+     palletName = proCode//生成流转单
+      /**
+       * 报工明细表记录
+       *报工记录 1.生产批次号（lot） 2.工单号 3.设备 4.工序流转单 5.物料号 6.报工数量 7.打印状态 8.车间工单号 
+       * **/
+     if(artQtySinger != 0){
+         takeShapeArtRecord(lotName,mainOrderObj.getOrderKey(),equip,palletName,proType,float(artQtySinger),10,orderNum)
+     }
+     /**
+      * 连线报工
+      *将前几道自动报工的工步都给报工 1.主工单 2。车间工单 3.批次号 4.工作中心 5.pt号 6.物料编码 7.报工数量 
+      * **/
+    ligatureArt(mainOrder,orderNum,lotName,WCObj.getKey(),proCode,proType,float(artQtySinger))
+    //生成产品标示卡  且计算出没有打印的数量
+    filterObj = createATRowFilter("OM_ProductionReport")
+    filterObj.forColumnNameEqualTo("pallet_name",palletName)
+    filterObj.forColumnNameEqualTo("whether_print",10)
+    vectorProCar = createATHandler("OM_ProductionReport").getATRowsByFilter(filterObj,true)
+    totalQty = 0
+    for(i=0;i<vectorProCar.size();i++){
+         proCarObj = vectorProCar.get(i)
+         qty = proCarObj.getValue("report_qty")
+         
+         if(qty== null){
+             qty = 0
+         }
+         qtyF = float(qty)
+         totalQty +=qtyF
+         proCarObj.setValue("whether_print",20)//将状态修改为 已打印
+         proCarObj.setValue("pallet_name",palletName)//产品车标示卡
+         proCarObj.save(null,null,null)
+    }
+    rowObj = getLastArtRouteStep(mainOrder,orderNum)
+    nextOrderRsKey = null
+    if(rowObj != null){
+       nextOrderRsKey = rowObj[8]
+    }
+    atrow = createATHandler("OM_Pallet").createATRow()
+    atrow.setValue("order_item_key",orderItemObj.getKey())//车间工单key
+    atrow.setValue("order_key",mainOrderObj.getOrderKey())//工单主键
+    atrow.setValue("order_item_desc",orderNum)//车间工单描述
+    atrow.setValue("order_desc",mainOrder)//工单描述
+    atrow.setValue("pallet_name",palletName)//流转单号
+    atrow.setValue("pallet_type",10)//10 正常 20 返工
+    atrow.setValue("part_number",proType)//产品型号
+    atrow.setValue("lot_name",lotName)//生产批号
+    atrow.setValue("equipment",equip)//设备
+    atrow.setValue("quantity_finished",totalQty)//数量
+    atrow.setValue("quantity_init",totalQty)//初始数量
+    atrow.setValue("pallet_category",20)//托盘分类 10: 产品车  20：流转托盘 
+    atrow.setValue("pallet_status",10)//托盘状态 10: 正常  20：被拆分  30: 被合并 
+    atrow.setValue("created_by_desc",getCurrentUser().getDescription())//创建人描述
+    atrow.setValue("created_by",getCurrentUser().getName())//创建人
+    //atrow.setValue("product_car_code",proCode)//物理托盘号
+    atrow.setValue("wc_key_desc",getFormProperty("wcName"))
+    atrow.setValue("wc_key",WCObj.getKey())//工作中心key
+    atrow.setValue("route_step_key",orderItemObj.getUDA("route_step_key"))
+    atrow.setValue("route_step_desc",orderItemObj.getUDA("operation_desc"))
+    atrow.setValue("whether_load",10)
+    atrow.setValue("current_storage_zone",WCObj.getUDA(0))//所在店铺名称
+    atrow.setValue("next_order_rs_key",nextOrderRsKey)//下道报工点key
+    atrow.save(null,null,null)
+        
+     //记录商店 入库 出库明细
+     atrowStore = createATHandler("OM_StoreRecordDetail").createATRow()
+     atrowStore.setValue("wc_key",WCObj.getKey())//工作中心key
+     atrowStore.setValue("store_name",WCObj.getUDA(0))//商店名称
+     atrowStore.setValue("lot_name",lotName)//批次号
+     atrowStore.setValue("part_number",proType)//物料号
+     atrowStore.setValue("qty",totalQty)//数量
+     //atrowStore.setValue("equipment",WCObj.getEquipment()[0].getName())//设备编码
+     atrowStore.setValue("pallet_name",palletName)//流转单
+     atrowStore.setValue("status",10)//状态 10 未消耗
+     atrowStore.setValue("source_type",10)//数据来源 10: 报工  20：退料 30： 移库
+     atrowStore.setValue("created_by",getFormProperty("loginUser").getName())//创建人
+     atrowStore.setValue("created_by_desc",getFormProperty("loginUser").getName())//创建人描述
+     atrowStore.save(null,null,null)
+
+    //打印后工序流转单 1.流转单号 2.工单号， 3.产品型号 4.批次号 5.产品名称
+    frmPrint(palletName,orderItemObj.getName(),proType,lotName,getPart(proType).getDescription(),mainOrderObj.getName())
+        
+     //打印记录
+     atrowRecords = createATHandler("PR_PrintRecords").createATRow()
+     atrowRecords.setValue("id",palletName)//编码 产品车标示卡号
+     atrowRecords.setValue("print_type","流转单")//产品车标示卡
+     atrowRecords.setValue("operator",getCurrentUser().getName())//操作人
+     atrowRecords.setValue("print_time",getDBTime())//打印时间
+     atrowRecords.setValue("print_count",1)//打印次数
+     atrowRecords.setValue("created_by",getCurrentUser().getName())//创建人
+     atrowRecords.save(null,null,null)
+     
+     editArtQty.setText(null)
+    }
+    if(checked == false)
+    {
+        //报工记录 1.生产批次号（lot） 2.工单号 3.设备 4.工序流转单号 5.产品型号 6.报工数量  7.打印状态 8.托盘号
+        takeShapeArtRecord(lotName,mainOrderObj.getOrderKey(),equip,proCode,proType,float(artQtySinger),10,orderNum)   
+        //将前几道自动报工的工步都给报工 1.主工单 2。车间工单 3.批次号 4.工作中心 5.pt号 6.物料编码 7.报工数量
+        ligatureArt(mainOrder,orderNum,lotName,WCObj.getKey(),proCode,proType,float(artQtySinger))
+        
+        editArtQty.setText(null)
+    }
+    
+    takeShapeArtShow()//刷新报工记录
+    
+    totalArtQty = orderItemObj.getUDA("finished_qty")
+    if(totalArtQty == null){
+        totalArtQty = 0
+    }
+    if(totalArtQty != null)
+    {
+        totalArtQty  = long(totalArtQty)
+    }
+    totalArtQty += artQtyL
+    orderItemObj.setUDA(totalArtQty,"finished_qty")   
+    mainOrderObj.save()
+    
+    editArtqty.setText(totalArtQty.toString())
+    takeShapeArtShow()
+    showloadMaterial()
+    
+    initOrder()//初始化工单列表
+    
+    totalQty = getNowBatch(mainOrderObj,orderItemObj,getFormProperty("wcName"))
+    edittotalBatch.setText(totalQty.toString())//批次累计
+}
+//将前几道自动报工的工步都给报工 1.主工单 2。车间工单 3.批次号 4.工作中心 5.pt号 6.物料编码 7.报工数量
+function ligatureArt(mainOrder,orderNum,lotName,workcenter,palletName,partnum,actualQty){
+     order =  getWorkOrder(mainOrder)
+     orderItem = order.getOrderItem(orderNum)
+     routeStepThis = orderItem.getUDA("route_step_key").toString()
+     sqlLigatureArt = "
+                      select wo.order_number,woi.order_item,wc.wc_name,uoi.operation_key_I,uoi.operation_name_S,uoi.report_flag_I,uoi.orderstep_seq_I,uoi.pre_route_step_key_I,uoi.route_step_key_I,uoi.next_step_key_I  
+                      from WORK_ORDER  wo left join WORK_ORDER_ITEMS  woi on wo.order_key = woi.order_key
+                      left join UDA_OrderItem uoi on woi.order_item_key = uoi.object_key 
+                      left join WORK_CENTER wc on uoi.wc_key_I = wc.wc_key
+                      where 1=1
+                      "
+      sqlLigatureArt += "and wo.order_number = '"+ mainOrder +"'"
+      sqlLigatureArt += " order by uoi.orderstep_seq_I desc"
+      vectorLigatureArt = querySql(sqlLigatureArt)
+      for(i=0;i<vectorLigatureArt.size();i++){
+           ligatureArtObj = vectorLigatureArt.get(i)
+           routeStepKey = ligatureArtObj[8].toString()
+           if(routeStepThis == routeStepKey){
+                flag = 1
+                while (flag == 1){
+                   i +=1
+                   if(i == vectorLigatureArt.size()-1){
+                       obj = vectorLigatureArt.get(vectorLigatureArt.size()-1)
+                       flag = 2
+                   }else{
+                       obj = vectorLigatureArt.get(i)  
+                   }
+                   reportFlag = obj[5]
+                   if(reportFlag == "10"){
+                        //报工明细记录 1.生产批次号（lot） 2.工单号 3.工作中心 4.产品车标示卡 5.物料号 6.报工数量 7.物理产品车号 8工序，9 工步
+                        //当前随工单报工 生成报工记录      1                                   1          1         1        
+                        orderItemKey =  getWorkOrder(obj[0]).getOrderItem(obj[1]).getOrderItemKey()
+                        takeShapeArtRecordligature(lotName,orderItemKey,workcenter,palletName,partnum,actualQty,null,obj[3],obj[8])
+                   }else{
+                        break
+                   }
+               }
+           }
+      }
+}
+//报工明细记录 1.生产批次号（lot） 2.工单号 3.工作中心 4.产品车标示卡 5.物料号 6.报工数量 7.物理产品车号 8工序，9 工步
+function takeShapeArtRecordligature(lotName,orderNum,workcenter,palletName,partNum,reportQty,printStatus,op,opstep){
+    atrow = createATHandler("OM_ProductionReport").createATRow()
+    atrow.setValue("lot_name",lotName)//生产批次
+    atrow.setValue("order_item",orderNum)//工单号
+    atrow.setValue("p_line_key",null)//车间
+    atrow.setValue("wc_key",workcenter)//工作中心
+    atrow.setValue("step_key",opstep)//工步名称
+    atrow.setValue("op_key",op)//工序
+    atrow.setValue("equipment",getWorkCenterByKey(workcenter).getName())//设备
+    atrow.setValue("pallet_name",palletName)//工序流转单号
+    atrow.setValue("report_time",getDBTime())//报工时间 
+    atrow.setValue("part_number",partNum)//物料编码
+    atrow.setValue("report_qty",reportQty)//报工数量
+    atrow.setValue("reporter",getCurrentUser().getName())//报工人
+    atrow.setValue("created_by_desc",getCurrentUser().getName())//创建人描述
+    atrow.setValue("created_by",getCurrentUser().getName())//创建人
+    atrow.setValue("whether_print",printStatus)// 是否打印产品标示卡 10: 未打印  20：已打印
+    atrow.save(getDBTime(),null,null)
+}
+// para 1.车间工单obj 2.物料编码 3.消耗lot 4.消耗托盘 5.消耗数量 6.产出lot 7.产出托盘 8.产出数量
+function consumeRecord(orderItemObj,partNum,fromLotName,fromPallet,consumeQty,toLot,toPalletName,proQty){
+     
+     atrow = createATHandler("OM_ConsumeRecord").createATRow()
+     atrow.setValue("order_item_key",orderItemObj.getOrderItemKey())//车间工单主键
+     atrow.setValue("part_number",partNum)//物料编码
+     atrow.setValue("p_line_key",orderItemObj.getUDA("p_line_key"))//车间
+     atrow.setValue("wc_key",getWorkCenterByName(getFormProperty("wcName")).getKey())//工作中心
+     atrow.setValue("step_key",orderItemObj.getUDA("route_step_key"))//工步key
+     atrow.setValue("op_key",orderItemObj.getUDA("operation_key"))//工序
+     atrow.setValue("from_lot_name",fromLotName)//消耗Lot
+     atrow.setValue("from_pallet_name",fromPallet)//消耗托盘
+     atrow.setValue("consume_qty",consumeQty)//消耗数量
+     atrow.setValue("to_lot_name",toLot)//产出Lot
+     atrow.setValue("to_pallet_name",toPalletName)//产出托盘
+     atrow.setValue("product_qty",proQty)//产出数量
+     atrow.setValue("consume_time",getDBTime())//消耗时间
+     atrow.setValue("created_by",getCurrentUser().getName())
+     atrow.setValue("last_modified_by",getCurrentUser().getName())
+     atrow.setValue("created_by_desc",getCurrentUser().getName())
+     atrow.setValue("last_modified_by_desc",getCurrentUser().getName())
+     atrow.save(null,null,null)
+     //return atrow
+}
+//通过本道报工点工序获取到 上道报工点
+function  getLastArtRouteStep(mainOrder,orderNum){
+     order =  getWorkOrder(mainOrder)
+     orderItem = order.getOrderItem(orderNum)
+     routeStepThis = orderItem.getUDA("route_step_key").toString()
+     sqlHideLoad += "and wo.order_number = '"+ mainOrder +"'"
+     sqlHideLoad += " order by uoi.orderstep_seq_I asc "
+     vectorData = querySql(sqlHideLoad)
+     //routeStepThis =  labelRouteStepKey.getText()//当前工作中心对应的工序
+     for(i=0;i<vectorData.size();i++){
+         step =  vectorData.get(i)[8]//当前工序
+         if(routeStepThis.equals(step)){
+               if(vectorData.size()-1 != i){
+                     return vectorData.get(i+1)  
+               }
+          }
+     }
+}
+//获取首道报工点 
+function  getFirstArtRouteStep(mainOrder){
+     sqlHideLoad += "and wo.order_number = '"+ mainOrder +"'"
+     sqlHideLoad += " order by uoi.orderstep_seq_I asc "
+     vectorData = querySql(sqlHideLoad)
+     return vectorData
+}
+//获取当前工单对应的最新的 批次号 数量
+function getNowBatch(mainOrderObj,orderItemObj,WC){
+
+    
+    sqlBatch += " and pa.order_key_I = '"+ mainOrderObj.getOrderKey()  +"'"
+    sqlBatch += " and pa.order_item_key_I = '"+ orderItemObj.getOrderItemKey() +"'"
+    sqlBatch += " and pa.equipment_S = '"+ labelEquipment.getText() +"'"
+    sqlBatch += " order by pa.creation_time desc "
+     vectorBatch= querySql(sqlBatch)
+     if(vectorBatch.size()>0){
+         batchNo = vectorBatch.get(0)[3]
+         editBatch.setText(batchNo)//生产批次号
+        
+        filterObj = createATRowFilter("OM_Pallet")
+        filterObj.forColumnNameEqualTo("lot_name",batchNo)
+        filterObj.forColumnNameEqualTo("wc_key_desc",WC)
+        filterObj.forColumnNameEqualTo("order_item_key",orderItemObj.getOrderItemKey().toString())
+        vectorProCar = createATHandler("OM_Pallet").getATRowsByFilter(filterObj,true)
+        totalQty = 0
+         for(i=0;i<vectorProCar.size();i++){
+             proCarObj = vectorProCar.get(i)
+             qty = proCarObj.getValue("quantity_finished")
+             
+             if(qty== null){
+                 qty = 0
+             }
+              qtyF = float(qty)
+              totalQty +=qtyF
+              totalQty = long(totalQty)
+        }
+         return totalQty
+     }else{
+         return 0
+     } 
+}
+
+//报工明细记录 1.生产批次号（lot） 2.工单主键号 3.工作中心 4.产品车标示卡 5.物料号 6.报工数量 7.打印状态 8 车间工单号
+function takeShapeArtRecord(lotName,orderNum,equip,palletName,partNum,reportQty,printStatus,orderNumName){
+    atrow = createATHandler("OM_ProductionReport").createATRow()
+    atrow.setValue("lot_name",lotName)//生产批次
+    atrow.setValue("order_item",orderNum)//工单主键
+    atrow.setValue("order_item_name",orderNumName)//工单号
+    atrow.setValue("p_line_key",null)//车间
+    atrow.setValue("wc_key",getWorkCenterByName(getFormProperty("wcName")).getKey())//工作中心
+    atrow.setValue("step_key",null)//工步名称
+    atrow.setValue("op_key",null)//工序
+    atrow.setValue("equipment",equip)//工作中心
+    atrow.setValue("pallet_name",palletName)//工序流转单号
+    atrow.setValue("report_time",getDBTime())//报工时间 
+    atrow.setValue("part_number",partNum)//物料编码
+    atrow.setValue("report_qty",reportQty)//报工数量
+    atrow.setValue("reporter",getCurrentUser().getDescription())//报工人
+    atrow.setValue("created_by_desc",getCurrentUser().getDescription())//创建人描述
+    atrow.setValue("created_by",getCurrentUser().getName())//创建人
+    //atrow.setValue("product_car_code",proCode)//物理托盘号
+    atrow.setValue("whether_print",printStatus)// 是否打印产品标示卡 10: 未打印  20：已打印
+    atrow.save(null,null,null)
+}
+
+ //打印后工序流转单 1.流转单号 2.工单号， 3.产品型号 4.批次号 5.产品名称
+function  frmPrint(palletName,orderNum,proType,batchNo,proName,mainOrderNum)
+{   
+    report = createReport("Report_Design_trackNum", "1")   
+
+    reportDataSet = createReportDataSet()
+    reportDataSet.setGlobalVariable("palletName",palletName)
+    reportDataSet.setGlobalVariable("orderNum",orderNum)
+    reportDataSet.setGlobalVariable("productModel",proType)
+    reportDataSet.setGlobalVariable("batchNo",batchNo)
+    reportDataSet.setGlobalVariable("productName",proName)
+    
+     sql = "
+            select  ap.orderstep_seq_I,ap.operation_name_S,pl.p_line_name+':'+pl.description  ,wc.wc_name,  case ap.report_flag_I   when 10 then  '' when 20 then N'是' else '' end  
+            from   AT_OM_OrderRouteStep ap
+            left join PRODUCTION_LINE pl on pl.p_line_key = ap.pline_key_I 
+            left  join  AT_OM_OrderRoute  ae on ae.atr_key = ap.order_route_key_I
+            left  join  WORK_CENTER  wc  on wc.wc_key = ap.wc_key_S where 1=1 
+          "
+     sql += " and ae.order_number_S = '"+ mainOrderNum  +"'"  
+     sql += " order by ap.orderstep_seq_I asc "
+    
+    stepVector = querySql(sql)
+    for(i = 0; i <stepVector.size() ; i++)
+    { 
+        hashtableRow = reportDataSet.createRow()
+        op = stepVector.get(i)[0]
+        if(op.length()==1){
+            op = "OP00"+op
+        }else if(op.length()==2){
+            op = "OP0"+op
+        }else if(op.length()==3){
+            op = "OP"+op
+        }
+        hashtableRow.put("op",op)// 
+        hashtableRow.put("route_name",stepVector.get(i)[1])// 
+        hashtableRow.put("address",stepVector.get(i)[2])// 
+        wc = stepVector.get(i)[3]
+        if(wc == null || wc == ""){
+            wc = "/"
+        }
+        hashtableRow.put("wc",wc)//
+        ysNoTask = stepVector.get(i)[4]
+        if(ysNoTask == null || ysNoTask == ""){
+            ysNoTask = "/"
+        }
+        hashtableRow.put("ys_no_task",ysNoTask)// 
+        hashtableRow.put("qty","")// 
+        hashtableRow.put("remark","")// 
+        
+        reportDataSet.appendRow(hashtableRow)
+    }
+    report.setReportDataSet(reportDataSet)
+    response  = report.generate()
+    if(response.isError() ){
+        dialogError("装箱单打印异常，请及时联系相关人员")
+       
+    }
+    response = report.preview()
+    reponse = report.print(null,false)
+    checkAndDisplayResponse(response)
+}
+//报工记录展示
+function takeShapeArtShow(){
+     orderNum = editOrderNum.getText().trim()
+     sql += "and pr.wc_key_I = '"+ getWorkCenterByName(getFormProperty("wcName")).getKey() +"'"
+     sql += "and pr.order_item_name_S = '"+ orderNum +"'"
+     sql += " order by pr.creation_time desc "
+     vectorData = querySql(sql)
+     displayGridResult3(vectorData,gridPallet)
+}
+function displayGridResult3(vec,grid){
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+   
+    for(i=0; i<vec.size(); i++){
+        obj = vec.get(i)
+        
+        grid.setCellText(i,0,i+1)
+        grid.setCellText(i,1,obj[0])
+        grid.setCellText(i,2,obj[1])
+        grid.setCellText(i,3,obj[2])
+        grid.setCellText(i,4,obj[3])
+        grid.setCellText(i,5,obj[4])
+        grid.setCellText(i,6,obj[5])
+        grid.setCellText(i,7,obj[6])
+        grid.setCellText(i,8,obj[7])
+        grid.setCellText(i,9,obj[8])
+        grid.setCellText(i,10,obj[9])
+    }
+    grid.resizeColumnsToFit()
+}
+//上料时产品车标示卡回车 带出数量
+function showLoadQty(){
+    orderNum = editOrderNum.getText().trim()//车间工单
+    if(orderNum==""||orderNum ==null){
+        return
+    }
+    pallatName = editPallatName.getText().trim()//产品标示卡号
+    if(pallatName==null||pallatName==""){
+        dialogError("请输入正确产品车标示卡！")
+        return
+    }
+    
+    filterObj = createATRowFilter("OM_Pallet")
+    filterObj.forColumnNameEqualTo("pallet_name",pallatName)//产品车标示卡
+    filterObj.forColumnNameEqualTo("pallet_category",10)//10代表产品车标示卡
+    vectorPallet = createATHandler("OM_Pallet").getATRowsByFilter(filterObj,true)
+    if(vectorPallet.size()==0){
+        dialogError("输入的产品标识卡不存在，请核对正确后上料！")
+        editPallatName.setText(null)
+        smartEdit.setValue(null)
+        return
+    }
+    filterObj = createATRowFilter("OM_Pallet")
+    filterObj.forColumnNameEqualTo("pallet_name",pallatName)//产品车标示卡
+    filterObj.forColumnNameEqualTo("pallet_category",10)//10代表产品车标示卡
+    filterObj.forColumnNameEqualTo("whether_load",10)//是否已经上料 未上料
+    vectorPallet = createATHandler("OM_Pallet").getATRowsByFilter(filterObj,true)
+    if(vectorPallet.size()==0){
+        dialogError("输入的产品标识卡已经上料，不允许重复上料操作！")
+        editPallatName.setText(null)
+        smartEdit.setValue(null)
+        return
+    }
+    qty = vectorPallet.get(0).getValue("quantity_finished")
+    smartEdit.setValue(long(qty))
+//     checked = radioButtonAll1.getChecked()
+//     if(checked == true){
+//         qty = vectorPallet.get(0).getValue("ligature_qty")
+//         if(qty == null){
+//             qty = 0
+//         }
+//         smartEdit.setValue(long(qty))
+//     }else{
+//         qty = vectorPallet.get(0).getValue("quantity_finished")
+//         smartEdit.setValue(long(qty))
+//     }
+
+}
+
+//个人报工记录查看
+function  personArtShow(orderItemDesc){
+     name = getCurrentUser().getName()
+     sqlPersonArtShow += "and pa.order_item_desc_S = '"+ orderItemDesc +"'"
+     sqlPersonArtShow += "and pa.created_by_S = '"+ name +"'"
+     sqlPersonArtShow += " and  CONVERT(varchar(100), pa.creation_time, 102) = '" + getStringOfTimeInSqlTime(getDBTime())+"'"
+     vectorData = querySql(sqlPersonArtShow)
+     displayGridResult5(vectorData,gridPersonArt)
+}
+function displayGridResult5(vec,grid){
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+   
+    for(i=0; i<vec.size(); i++){
+        obj = vec.get(i)
+        
+        grid.setCellText(i,0,i+1)
+        grid.setCellText(i,1,obj[0])
+        grid.setCellText(i,2,obj[1])
+        grid.setCellText(i,3,obj[2])
+        grid.setCellText(i,4,obj[3])
+        grid.setCellText(i,5,obj[4])
+        grid.setCellText(i,6,obj[5])
+        grid.setCellText(i,7,obj[6])
+        grid.setCellText(i,8,obj[7])
+        grid.setCellText(i,9,obj[8])
+    }
+    grid.resizeColumnsToFit()
+}
+function getStringOfTimeInSqlTime(time){
+    stringOfTime = ""
+    if(time != null){
+        y = time.getYear()
+        m = time.getMonth()
+        d = time.getDay()
+        h = time.getHour()
+        t = time.getMinute()
+        s = time.getSecond()
+        stringOfTime = y + "."
+        if(m < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + m + "."
+        
+        if(d < 10){
+            stringOfTime = stringOfTime + "0"
+        }
+        stringOfTime = stringOfTime + d + " "
+    }
+    return stringOfTime
+}
+
+//工单批次展示
+function orderBatchShow(orderItemDesc){
+    sqlOrderBatch = " 
+                     select DISTINCT  pa.order_desc_S,pa.order_item_desc_S,wc_key_desc_S,pa.lot_name_S from AT_OM_Pallet pa  where pa.pallet_category_I = 20
+                    "
+    sqlOrderBatch += "and pa.order_item_desc_S = '"+ orderItemDesc +"'"
+    vectorData = querySql(sqlOrderBatch)
+    displayGridResult7(vectorData,gridOrderBatch)
+}
+function displayGridResult7(vec,grid){
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+   
+    for(i=0; i<vec.size(); i++){
+        obj = vec.get(i)
+        
+        grid.setCellText(i,0,i+1)
+        grid.setCellText(i,1,obj[1])
+        grid.setCellText(i,2,obj[2])
+        grid.setCellText(i,3,obj[3])
+        
+        filterObj = createATRowFilter("OM_Pallet")
+        filterObj.forColumnNameEqualTo("order_item_desc",obj[1])
+        filterObj.forColumnNameEqualTo("wc_key_desc",obj[2])
+        filterObj.forColumnNameEqualTo("lot_name",obj[3])
+        vectorPallet = createATHandler("OM_Pallet").getATRowsByFilter(filterObj,true)
+        totalQty = 0
+        for(i=0;i<vectorPallet.size();i++){
+            palletObj = vectorPallet.get(i)
+            qty = palletObj.getValue("quantity_finished")
+             
+            if(qty== null){
+                qty = 0
+            }
+             qtyL = long(qty)
+             totalQty +=qtyL
+        }
+        grid.setCellText(i,4,totalQty.toString())
+    }
+    grid.resizeColumnsToFit()
+}
+
+//工单开工
+function orderStartWork(){
+   row = gridOrderList.getSelectedRow()
+   if(row == -1){
+        dialogError("请选择工单！")
+        return
+   }
+   mainOrderNum = gridOrderList.getCellText(row,1)
+   orderItemNum = gridOrderList.getCellText(row,2)
+   mainOrderObj = getWorkOrder(mainOrderNum)
+   orderItemObj = mainOrderObj.getOrderItem(orderItemNum)
+   orderItemObj.setUDA(30,"order_status")
+   
+   routeStepThis = orderItemObj.getUDA("route_step_key").toString()
+   vectorArtFlag = getFirstArtRouteStep(mainOrderNum)
+   firstArtRouteStep = vectorArtFlag.get(0)[8]
+    if(routeStepThis.equals(firstArtRouteStep)){
+        orderItemObj.setUDA(getDBTime(),"actual_start_time")
+        mainOrderObj.setUDA(getDBTime(),"actual_start_time")
+    }
+    mainOrderObj.setUDA(30,"order_status")
+    mainOrderObj.save()
+   
+   switchOrder()//右侧显示详细信息
+   initOrder()
+   OrderChangeHis(orderItemObj)//记录工序工单调整履历
+   
+   showloadMaterial()
+}
+//工单挂起
+function orderHangUp(){
+    row = gridOrderList.getSelectedRow()
+    if(row == -1){
+         dialogError("请选择工单！")
+         return
+    }
+    mainOrderNum = gridOrderList.getCellText(row,1)
+    orderItemNum = gridOrderList.getCellText(row,2)
+    WC = gridOrderList.getCellText(row,8)
+    form=getForm("MES_OM_orderHangUp")
+    setFormProperty(form,"ORDERITEMNUM",orderItemNum)
+    setFormProperty(form,"WC",WC)
+    setFormProperty(form,"ORDERNUM",mainOrderNum)
+    setFormProperty(form,"ORDERSTATUS",40)//工单状态  40：暂停
+    rs=showAsDialog(form)
+    
+    status = getFormProperty(form,"STATUS")//暂时不用
+    if(status == null || status == ""){
+        return
+    }
+
+    mainOrderObj = getWorkOrder(mainOrderNum)
+    orderItemObj = mainOrderObj.getOrderItem(orderItemNum)
+     orderItemObj.setUDA(40,"order_status")
+     
+     mainOrderObj.setUDA(40,"order_status")
+     mainOrderObj.save()
+    
+    initOrder()
+    
+    resetAllControlValues(splitPaneOrder)
+}
+
+//工单完工
+function orderEndWork(){
+   row = gridOrderList.getSelectedRow()
+   if(row == -1){
+        dialogError("请选择工单！")
+        return
+   }
+   mainOrderNum = gridOrderList.getCellText(row,1)
+   orderItemNum = gridOrderList.getCellText(row,2)
+   mainOrderObj = getWorkOrder(mainOrderNum)
+   orderItemObj = mainOrderObj.getOrderItem(orderItemNum)
+   
+    //获取计划数量  报工数量进行比对
+   qtyOrder = orderItemObj.getQuantityOrdered()
+   qtyOrderL = long(qtyOrder)
+   finishQty = orderItemObj.getUDA("finished_qty")
+   finishQtyL = long(finishQty)
+   if(finishQtyL == null){
+      finishQtyL = 0
+   }
+   
+   tolerance = qtyOrderL/10//公差 +-10%
+   totalMin= qtyOrderL - tolerance
+   totalMax = qtyOrderL + tolerance
+   
+   if(totalMax > finishQtyL && finishQtyL > totalMin){
+        
+   }else{
+        dialogError("报工范围必须是"+totalMin+"~"+totalMax+"数量之间！")
+        return
+   }
+    orderItemObj.setUDA(50,"order_status")
+    orderItemObj.setUDA(110,"order_Statusdesc")
+    
+   routeStepThis = orderItemObj.getUDA("route_step_key").toString()
+   vectorArtFlag = getFirstArtRouteStep(mainOrderNum)  
+   vectorObj = null
+   for(i=0;i<vectorArtFlag.size();i++){
+         step =  vectorArtFlag.get(i)[8]//当前工序
+         if(routeStepThis.equals(step)){
+               if(vectorArtFlag.size()>1){
+                   if(i !=0 ){
+                        vectorObj =  vectorArtFlag.get(i-1) 
+                   }
+               }
+         }
+   }
+   if(vectorObj != null){
+        upOrderItemNum = vectorObj[1]
+        upOrderItemNumObj = mainOrderObj.getOrderItem(upOrderItemNum)
+        orderStatus = upOrderItemNumObj.getUDA("order_status")
+        if(orderStatus != 50){
+            dialogError("前道工序工单没有关闭，此道工序不允许关闭！")
+            return
+        }
+   }
+   lastArtRouteStep = vectorArtFlag.get(vectorArtFlag.size()-1)[8]
+   if(routeStepThis.equals(lastArtRouteStep)){
+        orderItemObj.setUDA(getDBTime(),"actual_finish_time")
+   }
+   mainOrderObj.setUDA(50,"order_status")
+   mainOrderObj.save()
+   
+   initOrder()
+   OrderChangeHis(orderItemObj)//记录工序工单调整履历
+   
+   resetAllControlValues(splitPaneOrder)
+}
+
+//记录工序工单调整履历
+function OrderChangeHis(orderItem){
+    atrowPlan = createATHandler("OM_OrderStepHis").createATRow()
+    atrowPlan.setValue("plan_number",orderItem.getUDA("plan_number"))//主计划编号   
+    atrowPlan.setValue("order_item",orderItem.getOrderItem()) //车间工单号
+    atrowPlan.setValue("p_line_key",orderItem.getUDA("p_line_key"))//车间 p_line_key
+    atrowPlan.setValue("planned_route",orderItem.getPlannedRoute())//工艺路线planned_route
+    atrowPlan.setValue("work_center",orderItem.getUDA("work_center"))//工做中心work_center
+    atrowPlan.setValue("seq_number",orderItem.getUDA("seq_number"))//排台序号 seq_number
+    atrowPlan.setValue("route_step_key",orderItem.getUDA("route_step_key")) //工步主键  route_step_key
+    atrowPlan.setValue("order_type",orderItem.getUDA("order_type"))//工单类型  order_type
+    atrowPlan.setValue("part_number",orderItem.getPartNumber())//产品型号  part_number
+    atrowPlan.setValue("bom_name",orderItem.getBomName())//bom_name
+    atrowPlan.setValue("bom_version",orderItem.getBomRevision())//bom_version
+    atrowPlan.setValue("planned_start_time",orderItem.getPlannedStartTime())//计划开始时间 planned_start_time
+    atrowPlan.setValue("planned_finish_time",orderItem.getPlannedFinishTime())//计划开始时间 planned_finish_time
+    atrowPlan.setValue("actual_start_time",orderItem.getUDA("actual_start_time"))//实际开始时间 actual_start_time
+    atrowPlan.setValue("actual_finish_time",orderItem.getUDA("actual_finish_time"))//实际完成时间 actual_finish_time
+    atrowPlan.setValue("order_status",orderItem.getUDA("order_status"))//工单状态 order_status
+    atrowPlan.setValue("quantity_odered",orderItem.getQuantityOrdered())//计划数量  quantity_odered
+    atrowPlan.setValue("quantity_finished",orderItem.getQuantityFinished())//实际完成数量  quantity_finished
+//     atrowPlan.setValue("last_modifier_key",orderItem.getUDA("last_modifier_key"))//最后调整人 last_modifier_key
+    atrowPlan.setValue("adjust_time",orderItem.getLastModifiedTime())//最后调整时间 adjust_time
+    atrowPlan.setValue("create_by",orderItem.getUDA("create_by"))//创建人 create_by
+    atrowPlan.setValue("created_by_desc",orderItem.getUDA("created_by_desc"))//创建人描述  created_by_desc
+    atrowPlan.setValue("finished_time",orderItem.getFinishedTime())//关闭时间 finished_time
+    atrowPlan.setValue("remark",orderItem.getUDA("remark"))//备注 remark
+    atrowPlan.setValue("report_flag",orderItem.getUDA("report_flag"))//报工点  report_flag
+    atrowPlan.setValue("last_report_flag",orderItem.getUDA("last_report_flag"))//最后报工点 last_report_flag
+    atrowPlan.setValue("pre_route_step_key",orderItem.getUDA("pre_route_step_key"))//上道工序 pre_route_step_key
+    atrowPlan.setValue("next_step_key",orderItem.getUDA("next_step_key"))//下道工序 next_step_key
+    atrowPlan.save(null,null,null)
+}
+
+//  根据Key 值从指定名称中获获取名称
+function getClientOptions(name, key )
+{
+    preferenceName = "~" + name + ".dat"
+    preferences = class com.datasweep.core.utility.Preference(preferenceName);     
+    result = null 
+    values = preferences.load();  
+    if (values != null ){
+        result = values.getProperty(key)
+        if  (isEmptyStr(result)){
+            result = ""
+        }
+        return result  
+    }else {
+        return  result 
+    }  
+}
+
+//================设备状态记录时长==============
+function stopStatus(){
+    
+    orderNum = editOrderNum.getText()
+    if(orderNum == null || orderNum == ""){
+        dialogError("请选择工单！")
+        return
+    }
+    WC = labelWC.getText()
+    equip = labelEquipment.getText()
+    form=getForm("MES_EM_EquipmentStatus")
+    setFormProperty(form,"ORDERNUM",orderNum)
+    setFormProperty(form,"WC",WC)//工作中心
+    setFormProperty(form,"EQUIP",equip)//工作中心
+    rs=showAsDialog(form)
+    if(rs == 1 || rs == 2){//1代表取消   2代表关闭
+     
+    }else{
+         if(editStatus.getText().trim() == null || editStatus.getText().trim() == ""){
+              editStatus.setText(getFormProperty(form,"DIGSTATUS"))
+         }
+         digStatus = editStatus.getText()//此页面标记的状态
+         localInfo = getClientOptions()
+         localDigStatus = localInfo.getProperty("digStatus")//从本地获取当前选中的状态类型
+         
+         if(digStatus.equals(localDigStatus)){
+              buttonStop.setBackColor(class com.datasweep.compatibility.ui.Color::RED)
+              buttonStop.setText("停机")
+              buttonStop.setText(buttonStop.getText()+":"+getFormProperty(form,"STATUS"))
+              buttonRegularPro.setBackColor(class com.datasweep.compatibility.ui.Color::GRAY) 
+         }else{
+              filterObj = createATRowFilter("EM_EquipmentStatusDetail")
+              filterObj.forColumnNameEqualTo("order_item",orderNum)
+              filterObj.forColumnNameEqualTo("equip_name",equip)
+              filterObj.forColumnNameEqualTo("current_status",long(digStatus))
+              filterObj.addOrderATColumnBy("start_time",short(0))
+              vectorEquipStatus = createATHandler("EM_EquipmentStatusDetail").getATRowsByFilter(filterObj,true)
+              obj = vectorEquipStatus.get(vectorEquipStatus.size()-1)
+              obj.setValue("end_time",getDBTime())
+              
+              endTime = getDBTime().getCalendar().getTime().getTime()
+              startTime = obj.getValue("start_time").getCalendar().getTime().getTime()
+              timeConsunming = (endTime - startTime)/(1000*60)
+              obj.setValue("time_consuming",timeConsunming)
+              obj.save(null,null,null)
+              
+              editStatus.setText(getFormProperty(form,"DIGSTATUS"))
+              buttonStop.setBackColor(class com.datasweep.compatibility.ui.Color::RED)
+              buttonStop.setText("停机")
+              buttonStop.setText(buttonStop.getText()+":"+getFormProperty(form,"STATUS"))
+              buttonRegularPro.setBackColor(class com.datasweep.compatibility.ui.Color::GRAY) 
+         }
+     } 
+}
+//设备统计正常生产
+function normalProduction(){
+     orderNum = editOrderNum.getText()
+     if(orderNum == null || orderNum == ""){
+         dialogError("请选择工单！")
+         return
+     }
+     WC = labelWC.getText()
+     equip = labelEquipment.getText()
+     digStatus = editStatus.getText()
+     if(digStatus != null && digStatus != ""){
+         filterObj = createATRowFilter("EM_EquipmentStatusDetail")
+         filterObj.forColumnNameEqualTo("order_item",orderNum)
+         filterObj.forColumnNameEqualTo("equip_name",equip)
+         filterObj.forColumnNameEqualTo("current_status",long(digStatus))
+         filterObj.addOrderATColumnBy("start_time",short(0))
+         vectorEquipStatus = createATHandler("EM_EquipmentStatusDetail").getATRowsByFilter(filterObj,true)
+         obj = vectorEquipStatus.get(vectorEquipStatus.size()-1)
+         obj.setValue("end_time",getDBTime())
+          
+         endTime = getDBTime().getCalendar().getTime().getTime()
+         startTime = obj.getValue("start_time").getCalendar().getTime().getTime()
+         timeConsunming = (endTime - startTime)/(1000*60)
+         obj.setValue("time_consuming",timeConsunming)
+         obj.save(null,null,null)
+        
+         buttonRegularPro.setBackColor(class com.datasweep.compatibility.ui.Color::GREEN)
+         buttonStop.setBackColor(class com.datasweep.compatibility.ui.Color::GRAY)
+         buttonStop.setText("停机")
+         editStatus.setText("")
+    }else{  
+         buttonRegularPro.setBackColor(class com.datasweep.compatibility.ui.Color::GREEN)
+         buttonStop.setBackColor(class com.datasweep.compatibility.ui.Color::GRAY)
+         buttonStop.setText("停机")
+         editStatus.setText("")
+    }
+}
+//设备状态展示
+function equipStatusShow(){
+    
+    sqlEquip = " 
+    
+        select DISTINCT esd.wc_key_I,
+        case esd.current_status_I  when 10 then N'计划停机'
+                                when 20 then N'维保停机'
+                                when 30 then N'故障停机'
+                                when 40 then N'待料'
+                                when 50 then N'换模'
+                                when 60 then N'待模'
+                                when 70 then N'调试'
+                                when 80 then N'待精测'
+                                else '' end ,esd.current_status_I
+        from AT_EM_EquipmentStatusDetail esd where 1=1
+    "
+    wc = getFormProperty("wcName")
+    WCObj = getWorkCenterByName(wc)
+    if(WCObj != null){
+         key = WCObj.getKey()
+         sqlEquip += "and esd.wc_key_I = '"+ key +"'"
+         vectorData = querySql(sqlEquip)
+         displayGridResult6(vectorData,gridEquipStatusShow)
+    }
+}
+function displayGridResult6(vec,grid){
+    grid.clearGrid()
+    grid.setNumberOfRows(0)
+   
+    for(i=0; i<vec.size(); i++){
+        obj = vec.get(i)
+        
+        grid.setCellText(i,0,i+1)
+        grid.setCellText(i,1,getWorkCenterByKey(long(obj[0])).getName())
+        grid.setCellText(i,2,obj[1])
+        grid.setCellText(i,4,obj[2])
+        
+        filterObj = createATRowFilter("EM_EquipmentStatusDetail")
+        filterObj.forColumnNameEqualTo("wc_key",long(obj[0]))
+        filterObj.forColumnNameEqualTo("current_status",obj[2])
+        vectorProCar = createATHandler("EM_EquipmentStatusDetail").getATRowsByFilter(filterObj,true)
+        totalQty = 0
+        for(i=0;i<vectorProCar.size();i++){
+            proCarObj = vectorProCar.get(i)
+            qty = proCarObj.getValue("time_consuming")
+             
+            if(qty== null){
+                qty = 0
+            }
+             qtyL = long(qty)
+             totalQty +=qtyL
+        }
+        
+        grid.setCellText(i,3,totalQty.toString())
+    }
+    grid.resizeColumnsToFit()
+  
+//     runFunctionThread(setDicDataDescToGrid,[gridEquipStatusShow,vec,2,"equipment_status",60])
+}
+//设备状态明细展示
+function equipStatusDetailShow(){
+     selectIndex = gridEquipStatusShow.getSelectedRow()//获取工单列表中选中的行
+     if(selectIndex == null){
+        return
+     }
+     wcName = gridEquipStatusShow.getCellText(selectIndex,1)
+     equipStatus = gridEquipStatusShow.getCellText(selectIndex,4)
+     form=getForm("MES_OM_EqumentStatusDetail")
+     setFormProperty(form,"EQUIPSTATUS",equipStatus)
+     setFormProperty(form,"WC",wcName)//工作中心
+     rs=showAsDialog(form)
+}
+//设备状态设置自动刷新
+function equipStautsRefresh(){
+     orderNum = editOrderNum.getText()
+     if(orderNum == null || orderNum == ""){
+          return
+     }
+     digStatus = editStatus.getText()
+     if(digStatus == null || digStatus == ""){
+          return
+     }
+     WC = labelEquipment.getText()//工作中心
+     
+     filterObj = createATRowFilter("EM_EquipmentStatusDetail")
+     filterObj.forColumnNameEqualTo("order_item",orderNum)
+     filterObj.forColumnNameEqualTo("equip_name",WC)
+     filterObj.forColumnNameEqualTo("current_status",long(digStatus))
+     filterObj.addOrderATColumnBy("start_time",short(0))
+     vectorEquipStatus = createATHandler("EM_EquipmentStatusDetail").getATRowsByFilter(filterObj,true)
+     obj = vectorEquipStatus.get(vectorEquipStatus.size()-1)
+     obj.setValue("end_time",getDBTime())
+      
+     endTime = getDBTime().getCalendar().getTime().getTime()
+     startTime = obj.getValue("start_time").getCalendar().getTime().getTime()
+     timeConsunming = (endTime - startTime)/(1000*60)
+     obj.setValue("time_consuming",timeConsunming)
+     obj.save(null,null,null)
+}
+//从本地取数据
+function getClientOptions(){
+    preferences = class com.datasweep.core.utility.Preference("~options1.dat");
+    values = preferences.load();
+    return values
+}
+/**校验报工数量与计划数量比列**/
+function selectCheckTheSize(orderNum)
+{
+sql = " SELECT CAST(a.quantity_ordered AS DECIMAL),CAST(b.finished_qty_F AS DECIMAL) 
+    FROM WORK_ORDER_ITEMS a,UDA_OrderItem b WHERE 1=1 
+    AND a.order_item_key = b.object_key
+    AND a.order_item = '"+orderNum+"' "
+    vectorSql = querySql(sql)
+    if(vectorSql.size()>0)
+    {
+        gathered = vectorSql.get(0)
+        percentage = Long(gathered[0])*0.05
+        qutay =Long(gathered[0]) + float(percentage)
+        finqty = float(gathered[1])
+        if(isNullOrEmpty(finqty))
+        {
+            finqty=0
+        }
+        if(finqty>qutay)
+        {   
+            s = dialogYesNo("警告","报工数量已经超过计划数量,是否继续报工")
+            if(s==7)
+            {
+                return dialogError("已停止报工")
+            }
+        }
+        
+    }
+}

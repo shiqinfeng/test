@@ -1,0 +1,873 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<UseCaseConfig id="PMC Menu" administrative="false" accessPrivilege="PMC Menu" positionNumber="0">
+    <!-- 人员管理 --> 
+        <DataTemplate id="UserSystemManagement" autoExpand="false" editable="true" explodeToMultipleNodes="false"
+                dataClass="" administrative="false" positionNumber="0" accessPrivilege="Folder_UserSystemManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_user_management" tooltipId=""
+                        icon="MENU_SYSTEM" expandedIcon="" />
+          <!-- 员工信息 -->
+                <DataTemplate id="HolidayEmployeeManagement" autoExpand="false" editable="true" explodeToMultipleNodes="false"
+                dataClass="" administrative="false" positionNumber="0" accessPrivilege="Folder_HolidayEmployeeManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_Holiday_Employee_management" tooltipId=""
+                        icon="MENU_SYSTEM" expandedIcon="" />
+                  <!-- 请假管理 -->
+                              <DataTemplate id="UserHolidayManagement" accessPrivilege="Form_MES_UM_Holiday_Mgm">
+                                      <NavigationPane messagePack="pmc_Menus" messageId="form_user_HolidayMgm_configuration" tooltipId=""
+                                              icon="Menu Department" expandedIcon="" />
+                                      <Action id="acAddUserHolidayMgm" actionClass="buttonAdd" privilege="Action_Add_UserHolidayMgm" messagePack="pmc_Menus"
+                                              messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                      <Action id="acDeleteUserHolidayMgm" actionClass="buttonDelete" privilege="Action_Delete_UserHolidayMgm" messagePack="pmc_Menus"
+                                              messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                      <Action id="acEditUserHolidayMgm" actionClass="buttonEdit" privilege="Action_Edit_UserHolidayMgm" messagePack="pmc_Menus"
+                                              messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                                      <EmbeddedFormView formClass="MES_UM_Holiday_Mgm" />
+                              </DataTemplate> 
+                              <!-- 花名册管理 -->
+                              <DataTemplate id="UserEmployeeManagement" accessPrivilege="Form_MES_UM_Employee">
+                                      <NavigationPane messagePack="pmc_Menus" messageId="form_user_Employee_configuration" tooltipId=""
+                                              icon="Menu Department" expandedIcon="" />
+                                      <Action id="acAddUserEmployeeMgm" actionClass="buttonAdd" privilege="Action_Add_UserEmployeeMgm" messagePack="pmc_Menus"
+                                              messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                      <Action id="acDeleteUserEmployeeMgm" actionClass="buttonDelete" privilege="Action_Delete_UserEmployeeMgm" messagePack="pmc_Menus"
+                                              messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                      <Action id="acEditUserEmployeeMgm" actionClass="buttonEdit" privilege="Action_Edit_UserEmployeeMgm" messagePack="pmc_Menus"
+                                              messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                                      <EmbeddedFormView formClass="MES_UM_Employee" />
+                              </DataTemplate> 
+            </DataTemplate>   
+          <!-- 排班管理 -->
+                <DataTemplate id="UserShiftManagement" autoExpand="false" editable="true" explodeToMultipleNodes="false"
+                dataClass="" administrative="false" positionNumber="0" accessPrivilege="Folder_UserShiftManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_user_shift_management" tooltipId=""
+                        icon="MENU_SYSTEM" expandedIcon="" />
+            <!-- 员工排班维护 -->
+                             <DataTemplate id="WorkforceDetailManagement" accessPrivilege="Form_MES_UM_WorkforceDetail">
+                                     <NavigationPane messagePack="pmc_Menus" messageId="form_user_shift_configuration" tooltipId=""
+                                             icon="Menu Department" expandedIcon="" />
+                     <Action id="acAddUser" actionClass="buttonAdd" privilege="Action_Add_User" messagePack="pmc_Menus"
+                                             messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                     <Action id="acDeleteUser" actionClass="buttonDelete" privilege="Action_Delete_User" messagePack="pmc_Menus"
+                                             messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                     <Action id="acEditUser" actionClass="buttonEdit" privilege="Action_Edit_User" messagePack="pmc_Menus"
+                                             messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />                                  
+                                     <EmbeddedFormView formClass="MES_UM_WorkforceDetail" />
+                             </DataTemplate>
+                        <!-- 员工排班信息查询 -->
+                             <DataTemplate id="UserShiftInfoManagement" accessPrivilege="Form_MES_UM_Query_WorkforceDetail">
+                                     <NavigationPane messagePack="pmc_Menus" messageId="form_user_shiftInfo_configuration" tooltipId=""
+                                             icon="Menu Department" expandedIcon="" />
+                                     <EmbeddedFormView formClass="MES_UM_Query_WorkforceDetail" />
+                             </DataTemplate>
+        </DataTemplate>
+        <!-- 员工技能 -->
+                <DataTemplate id="EmployeeSkillManagement" autoExpand="false" editable="true" explodeToMultipleNodes="false"
+                dataClass="" administrative="false" positionNumber="0" accessPrivilege="Folder_EmployeeSkillManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_user_skill_management" tooltipId=""
+                        icon="MENU_SYSTEM" expandedIcon="" />
+                       <!-- 技能维护 -->
+                               <DataTemplate id="UserSkillManagement" accessPrivilege="Form_MES_UM_EmployeeSkill">
+                                       <NavigationPane messagePack="pmc_Menus" messageId="form_MES_UM_EmployeeSkill" tooltipId=""
+                                               icon="Menu Department" expandedIcon="" />
+                                       <Action id="acAddUserSkill" actionClass="buttonAdd" privilege="Action_Add_UserSkill" messagePack="pmc_Menus"
+                                               messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                       <Action id="acDeleteUserSkill" actionClass="buttonDelete" privilege="Action_Delete_UserSkill" messagePack="pmc_Menus"
+                                               messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                       <Action id="acEditUserSkill" actionClass="buttonEdit" privilege="Action_Edit_UserSkill" messagePack="pmc_Menus"
+                                               messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+									   <Action id="acAddUserSkillDetail" actionClass="buttonAddDetail" privilege="Action_Add_UserSkillDetail" messagePack="pmc_Menus"
+                                               messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                       <Action id="acDeleteUserSkillDetail" actionClass="buttonDeleteDetail" privilege="Action_Delete_UserSkillDetail" messagePack="pmc_Menus"
+                                               messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                       <Action id="acEditUserSkillDetail" actionClass="buttonEditDetail" privilege="Action_Edit_UserSkillDetail" messagePack="pmc_Menus"
+                                               messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />	   
+                                       <EmbeddedFormView formClass="MES_UM_EmployeeSkill" />
+                               </DataTemplate>
+                 <!-- 员工技能分配 -->
+                               <DataTemplate id="UserSkillAllotManagement" accessPrivilege="Form_MES_UM_EmployeeSkillAllot">
+                                       <NavigationPane messagePack="pmc_Menus" messageId="form_MES_UM_EmployeeSkillAllot" tooltipId=""
+                                               icon="Menu Department" expandedIcon="" />
+                                       <Action id="acAddUser" actionClass="buttonAdd" privilege="Action_Add_User" messagePack="pmc_Menus"
+                                               messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                       <Action id="acDeleteUser" actionClass="buttonDelete" privilege="Action_Delete_User" messagePack="pmc_Menus"
+                                               messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                       <Action id="acEditUser" actionClass="buttonEdit" privilege="Action_Edit_User" messagePack="pmc_Menus"
+                                               messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                                       <EmbeddedFormView formClass="MES_UM_EmployeeSkillAllot" />
+                               </DataTemplate>
+                       <!-- 上岗证考试成绩 -->
+                               <!-- <DataTemplate id="UserJoblicenseScoreManagement" accessPrivilege="Form_MES_UM_JoblicenseScore_Record">
+                                       <NavigationPane messagePack="pmc_Menus" messageId="form_user_joblicenseScore_configuration" tooltipId=""
+                                               icon="Menu Department" expandedIcon="" />
+                                      <Action id="acAddUser" actionClass="buttonAdd" privilege="Action_Add_User" messagePack="pmc_Menus"
+                                               messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                       <Action id="acDeleteUser" actionClass="buttonDelete" privilege="Action_Delete_User" messagePack="pmc_Menus"
+                                               messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                       <Action id="acEditUser" actionClass="buttonEdit" privilege="Action_Edit_User" messagePack="pmc_Menus"
+                                               messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                                       <EmbeddedFormView formClass="MES_UM_JoblicenseScore_Record" />
+                               </DataTemplate> -->
+                       <!-- 上岗证在线申请 -->
+                               <!-- <DataTemplate id="UserJoblicenseApplyManagement" accessPrivilege="Form_MES_UM_Joblicense_Apply">
+                                       <NavigationPane messagePack="pmc_Menus" messageId="form_user_joblicenseApply_configuration" tooltipId=""
+                                               icon="Menu Department" expandedIcon="" />
+                                       <EmbeddedFormView formClass="MES_UM_Joblicense_Apply" />
+                               </DataTemplate> -->
+                       <!-- 上岗证在线审核 -->
+                               <!-- <DataTemplate id="UserJoblicenseReviewManagement" accessPrivilege="Form_MES_UM_Joblicense_Review">
+                                       <NavigationPane messagePack="pmc_Menus" messageId="form_user_joblicenseReview_configuration" tooltipId=""
+                                               icon="Menu Department" expandedIcon="" />
+                                       <EmbeddedFormView formClass="MES_UM_Joblicense_Review" />
+                               </DataTemplate> -->
+                 <!-- 员工技能查询 -->
+                               <DataTemplate id="UserEmployeeInfoManagement" accessPrivilege="Form_MES_UM_EmployeeInfo_Query">
+                                       <NavigationPane messagePack="pmc_Menus" messageId="form_user_employeeinfoquery_configuration" tooltipId=""
+                                               icon="Menu Department" expandedIcon="" />
+                                       <EmbeddedFormView formClass="MES_UM_EmployeeInfo_Query" />
+                               </DataTemplate>
+        </DataTemplate>
+        <!-- 员工绩效 -->
+                <DataTemplate id="WorkingHourOrNumberManagement" autoExpand="false" editable="true" explodeToMultipleNodes="false"
+                dataClass="" administrative="false" positionNumber="0" accessPrivilege="Folder_WorkingHourOrNumberManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_user_performance_management" tooltipId=""
+                        icon="MENU_SYSTEM" expandedIcon="" />
+                      <!-- 查询员工工效 -->
+                              <DataTemplate id="UserWorkingHourOrNumberQueryManagement" accessPrivilege="Form_MES_UM_WorkingHourOrNumber_Query">
+                                      <NavigationPane messagePack="pmc_Menus" messageId="form_user_WorkingHourOrNumber_configuration" tooltipId=""
+                                              icon="Menu Department" expandedIcon="" />                             
+                                      <EmbeddedFormView formClass="MES_UM_WorkingHourOrNumber_Query" />
+                              </DataTemplate>
+                      <!-- 工时/计件单价维护 -->
+                              <DataTemplate id="UserHourOrNumberPriceManagement" accessPrivilege="Form_MES_UM_HourOrNumberPrice">
+                                      <NavigationPane messagePack="pmc_Menus" messageId="form_user_HourOrNumberPrice_configuration" tooltipId=""
+                                              icon="Menu Department" expandedIcon="" />
+                                      <Action id="acAddUser" actionClass="buttonAdd" privilege="Action_Add_User" messagePack="pmc_Menus"
+                                              messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                      <Action id="acDeleteUser" actionClass="buttonDelete" privilege="Action_Delete_User" messagePack="pmc_Menus"
+                                              messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                      <Action id="acEditUser" actionClass="buttonEdit" privilege="Action_Edit_User" messagePack="pmc_Menus"
+                                              messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                                      <EmbeddedFormView formClass="MES_UM_HourOrNumberPrice" />
+                              </DataTemplate>
+        </DataTemplate>
+        <!-- 岗位员工培训 -->
+                <DataTemplate id="UserTrainingManagement" autoExpand="false" editable="true" explodeToMultipleNodes="false"
+                dataClass="" administrative="false" positionNumber="0" accessPrivilege="Folder_UserTrainingManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_user_training_management" tooltipId=""
+                        icon="MENU_SYSTEM" expandedIcon="" />
+            <!-- 维护员工培训计划 -->
+                              <DataTemplate id="UserTrainingPlanManagement" accessPrivilege="Form_MES_UM_TrainingPlan">
+                                      <NavigationPane messagePack="pmc_Menus" messageId="form_user_TrainingPlan_configuration" tooltipId=""
+                                              icon="Menu Department" expandedIcon="" />
+										<Action id="acAddTrainingPlan" actionClass="buttonAdd" privilege="Action_Add_TrainingPlan" messagePack="pmc_Menus"
+                                               messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                       <Action id="acDeleteTrainingPlan" actionClass="buttonDelete" privilege="Action_Delete_TrainingPlan" messagePack="pmc_Menus"
+                                               messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                       <Action id="acEditTrainingPlan" actionClass="buttonEdit" privilege="Action_Edit_TrainingPlan" messagePack="pmc_Menus"
+                                               messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+									   <Action id="acAddTrainingPlanDetail" actionClass="buttonAddDetail" privilege="Action_Add_TrainingPlanDetail" messagePack="pmc_Menus"
+                                               messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                       <Action id="acDeleteTrainingPlanDetail" actionClass="buttonDeleteDetail" privilege="Action_Delete_TrainingPlanDetail" messagePack="pmc_Menus"
+                                               messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                       <Action id="acEditTrainingPlanDetail" actionClass="buttonEditDetail" privilege="Action_Edit_TrainingPlanDetail" messagePack="pmc_Menus"
+                                               messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+										<Action id="acImportTrainingPlan" actionClass="buttonImport" privilege="Action_Import_TrainingPlan" messagePack="pmc_Menus"
+                                               messageId="button_import" tooltipId="button_import" icon="Menu Action" />	   
+                                      <EmbeddedFormView formClass="MES_UM_TrainingPlan" />
+                              </DataTemplate>
+              <!-- 记录培训考试成绩 -->
+                              <DataTemplate id="UserTrainingTestScoreManagement" accessPrivilege="Form_MES_UM_TrainingTestScore_Record">
+                                      <NavigationPane messagePack="pmc_Menus" messageId="form_user_TrainingTestScore_configuration" tooltipId=""
+                                              icon="Menu Department" expandedIcon="" />
+                                      <Action id="acAddUserTrainingTestScore" actionClass="buttonAdd" privilege="Action_Add_UserTrainingTestScore" messagePack="pmc_Menus"
+                                              messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                      <Action id="acDeleteUserTrainingTestScore" actionClass="buttonDelete" privilege="Action_Delete_UserTrainingTestScore" messagePack="pmc_Menus"
+                                              messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                      <Action id="acEditUserTrainingTestScore" actionClass="buttonEdit" privilege="Action_Edit_UserTrainingTestScore" messagePack="pmc_Menus"
+                                              messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+										<Action id="acImportUserTrainingTestScore" actionClass="buttonImport" privilege="Action_Import_UserTrainingTestScore" messagePack="pmc_Menus"
+                                               messageId="button_import" tooltipId="button_import" icon="Menu Action" />	 	  
+                                      <EmbeddedFormView formClass="MES_UM_TrainingTestScore_Record" />
+                              </DataTemplate>
+              <!-- 记录员工培训履历 -->
+                              <DataTemplate id="UserTrainingRecordManagement" accessPrivilege="Form_MES_UM_TrainingRecord">
+                                      <NavigationPane messagePack="pmc_Menus" messageId="form_user_TrainingRecord_configuration" tooltipId=""
+                                              icon="Menu Department" expandedIcon="" />
+                                      <Action id="acAddUserTrainingRecord" actionClass="buttonAdd" privilege="Action_Add_UserTrainingRecord" messagePack="pmc_Menus"
+                                              messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                                      <Action id="acDeleteUserTrainingRecord" actionClass="buttonDelete" privilege="Action_Delete_UserTrainingRecord" messagePack="pmc_Menus"
+                                              messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                                      <Action id="acEditUserTrainingRecord" actionClass="buttonEdit" privilege="Action_Edit_UserTrainingRecord" messagePack="pmc_Menus"
+                                              messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+										<Action id="acImportUserTrainingRecord" actionClass="buttonImport" privilege="Action_Import_UserTrainingRecord" messagePack="pmc_Menus"
+                                               messageId="button_import" tooltipId="button_import" icon="Menu Action" />	  
+                                      <EmbeddedFormView formClass="MES_UM_TrainingRecord" />
+                              </DataTemplate>
+            </DataTemplate>       
+</DataTemplate>
+        <!-- 系统管理 -->
+        <DataTemplate id="SystemManagement" autoExpand="false" editable="true" explodeToMultipleNodes="false"
+                dataClass="" administrative="false" positionNumber="0" accessPrivilege="Folder_SystemManagement">
+               <NavigationPane messagePack="pmc_Menus" messageId="folder_system_management" tooltipId=""
+                        icon="MENU_SYSTEM" expandedIcon="" />
+                <!-- 用户管理 -->
+                <DataTemplate id="UserManagement" accessPrivilege="Form_MES_UM_User">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_user_configuration" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="acAddUser" actionClass="buttonAdd" privilege="Action_Add_User" messagePack="pmc_Menus"
+                                messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteUser" actionClass="buttonDelete" privilege="Action_Delete_User" messagePack="pmc_Menus"
+                                messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="acEditUser" actionClass="buttonEdit" privilege="Action_Edit_User" messagePack="pmc_Menus"
+                                messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+						<Action id="acAddUserUserGroup" actionClass="buttonAddGroup" privilege="Action_AddGroup_User"
+                                              messagePack="pmc_Menus" messageId="button_addgroup_user" tooltipId="button_addgroup_user" icon="Menu Action" />
+                        <Action id="acRemoveUserUserGroup" actionClass="buttonRemoveGroup" privilege="Action_RemoveGroup_User"
+                                              messagePack="pmc_Menus" messageId="button_removegroup_user" tooltipId="button_removegroup_user"
+                                              icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_UM_User" />
+                </DataTemplate>
+                <!-- 用户组管理 -->
+                <DataTemplate id="UserGroupManagement" accessPrivilege="Form_MES_UM_UserGroup">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_usergroup_configuration" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="acAddUserGroup" actionClass="buttonAdd" privilege="Action_Add_UserGroup" messagePack="pmc_Menus"
+                                messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteUserGroup" actionClass="buttonDelete" privilege="Action_Delete_UserGroup"
+                                messagePack="pmc_Menus" messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="acEditUserGroup" actionClass="buttonEdit" privilege="Action_Edit_User" messagePack="pmc_Menus"
+                                messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <Action id="acAddGroupUser" actionClass="buttonAddUser" privilege="Action_AddUser_UserGroup"
+                                messagePack="pmc_Menus" messageId="button_adduser_usergroup" tooltipId="button_adduser_usergroup"
+                                icon="Menu Action" />
+                        <Action id="acRemoveGroupUser" actionClass="buttonRemoveUser" privilege="Action_RemoveUser_UserGroup"
+                                messagePack="pmc_Menus" messageId="button_removeuser_usergroup" tooltipId="button_removeuser_usergroup"
+                                icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_UM_User_Group" />
+                </DataTemplate>
+                <!-- 用户权限管理 -->
+                <DataTemplate id="AccessPrivilegeManagement" accessPrivilege="Form_MES_UM_User_UsablePrivilege">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_user_usable_privilege_configuration"
+                                tooltipId="" icon="Menu Department" expandedIcon="" />
+                        <Action id="acSaveUser" actionClass="buttonSave" privilege="Action_Save_User" messagePack="pmc_Menus"
+                                messageId="button_save" tooltipId="button_save" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_UM_User_UsablePrivilege" />
+                </DataTemplate>
+                <!-- 用户组权限管理 -->
+                <DataTemplate id="UserGroupPrivilegeManagement" accessPrivilege="Form_MES_UM_UserGroup_Privilege">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_usergroup_privilege_configuration"
+                                tooltipId="" icon="Menu Department" expandedIcon="" />
+                        <Action id="acSaveUserGroup" actionClass="buttonSave" privilege="Action_Save_UserGroup"
+                                messagePack="pmc_Menus" messageId="button_save" tooltipId="button_save" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_UM_UserGroup_Privilege" />
+                </DataTemplate>
+        <!-- 移动端权限配置 -->
+        <DataTemplate id="MobileTerminalPermissionsConfigurationManagement" accessPrivilege="Folder_MES_SM_MobileAppConfig">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_SM_MobileAppConfig" tooltipId=""
+          icon="Menu Department" expandedIcon="" />
+            <Action id="acAddMobileTerminalPermissionsConfiguration" actionClass="buttonAdd" privilege="Action_Add_MobileTerminalPermissionsConfiguration" messagePack="pmc_Menus" messageId="button_add"
+          tooltipId="button_add_MobileTerminalPermissionsConfiguration_Hint" icon="Menu Action" />
+            <Action id="acDeleteMobileTerminalPermissionsConfiguration" actionClass="buttonDelete" privilege="Action_Delete_MobileTerminalPermissionsConfiguration" messagePack="pmc_Menus" messageId="button_delete"
+          tooltipId="button_delete" icon="Menu Action" />
+            <Action id="acEditMobileTerminalPermissionsConfiguration" actionClass="buttonEdit" privilege="Action_Edit_MobileTerminalPermissionsConfiguration" messagePack="pmc_Menus" messageId="button_edit"
+          tooltipId="button_edit" icon="Menu Action" />   
+            <EmbeddedFormView formClass="MES_SM_MobileAppConfig" />
+        </DataTemplate> 
+        <!-- 行政组织维护 -->
+                <DataTemplate id="DepartmentManagement" accessPrivilege="Form_MES_UM_Department">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_department_configuration" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="acAddDepartment" actionClass="buttonAdd" privilege="Action_Add_Department" messagePack="pmc_Menus"
+                                messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteDepartment" actionClass="buttonDelete" privilege="Action_Delete_Department"
+                                messagePack="pmc_Menus" messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="acEditDepartment" actionClass="buttonEdit" privilege="Action_Edit_Department"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_UM_Department" />
+                </DataTemplate>
+        <!-- 文档上传 -->
+        <DataTemplate id="UploadDocumentManagement" accessPrivilege="Form_MES_SM_Document">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_sm_document" tooltipId=""
+            icon="Menu Department" expandedIcon="" />
+        <Action id="acAddUploadDocumentManagement" actionClass="buttonAdd" privilege="Action_Add_UploadDocumentManagement" messagePack="pmc_Menus" messageId="button_add"
+            tooltipId="button_add" icon="Menu Action" />
+        <Action id="acDeleteUploadDocumentManagement" actionClass="buttonDelete" privilege="Action_Delete_UploadDocumentManagement" messagePack="pmc_Menus" messageId="button_delete"
+            tooltipId="button_delete" icon="Menu Action" />
+        <Action id="acEditUploadDocumentManagement" actionClass="buttonEdit" privilege="Action_Edit_UploadDocumentManagement" messagePack="pmc_Menus" messageId="button_edit"
+            tooltipId="button_edit" icon="Menu Action" />
+        <EmbeddedFormView formClass="MES_SM_Document " />
+        </DataTemplate> 
+        <!-- 系统日志 -->
+        <DataTemplate id="StstemLogUserGroupPrivilegeManagement" accessPrivilege="Form_MES_SM_Log">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_mes_sm_lon_configuration"
+            tooltipId="" icon="Menu Department" expandedIcon="" />
+          <EmbeddedFormView formClass="MES_SM_Log" />
+        </DataTemplate>
+          <!-- 配置项维护 -->
+                <DataTemplate id="DataDictionaryNewManagement" accessPrivilege="Form_MES_SM_DataDictionary">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_sm_dataDictionary" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="acDatadictionary" actionClass="buttonAdd" privilege="Action_Add_DataDictionary"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteDataDictionary" actionClass="buttonDelete" privilege="Action_Delete_DataDictionary"
+                                messagePack="pmc_Menus" messageId="button_delete" tooltipId="button_delete"
+                                icon="Menu Action" />
+                        <Action id="acEditDataDictionary" actionClass="buttonEdit" privilege="Action_Edit_DataDictionary"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <Action id="acDatadictionarys" actionClass="buttonAdds" privilege="Action_Add_DataDictionarys"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteDataDictionarys" actionClass="buttonDeletes" privilege="Action_Delete_DataDictionarys"
+                                messagePack="pmc_Menus" messageId="button_delete" tooltipId="button_delete"
+                                icon="Menu Action" />
+                        <Action id="acEditDataDictionarys" actionClass="buttonEdits" privilege="Action_Edit_DataDictionarys"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" /> 
+                        <EmbeddedFormView formClass="MES_SM_DataDictionary" />
+                </DataTemplate>
+                <!-- 菜单查看-->
+                <DataTemplate id="UserGroupPrivilegeManagementSelect" accessPrivilege="Form_mes_form_SysMenuConfig">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_mes_form_SysMenuConfig"
+                                tooltipId="form_mes_form_SysMenuConfig" icon="Menu Department" expandedIcon="" />       
+                        <EmbeddedFormView formClass="mes_form_SysMenuConfig" />
+                </DataTemplate>
+                <!-- 工作中心配置-->
+                <DataTemplate id="SMWCConfig" accessPrivilege="Form_MES_SM_WC_config">
+                        <NavigationPane messagePack="pmc_Menus" messageId="Form_MES_SM_WC_config"
+                                tooltipId="Form_MES_SM_WC_config" icon="Menu Department" expandedIcon="" />       
+                        <EmbeddedFormView formClass="MES_SM_WC_config" />
+                </DataTemplate>
+                <!-- 缺陷类型 -->
+                <DataTemplate id="DefectTypeManagement" accessPrivilege="Form_MES_QM_DefectType">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_MES_QM_DefectType" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="addDefectType" actionClass="buttonAdd" privilege="Action_Add_DefectType" messagePack="pmc_Menus"
+                                messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="deleteDefectType" actionClass="buttonDelete" privilege="Action_Delete_DefectType" messagePack="pmc_Menus"
+                                messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="editDefectType" actionClass="buttonEdit" privilege="Action_Edit_DefectType" messagePack="pmc_Menus"
+                                messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_QM_DefectType" />
+                </DataTemplate>
+                <!-- 包装工艺   MES_OM_PackProcess_Manage-->
+                <DataTemplate id="packProcessManage" accessPrivilege="Form_MES_OM_PackProcess_Manage">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_PackProcess_Manage" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="addPackProcess" actionClass="buttonAdd" privilege="Action_Add_PackProcess" messagePack="pmc_Menus"
+                                messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="deletePackProcess" actionClass="buttonDelete" privilege="Action_Delete_PackProcess" messagePack="pmc_Menus"
+                                messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="editPackProcess" actionClass="buttonEdit" privilege="Action_Edit_PackProcess" messagePack="pmc_Menus"
+                                messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_OM_PackProcess_Manage" />
+                </DataTemplate>
+       </DataTemplate>
+     <!-- 工艺管理 -->
+        <DataTemplate id="Processmanagement" accessPrivilege="Folder_MasterDataManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_process_management" tooltipId=""
+                        icon="MENU_BASIC" expandedIcon="" />
+        <!-- 工厂建模 -->
+                <DataTemplate id=" FactorysManagement" accessPrivilege="Folders_ FactorysManagements">
+                        <NavigationPane messagePack="pmc_Menus" messageId="folders_Factorys_Management" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+            <!-- 工厂维护 -->
+            <DataTemplate id="FactoryModelManagement" accessPrivilege="Folder_MES_SM_Site_Main">
+                <NavigationPane messagePack="pmc_Menus" messageId="form_sm_factorymodel" tooltipId=""
+                    icon="Menu Department" expandedIcon="" />
+                <Action id="acAddFactoryModel" actionClass="buttonAdd" privilege="Action_Add_FactoryModel"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                <Action id="acDeleteFactoryModel" actionClass="buttonDelete" privilege="Action_Delete_FactoryModel"
+                                messagePack="pmc_Menus" messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+                <Action id="acEditFactoryModel" actionClass="buttonEdit" privilege="Action_Edit_FactoryModel"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                <EmbeddedFormView formClass="MES_SM_Site_Main" />
+            </DataTemplate>
+            <!-- 科室维护 -->
+            <DataTemplate id="PlantConfigurationManagement" accessPrivilege="Folder_MES_SM_AreaConfig_Main">
+                <NavigationPane messagePack="pmc_Menus" messageId="form_sm_areaConfig_main" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                <Action id="acAddPlantConfiguration" actionClass="buttonAdd" privilege="Action_Add_PlantConfiguration"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                <Action id="acDeletePlantConfiguration" actionClass="buttonDelete"
+                                privilege="Action_Delete_PlantConfiguration" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                <Action id="acEditPlantConfiguration" actionClass="buttonEdit" privilege="Action_Edit_PlantConfiguration"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                <EmbeddedFormView formClass="MES_SM_AreaConfig_Main" />
+            </DataTemplate>
+            <!-- 车间维护 -->
+            <DataTemplate id="ProductionlineManagement" accessPrivilege="Folder_MES_SM_ProductionLine_Main">
+                <NavigationPane messagePack="pmc_Menus" messageId="form_sm_productionLine" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                <Action id="acAddProductionline" actionClass="buttonAdd" privilege="Action_Add_Productionline"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                <Action id="acDeleteProductionline" actionClass="buttonDelete" privilege="Action_Delete_Productionline"
+                                messagePack="pmc_Menus" messageId="button_delete" tooltipId="button_delete"
+                                icon="Menu Action" />
+                <Action id="acEditProductionline" actionClass="buttonEdit" privilege="Action_Edit_Productionline"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                <EmbeddedFormView formClass="MES_SM_ProductionLine_Main" />
+            </DataTemplate>
+            <!-- 工作中心 -->
+            <DataTemplate id="WorkCenterMaintenanceManagement" accessPrivilege="Folder_MES_SM_WorkCenter_Main">
+                <NavigationPane messagePack="pmc_Menus" messageId="form_sm_workcentermanagenent" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                <Action id="acAddWorkCenterMaintenance" actionClass="buttonAdd" privilege="Action_Add_WorkCenterMaintenance"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                <Action id="acDeleteWorkCenterMaintenance" actionClass="buttonDelete"
+                                privilege="Action_Delete_WorkCenterMaintenance" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                <Action id="acEditWorkCenterMaintenance" actionClass="buttonEdit"
+                                privilege="Action_Edit_WorkCenterMaintenance" messagePack="pmc_Menus" messageId="button_edit"
+                                tooltipId="button_edit" icon="Menu Action" />
+                <EmbeddedFormView formClass="MES_SM_WorkCenter_Configuration" />
+            </DataTemplate>
+        </DataTemplate> 
+        <!-- 工艺卡清单 -->
+                <DataTemplate id=" FactorysManagement" accessPrivilege="Folders_ ProcessCardManagements">
+                        <NavigationPane messagePack="pmc_Menus" messageId="folders_ProcessCard_Management" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+            <!-- 物料信息 -->
+            <DataTemplate id="PartConfigManagement" accessPrivilege="Folder_MES_OM_Part_Main">
+                <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_Part" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                <Action id="acAddPartMaintenance" actionClass="buttonAdd" privilege="Action_Add_PartMaintenance"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                <Action id="acDeletePartMaintenance" actionClass="buttonDelete"
+                                privilege="Action_Delete_PartMaintenance" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                <Action id="acEditPartMaintenance" actionClass="buttonEdit"
+                                privilege="Action_Edit_PartMaintenance" messagePack="pmc_Menus" messageId="button_edit"
+                                tooltipId="button_edit" icon="Menu Action" />
+				<Action id="acSyncPartMaintenance" actionClass="buttonSync"
+                                privilege="Action_Sync_PartMaintenance" messagePack="pmc_Menus" messageId="button_sync_part"
+                                tooltipId="button_sync_part" icon="Menu Action" />
+                <EmbeddedFormView formClass="MES_OM_Part" />
+            </DataTemplate>
+        </DataTemplate> 
+                <!--BOM信息 -->
+            <DataTemplate id="BOMConfigManagement" accessPrivilege="Form_MES_MM_BOMConfig">
+                <NavigationPane messagePack="pmc_Menus" messageId="form_mm_bomConfig" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+            <Action id="acAddbomConfigManagement" actionClass="buttonAdd" privilege="Action_Add_bomConfigManagement" messagePack="pmc_Menus" messageId="button_add"
+                      tooltipId="button_add" icon="Menu Action" />
+                <Action id="acDeletebomConfigManagement" actionClass="buttonDelete" privilege="Action_Delete_bomConfigManagement" messagePack="pmc_Menus" messageId="button_delete"
+                      tooltipId="button_delete" icon="Menu Action" />
+                <Action id="acEditbomConfigManagement" actionClass="buttonEdit" privilege="Action_Edit_bomConfigManagement" messagePack="pmc_Menus" messageId="button_edit"
+                      tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_MM_Bom_Main" />
+            </DataTemplate>         
+                <!-- 工序维护 -->
+            <DataTemplate id="RouteOperationConfigManagement" accessPrivilege="Form_MES_OM_RouteOperationConfig">
+                <NavigationPane messagePack="pmc_Menus" messageId="form_om_routeoperationConfig" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+            <Action id="acAddRouteOperationConfigManagement" actionClass="buttonAdd" privilege="Action_Add_RouteOperationConfigManagement" messagePack="pmc_Menus" messageId="button_add"
+                      tooltipId="button_add" icon="Menu Action" />
+                <Action id="acDeleteRouteOperationConfigManagement" actionClass="buttonDelete" privilege="Action_Delete_RouteOperationConfigManagement" messagePack="pmc_Menus" messageId="button_delete"
+                      tooltipId="button_delete" icon="Menu Action" />
+                <Action id="acEditRouteOperationConfigManagement" actionClass="buttonEdit" privilege="Action_Edit_RouteOperationConfigManagement" messagePack="pmc_Menus" messageId="button_edit"
+                      tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_OM_RotueOperationMain" />
+            </DataTemplate> 
+                 <!-- 专线工厂信息 -->
+            <DataTemplate id="DefaultPlantConfigManagement" accessPrivilege="Form_MES_OM_DefaultPlantConfig">
+                <NavigationPane messagePack="pmc_Menus" messageId="form_om_DefaultPlantConfig" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+            <Action id="acAddDefaultPlantConfigManagement" actionClass="buttonAdd" privilege="Action_Add_DefaultPlantConfigManagement" messagePack="pmc_Menus" messageId="button_add"
+                      tooltipId="button_add" icon="Menu Action" />
+                <Action id="acDeleteDefaultPlantConfigManagement" actionClass="buttonDelete" privilege="Action_Delete_DefaultPlantConfigManagement" messagePack="pmc_Menus" messageId="button_delete"
+                      tooltipId="button_delete" icon="Menu Action" />
+                <Action id="acEditDefaultPlantConfigManagement" actionClass="buttonEdit" privilege="Action_Edit_DefaultPlantConfigManagement" messagePack="pmc_Menus" messageId="button_edit"
+                      tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_OM_Default_Plant" />
+            </DataTemplate> 
+        <!-- 产品周期信息 -->
+            <DataTemplate id="PartLifeStepListManagement" accessPrivilege="Form_MES_OM_PartLifeStepList">
+                <NavigationPane messagePack="pmc_Menus" messageId="form_om_PartLifeStepList" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+            <Action id="acAddPartLifeStepListManagement" actionClass="buttonAdd" privilege="Action_Add_PartLifeStepListManagement" messagePack="pmc_Menus" messageId="button_add"
+                      tooltipId="button_add" icon="Menu Action" />
+                <Action id="acDeletePartLifeStepListManagement" actionClass="buttonDelete" privilege="Action_Delete_PartLifeStepListManagement" messagePack="pmc_Menus" messageId="button_delete"
+                      tooltipId="button_delete" icon="Menu Action" />
+                <Action id="acEditPartLifeStepListManagement" actionClass="buttonEdit" privilege="Action_Edit_PartLifeStepListManagement" messagePack="pmc_Menus" messageId="button_edit"
+                      tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_OM_PartLifeStepList" />
+            </DataTemplate> 
+               <!-- 计划卡 -->
+               <DataTemplate id="Safestore" accessPrivilege="Form_MES_OM_Safestore">
+          <NavigationPane messagePack="pmc_Menus" messageId="form_om_Safestore" tooltipId="" icon="Menu Department" expandedIcon="" />
+          <Action id="acAddSafestore" actionClass="buttonAdd" privilege="Action_Add_Safestore" messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+          <Action id="acDeleteSafestore" actionClass="buttonDelete" privilege="Action_Delete_Safestore" messagePack="pmc_Menus" messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+          <Action id="acEditSafestore" actionClass="buttonEdit" privilege="Action_Edit_Safestore" messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+          <EmbeddedFormView formClass="MES_OM_Safestore" />
+        </DataTemplate>   
+        <!-- 业务信息 -->
+               <DataTemplate id="AccountMainManagement" accessPrivilege="Form_MES_OM_Account_Main">
+          <NavigationPane messagePack="pmc_Menus" messageId="form_om_AccountMain" tooltipId="" icon="Menu Department" expandedIcon="" />
+          <Action id="acAddAccountMain" actionClass="buttonAdd" privilege="Action_Add_AccountMain" messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+          <Action id="acDeleteAccountMain" actionClass="buttonDelete" privilege="Action_Delete_AccountMain" messagePack="pmc_Menus" messageId="button_delete" tooltipId="button_delete" icon="Menu Action" />
+          <Action id="acEditAccountMain" actionClass="buttonEdit" privilege="Action_Edit_AccountMain" messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+          <EmbeddedFormView formClass="MES_OM_Account_Main" />
+        </DataTemplate>   
+        <!-- 产品工艺卡信息 -->
+                <DataTemplate id="ProcessCardMaintenanceManagement" accessPrivilege="Folder_MES_OM_ProcessCardQuery">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_om_processcard_query" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="acbuttonPcard" actionClass="buttonPcard" privilege="Action_buttonPcard"
+                                messagePack="pmc_Menus" messageId="buttonPcard" tooltipId="button_Pcard_Hint"
+                                icon="Menu Action" />             
+                        <EmbeddedFormView formClass="MES_OM_ProcessCard_Query" />
+                </DataTemplate>   
+			<!-- 工艺路线维护 -->
+			<DataTemplate id="RouteMainManagement" accessPrivilege="Form_MES_OM_RouteMain">
+					<NavigationPane messagePack="pmc_Menus" messageId="form_OM_RouteMain" tooltipId=""
+									icon="Menu Department" expandedIcon="" />
+					<Action id="acAddRouteMain" actionClass="buttonAdd" privilege="Action_Add_RouteMain" messagePack="pmc_Menus" messageId="button_add"
+						  tooltipId="button_add" icon="Menu Action" />
+					<Action id="acDeleteRouteMain" actionClass="buttonDelete" privilege="Action_Delete_RouteMain" messagePack="pmc_Menus" messageId="button_delete"
+						  tooltipId="button_delete" icon="Menu Action" />
+					<Action id="acEditRouteMain" actionClass="buttonEdit" privilege="Action_Edit_RouteMain" messagePack="pmc_Menus" messageId="button_edit"
+						  tooltipId="button_edit" icon="Menu Action" />
+					<Action id="acImportRouteMain" actionClass="buttonImport" privilege="Action_Import_RouteMain" messagePack="pmc_Menus" messageId="button_import"
+						  tooltipId="button_import" icon="Menu Action" />	  
+					<Action id="acCapacityRouteMain" actionClass="buttonCapacity" privilege="Action_Capacity_RouteMain" messagePack="pmc_Menus" messageId="button_capacity"
+						  tooltipId="button_capacity" icon="Menu Action" />	  	  
+					<EmbeddedFormView formClass="MES_OM_RouteMain" />
+				</DataTemplate> 
+			<!-- 工序能力维护 -->
+			<DataTemplate id="CapacityManagement" accessPrivilege="Form_MES_OM_Capacity">
+					<NavigationPane messagePack="pmc_Menus" messageId="form_OM_Capacity" tooltipId=""
+									icon="Menu Department" expandedIcon="" />
+					<Action id="acDeleteCapacity" actionClass="buttonDelete" privilege="Action_Delete_Capacity" messagePack="pmc_Menus" messageId="button_delete"
+						  tooltipId="button_delete" icon="Menu Action" />
+					<Action id="acEditCapacity" actionClass="buttonEdit" privilege="Action_Edit_Capacity" messagePack="pmc_Menus" messageId="button_edit"
+						  tooltipId="button_edit" icon="Menu Action" />
+					<Action id="acImportCapacity" actionClass="buttonImport" privilege="Action_Import_Capacity" messagePack="pmc_Menus" messageId="button_import"
+						  tooltipId="button_import" icon="Menu Action" />	  
+					<EmbeddedFormView formClass="MES_OM_Capacity" />
+				</DataTemplate> 
+			<!-- 工艺文件维护 -->
+			<DataTemplate id="RouteStepFileManagement" accessPrivilege="Form_MES_OM_RouteStepFile">
+					<NavigationPane messagePack="pmc_Menus" messageId="form_OM_RouteStepFile" tooltipId=""
+									icon="Menu Department" expandedIcon="" />
+					<Action id="acAddRouteStepFile" actionClass="buttonAdd" privilege="Action_Add_RouteStepFile" messagePack="pmc_Menus" messageId="button_add"
+						  tooltipId="button_add" icon="Menu Action" />
+					<Action id="acDeleteRouteStepFile" actionClass="buttonDelete" privilege="Action_Delete_RouteStepFile" messagePack="pmc_Menus" messageId="button_delete"
+						  tooltipId="button_delete" icon="Menu Action" />
+					<Action id="acEditRouteStepFile" actionClass="buttonEdit" privilege="Action_Edit_RouteStepFile" messagePack="pmc_Menus" messageId="button_edit"
+						  tooltipId="button_edit" icon="Menu Action" />
+					<Action id="acViewRouteStepFile" actionClass="buttonView" privilege="Action_View_RouteStepFile" messagePack="pmc_Menus" messageId="button_view"
+						  tooltipId="button_view" icon="Menu Action" />
+					<Action id="acDownloadRouteStepFile" actionClass="buttonDownload" privilege="Action_Download_RouteStepFile" messagePack="pmc_Menus" messageId="button_download"
+						  tooltipId="button_download" icon="Menu Action" />	    
+					<EmbeddedFormView formClass="MES_OM_RouteStepFile" />
+				</DataTemplate> 
+        </DataTemplate>
+        <!-- 生产管理 -->
+        <DataTemplate id="ProductionProcessManagement" accessPrivilege="Folder_ProductionProcessManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_ProductionProcess_management" tooltipId=""
+                        icon="MENU_PRODUCT" expandedIcon="" />  
+       <!-- 箱号重打印 -->
+     <DataTemplate id="BoxAgainManagement" accessPrivilege="Folder_MES_OM_PackPrintBoxNum">
+    <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_PackPrintBoxNum" tooltipId=""
+      icon="Menu Department" expandedIcon="" />
+    <Action id="acAddWasprints" actionClass="buttonAdd" privilege="Action_Add_Wasprints" messagePack="pmc_Menus" messageId="button_add"
+      tooltipId="button_add" icon="Menu Action" />  
+    <Action id="acDeleteWasprints" actionClass="buttonDelete" privilege="Action_Delete_Wasprints" messagePack="pmc_Menus" messageId="button_delete"
+      tooltipId="button_delete" icon="Menu Action" /> 
+    <Action id="acEditWasprints" actionClass="buttonEdit" privilege="Action_Edit_Wasprints" messagePack="pmc_Menus" messageId="button_edit"
+      tooltipId="button_edit" icon="Menu Action" />         
+    <!-- <Action id="acDeleteWasprintss" actionClass="button6" privilege="Action_Delete_Wasprintss" messagePack="pmc_Menus" messageId="button_prints"
+      tooltipId="button_delete_WasprintsManagemens" icon="Menu Action" />  -->  
+    <EmbeddedFormView formClass="MES_OM_PackPrintBoxNum" />
+    </DataTemplate>
+<!-- 废料查询 -->
+    <DataTemplate id="PrintPallet" accessPrivilege="Folder_MES_OM_PrintPallet">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_PrintPallet" tooltipId=""
+                    icon="Menu Department" expandedIcon="" />
+            <EmbeddedFormView formClass="MES_OM_PrintPallet" />
+    </DataTemplate>
+<!-- 托盘调拨 -->
+    <DataTemplate id="PalletaAllot" accessPrivilege="Folder_MES_OM_PalletaAllot">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_PalletaAllot" tooltipId=""
+                    icon="Menu Department" expandedIcon="" />
+            <EmbeddedFormView formClass="MES_OM_PalletaAllot" />
+    </DataTemplate>
+<!-- 打印发料单 -->
+    <DataTemplate id="BillOfMaterials" accessPrivilege="Folder_MES_OM_BillOfMaterials">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_BillOfMaterials" tooltipId=""
+                    icon="Menu Department" expandedIcon="" />
+            <EmbeddedFormView formClass="MES_OM_BillOfMaterials" />
+    </DataTemplate>
+<!-- 发料单管理 -->
+    <DataTemplate id="BillOfGenerate" accessPrivilege="Folder_MES_OM_BillOfGenerate">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_BillOfGenerate" tooltipId=""
+                    icon="Menu Department" expandedIcon="" />
+            <EmbeddedFormView formClass="MES_OM_BillOfGenerate" />
+    </DataTemplate>
+        </DataTemplate>
+        <!-- 计划管理 -->
+        <DataTemplate id="planInfoManagement" accessPrivilege="Folder_PlanManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_OM_PlanManagement" tooltipId=""
+                        icon="MENU_PLAN" expandedIcon="" />
+        <!-- 计划管理 -->
+                <DataTemplate id="ProductionPlanManagementDM" accessPrivilege="Folder_MES_OM_Plan_Management">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_mes_om_Plan_Management" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="PlanProductionOrderProductionPlan" actionClass="buttonAdd"
+                                privilege="Action_PlanProductionOrder_ProductionPlan" messagePack="pmc_Menus" messageId="button_add"
+                                tooltipId="button_add" icon="Menu Action" />
+                        <Action id="PlanAdjustmentProductionPlan" actionClass="buttonDelete"
+                                privilege="Action_PlanAdjustment_ProductionPlan" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="buttonImportProductionPlan" actionClass="buttonEdit" privilege="Action_Import_ProductionPlan"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                       <!--  <Action id="acDeleteProductionPlan" actionClass="buttonDelete" privilege="Action_Delete_ProductionPlan"
+                                messagePack="pmc_Menus" messageId="button_delete" tooltipId="button_delete_ProductionPlan" icon="Menu Action" /> -->
+                        <EmbeddedFormView formClass="MES_OM_Plan_Manage" />
+                </DataTemplate>
+        <!-- 计划审批 -->
+                <DataTemplate id="ProductionPlanAuditDM" accessPrivilege="Folder_MES_OM_Plan_Audit">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_mes_om_Plan_Audit" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="PlanProductionOrderProductionPlan" actionClass="buttonAdd"
+                                privilege="Action_PlanProductionOrder_ProductionPlan" messagePack="pmc_Menus" messageId="button_add"
+                                tooltipId="button_add" icon="Menu Action" />
+                        <Action id="PlanAdjustmentProductionPlan" actionClass="buttonDelete"
+                                privilege="Action_PlanAdjustment_ProductionPlan" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="buttonImportProductionPlan" actionClass="buttonEdit" privilege="Action_Import_ProductionPlan"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_OM_Plan_Audit" />
+                </DataTemplate>
+        <!-- 主工单管理 -->
+                <DataTemplate id="OrderManageDM" accessPrivilege="Folder_MES_OM_Order_Manage">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_mes_om_Order_Manage" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="PlanProductionOrderProductionPlan" actionClass="buttonAdd"
+                                privilege="Action_PlanProductionOrder_ProductionPlan" messagePack="pmc_Menus" messageId="button_add"
+                                tooltipId="button_add" icon="Menu Action" />
+                        <Action id="PlanAdjustmentProductionPlan" actionClass="buttonDelete"
+                                privilege="Action_PlanAdjustment_ProductionPlan" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="buttonImportProductionPlan" actionClass="buttonEdit" privilege="Action_Import_ProductionPlan"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_OM_Order_Manage" />
+                </DataTemplate>
+        <!-- 工单排台 -->
+                <DataTemplate id="OrderDayManageDM" accessPrivilege="Folder_MES_OM_OrderDay_Manage">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_mes_om_OrderDay_Manage" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="PlanProductionOrderProductionPlan" actionClass="buttonAdd"
+                                privilege="Action_PlanProductionOrder_ProductionPlan" messagePack="pmc_Menus" messageId="button_add"
+                                tooltipId="button_add" icon="Menu Action" />
+                        <Action id="PlanAdjustmentProductionPlan" actionClass="buttonDelete"
+                                privilege="Action_PlanAdjustment_ProductionPlan" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="buttonImportProductionPlan" actionClass="buttonEdit" privilege="Action_Import_ProductionPlan"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_OM_OrderStepSeqManager" />
+                </DataTemplate>
+        </DataTemplate>
+        <!-- 设备管理 -->
+        <DataTemplate id="EquipmentinfoManagement" accessPrivilege="Folder_EquipmentinfoManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_EM_EquipmentConf" tooltipId=""
+                      icon="MENU_EQUIP" expandedIcon="" />
+                <!-- 设备信息维护 -->
+                <DataTemplate id="EquipmentInformationManagement" accessPrivilege="Folder_MES_EM_EquipmentConf">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_MES_EM_EquipmentConf" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="acAddEquipmentInformation" actionClass="buttonAdd" privilege="Action_Add_EquipmentInformation"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteEquipmentInformation" actionClass="buttonDelete"
+                                privilege="Action_Delete_EquipmentInformation" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="acEditEquipmentInformation" actionClass="buttonEdit" privilege="Action_Edit_EquipmentInformation"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_EM_EquipmentConf" />
+                </DataTemplate>
+        <!-- 设备类维护-->
+              <DataTemplate id="DeviceTypeManagementManagement" accessPrivilege="Folder_MES_EM_EquipmentClass">
+          <NavigationPane messagePack="pmc_Menus" messageId="form_MES_EM_EquipmentClass" tooltipId=""
+          icon="Menu Department" expandedIcon="" />
+          <Action id="acAddDeviceTypeManagement" actionClass="buttonAdd" privilege="Action_Add_DeviceTypeManagement" messagePack="pmc_Menus" messageId="button_add"
+            tooltipId="button_add" icon="Menu Action" />  
+          <Action id="acDeleteDeviceTypeManagement" actionClass="buttonDelete" privilege="Action_Delete_DeviceTypeManagement" messagePack="pmc_Menus" messageId="button_delete"
+            tooltipId="button_delete" icon="Menu Action" /> 
+          <Action id="acEditDeviceTypeManagement" actionClass="buttonEdit" privilege="Action_Edit_DeviceTypeManagement" messagePack="pmc_Menus" messageId="button_edit"
+            tooltipId="button_edit" icon="Menu Action" /> 
+          <EmbeddedFormView formClass="MES_EM_EquipmentClass" />
+        </DataTemplate>
+        <!--  维修措施-->
+              <DataTemplate id="MaintenanceMeasurestManagement" accessPrivilege="Folder_MES_SM_Maintenance">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_SM_Maintenance" tooltipId=""
+            icon="Menu Department" expandedIcon="" />
+            <Action id="acAddMaintenanceMeasures" actionClass="buttonAdd" privilege="Action_Add_MaintenanceMeasures" messagePack="pmc_Menus" messageId="button_add"
+            tooltipId="button_add" icon="Menu Action" />  
+            <Action id="acDeleteMaintenanceMeasures" actionClass="buttonDelete" privilege="Action_Delete_MaintenanceMeasures" messagePack="pmc_Menus" messageId="button_delete"
+            tooltipId="button_delete" icon="Menu Action" /> 
+            <Action id="acEditMaintenanceMeasures" actionClass="buttonEdit" privilege="Action_Edit_MaintenanceMeasures" messagePack="pmc_Menus" messageId="button_edit"
+            tooltipId="button_edit" icon="Menu Action" /> 
+            <EmbeddedFormView formClass="MES_SM_Maintenance" />
+        </DataTemplate> 
+        <!--保养项目维护 -->
+                <DataTemplate id="EquipmentMaintenanceManagement" accessPrivilege="Folder_MES_SM_ProductionLine_Main">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_em_maintain" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="acAddEquipmentMaintenan" actionClass="buttonAdd" privilege="Action_Add_EquipmentMaintenan"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteEquipmentMaintenan" actionClass="buttonDelete"
+                                privilege="Action_Delete_EquipmentMaintenan" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="acEditEquipmentMaintenan" actionClass="buttonEdit" privilege="Action_Edit_EquipmentMaintenan"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" /> 
+                        <EmbeddedFormView formClass="MES_EM_Maintain" />
+                </DataTemplate> 
+        <!--保养项目维护 -->
+                <DataTemplate id="EquipmentMaintenanceManagement" accessPrivilege="Folder_MES_SM_ProductionLine_Main">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_em_maintain" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="acAddEquipmentMaintenan" actionClass="buttonAdd" privilege="Action_Add_EquipmentMaintenan"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteEquipmentMaintenan" actionClass="buttonDelete"
+                                privilege="Action_Delete_EquipmentMaintenan" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="acEditEquipmentMaintenan" actionClass="buttonEdit" privilege="Action_Edit_EquipmentMaintenan"
+                                messagePack="pmc_Menus" messageId="button_edit" tooltipId="button_edit" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_EM_Maintain" />
+                </DataTemplate>       
+        <!--  保养计划管理-->
+              <DataTemplate id="EquipmentmaintenanceplanmaintenanceManagement" accessPrivilege="Folder_MES_EM_MaintainPlan">
+          <NavigationPane messagePack="pmc_Menus" messageId="form_MES_EM_MaintainPlan" tooltipId=""
+          icon="Menu Department" expandedIcon="" />
+          <Action id="acAddProgramNumberMaintenance" actionClass="buttonAdd" privilege="Action_Add_ProgramNumberMaintenance" messagePack="pmc_Menus" messageId="button_add"
+            tooltipId="button_add" icon="Menu Action" />  
+          <Action id="acDeleteProgramNumberMaintenance" actionClass="buttonDelete" privilege="Action_Delete_ProgramNumberMaintenance" messagePack="pmc_Menus" messageId="button_delete"
+            tooltipId="button_delete" icon="Menu Action" /> 
+          <Action id="acEditProgramNumberMaintenance" actionClass="buttonEdit" privilege="Action_Edit_ProgramNumberMaintenance" messagePack="pmc_Menus" messageId="button_edit"
+            tooltipId="button_edit" icon="Menu Action" /> 
+          <EmbeddedFormView formClass="MES_EM_MaintainPlan" />
+        </DataTemplate>
+        <!--  保养工单查询-->
+              <DataTemplate id="EquipmentmaintenanceorderworkqueryManagement" accessPrivilege="Folder_MES_EM_MaintainOrderSearch">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_EM_MaintainOrderSearch" tooltipId=""
+              icon="Menu Department" expandedIcon="" />
+            <Action id="acAddEquipmentmaintenanceorderworkqueryn" actionClass="buttonAdd"
+                                privilege="Action_AddItem_Equipmentmaintenanceorderworkqueryan" messagePack="pmc_Menus" messageId="button_add"
+                                tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteItemEquwsxdeqdsaipmentMaintenan" actionClass="buttonDelete"
+                                privilege="Action_DeleteItem_EquipmensewefwqtMaiqwntenan" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="acEditItemEquipmqqwqfrafsentMaintenan" actionClass="buttonEdit"
+                                privilege="Action_EditItem_EquipawrwmentMaintenan" messagePack="pmc_Menus" messageId="button_edit"
+                                tooltipId="button_edit" icon="Menu Action" />
+            <EmbeddedFormView formClass="MES_EM_MaintainOrderSearch" />
+        </DataTemplate>
+        <!-- 点检项目维护 -->
+        <DataTemplate id="DeviceClickProjectMaintenanceManagement" accessPrivilege="Folder_MES_EM_SpotCheck">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_em_spotcheck" tooltipId=""
+              icon="Menu Department" expandedIcon="" />         
+            <Action id="acAddDeviceClickProjectMaintenance" actionClass="buttonAdd" privilege="Action_Add_DeviceClickProjectMaintenance" messagePack="pmc_Menus" messageId="button_add"
+              tooltipId="button_add" icon="Menu Action" />          
+            <Action id="acDeleteDeviceClickProjectMaintenance" actionClass="buttonDelete" privilege="Action_Delete_DeviceClickProjectMaintenance" messagePack="pmc_Menus" messageId="button_delete"
+              tooltipId="button_delete" icon="Menu Action" /> 
+            <Action id="acEditDeviceClickProjectMaintenance" actionClass="buttonEdit" privilege="Action_Edit_DeviceClickProjectMaintenance" messagePack="pmc_Menus" messageId="button_edit"
+              tooltipId="button_edit" icon="Menu Action" /> 
+            <EmbeddedFormView formClass="MES_EM_SpotCheck" />
+        </DataTemplate>
+        <!-- 点检计划创建 -->
+        <DataTemplate id="MaintenanceSpotInspectionPlanManagement" accessPrivilege="Folder_MES_EM_SpotCheckPlan">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_em_spotcheckplan" tooltipId=""
+              icon="Menu Department" expandedIcon="" />         
+            <Action id="acAddMaintenanceSpotInspectionPlan" actionClass="buttonAdd" privilege="Action_Add_MaintenanceSpotInspectionPlan" messagePack="pmc_Menus" messageId="button_add"
+              tooltipId="button_add" icon="Menu Action" />          
+            <Action id="acDeleteMaintenanceSpotInspectionPlan" actionClass="buttonDelete" privilege="Action_Delete_MaintenanceSpotInspectionPlan" messagePack="pmc_Menus" messageId="button_delete"
+              tooltipId="button_delete" icon="Menu Action" /> 
+            <Action id="acEditMaintenanceSpotInspectionPlan" actionClass="buttonEdit" privilege="Action_Edit_MaintenanceSpotInspectionPlan" messagePack="pmc_Menus" messageId="button_edit"
+              tooltipId="button_edit" icon="Menu Action" />   
+            <EmbeddedFormView formClass="MES_EM_SpotCheckPlan" />
+        </DataTemplate>
+        <!--  点检记录查询-->
+              <DataTemplate id="Spot check record querydManagement" accessPrivilege="Folder_MES_EM_SpotCheckOrderRecord">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_EM_SpotCheckOrderRecord" tooltipId=""
+              icon="Menu Department" expandedIcon="" />
+            <EmbeddedFormView formClass="MES_EM_SpotCheckOrderRecord" />
+        </DataTemplate>     
+        <!--  维修工单查询-->
+              <DataTemplate id="EquipmentmaintenanceorderqueryManagement" accessPrivilege="Folder_MES_EM_RepairOrderSearcho">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_EM_RepairOrderSearchs" tooltipId=""
+              icon="Menu Department" expandedIcon="" />
+            <Action id="acAddEquipmenawetmaintenanceorderworkqueryn" actionClass="buttonAdd"
+                                privilege="Action_AddItem_Equipasdmentmaintenanceorderworkqueryan" messagePack="pmc_Menus" messageId="button_add"
+                                tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteItemEquasqwwsxdeqdsaipmentMaintenan" actionClass="buttonDelete"
+                                privilege="Action_DeleteItem_ErgquipmensewefwqtMaiqwntenan" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="acEditItemEquipmaedqqwqfrafsentMaintenan" actionClass="buttonEdit"
+                                privilege="Action_EditItem_EquipaawwrwmentMaintenan" messagePack="pmc_Menus" messageId="button_edit"
+                                tooltipId="button_edit" icon="Menu Action" />
+            <EmbeddedFormView formClass="MES_EM_RepairOrderSearch" />
+        </DataTemplate>
+        <!-- 备件使用记录-->
+              <DataTemplate id="EquipmentSparePartsUseRecordManagement" accessPrivilege="Folder_MES_EM_SparePartUsedInfo">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_EM_SparePartUsedInfo" tooltipId=""
+              icon="Menu Department" expandedIcon="" />
+            <EmbeddedFormView formClass="MES_EM_SparePartUsedInfo" />
+        </DataTemplate>
+        <!--  备件信息查询-->
+              <DataTemplate id="SparePartsInformationInquirydManagement" accessPrivilege="Folder_MES_EM_SparePartInfo">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_EM_SparePartInfos" tooltipId=""
+              icon="Menu Department" expandedIcon="" />
+            <EmbeddedFormView formClass="MES_EM_SparePartInfo" />
+        </DataTemplate>
+<!--  备件信息配置界面-->
+              <DataTemplate id="SparepartsinformationconfigurationnterfaceManagement" accessPrivilege="Folder_MES_EM_SpartPartConfigo">
+            <NavigationPane messagePack="pmc_Menus" messageId="form_MES_MES_EM_SpartPartConfig" tooltipId=""
+              icon="Menu Department" expandedIcon="" /> 
+            <Action id="acAddSparepartsinformationconfigurationnterface" actionClass="buttonAdd"
+                                privilege="Action_AddItem_ESparepartsinformationconfigurationnterfacen" messagePack="pmc_Menus" messageId="button_add"
+                                tooltipId="button_add" icon="Menu Action" />
+                        <Action id="acDeleteSparepartsinformationconfigurationnterface" actionClass="buttonDelete"
+                                privilege="Action_DeleteItem_Sparepartsinformationconfigurationnterfacen" messagePack="pmc_Menus" messageId="button_delete"
+                                tooltipId="button_delete" icon="Menu Action" />
+                        <Action id="acEditSparepartsinformationconfigurationnterfacen" actionClass="buttonEdit"
+                                privilege="Action_EditItem_Sparepartsinformationconfigurationnterfacen" messagePack="pmc_Menus" messageId="button_edit"
+                                tooltipId="button_edit" icon="Menu Action" />
+            <EmbeddedFormView formClass="MES_EM_SpartPartConfig" />
+        </DataTemplate>
+          <!-- 设备故障报修 -->   
+                <DataTemplate id="KCreateEquipRepairement" accessPrivilege="Folder_MES_OM_SteelcaratemodeleWireLoss">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_om_CreateEquips" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <Action id="acAddCreateEquipRepairs" actionClass="buttonAdd" privilege="Action_Add_KCreateEquipRepaiross"
+                                messagePack="pmc_Menus" messageId="button_add" tooltipId="button_add" icon="Menu Action" />
+                        <EmbeddedFormView formClass="MES_EM_CreateEquipRepairs" />
+         </DataTemplate>    
+</DataTemplate>
+        <!-- 报表管理 -->
+        <DataTemplate id="ReportManagement" accessPrivilege="Folder_ReportManagement">
+                <NavigationPane messagePack="pmc_Menus" messageId="folder_ReportManagement" tooltipId=""
+                      icon="MENU_EQUIP" expandedIcon="" />
+                <!-- 混料粉投料查询 -->
+                <DataTemplate id="MixedPowderRecordReport" accessPrivilege="Folder_MES_OM_MixedPowderRecord">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_MixedPowderRecord" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <EmbeddedFormView formClass="MES_OM_MixedPowderRecord" />
+                </DataTemplate>  
+				<!-- 报工记录查询 -->
+                <DataTemplate id="ProductionReportReport" accessPrivilege="Folder_MES_OM_ProductionReport">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_ProductionReport" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <EmbeddedFormView formClass="MES_OM_ProductionReport" />
+                </DataTemplate> 
+				<!-- 店铺库存查询 -->
+                <DataTemplate id="StoreRecordDetailReport" accessPrivilege="Folder_MES_OM_StoreRecordDetail">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_MES_OM_StoreRecordDetail" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <EmbeddedFormView formClass="MES_OM_StoreRecordDetail" />
+                </DataTemplate> 
+				<!-- 废料查询 -->
+                <DataTemplate id="ScrapDetailQueryReport" accessPrivilege="Folder_MES_QM_ScrapDetailQuery">
+                        <NavigationPane messagePack="pmc_Menus" messageId="form_MES_QM_ScrapDetailQuery" tooltipId=""
+                                icon="Menu Department" expandedIcon="" />
+                        <EmbeddedFormView formClass="MES_QM_ScrapDetailQuery" />
+                </DataTemplate> 
+		</DataTemplate>      
+</UseCaseConfig> 

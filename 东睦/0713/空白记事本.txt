@@ -1,0 +1,33 @@
+﻿[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getPlanstarttime(), "yyyy-MM-dd HH:mm:ss") ]//"planstarttime"
+
+planfinishtime
+
+[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getPlanfinishtime(), "yyyy-MM-dd HH:mm:ss") ]//"planfinishtime"
+
+rfinishtime
+
+[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getRfinishtime(), "yyyy-MM-dd HH:mm:ss") ]//"rfinishtime"
+
+planimportt
+
+
+
+[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getPlanimportt(), "yyyy-MM-dd HH:mm:ss") ]//"planimportt"
+
+
+planaudittime
+
+[class com.ftpc.common.utilities.TimeHelper::timeToString(affectedObject.getPlanaudittime(), "yyyy-MM-dd HH:mm:ss") ]//"planaudittime"
+
+工序工工单sql
+		 select  oi.plan_number_S,wis.order_item,wis.planned_route,oi.route_step_key_I,oi.seq_number_I,oi.order_type_I,oi.pre_route_step_key_I,oi.next_step_key_I,wis.part_number,wis.bom_name,wis.bom_revision,
+			 wis.planned_start_time,wis.planned_finish_time,oi.actual_start_time_T,oi.actual_finish_time_T,oi.order_status_I,wis.quantity_ordered,wis.quantity_finished
+			 ,wis.last_modified_time,wis.last_modified_time,oi.created_by_S,oi.created_by_desc_S,wis.finished_time,oi.report_flag_I,oi.last_report_flag_I,oi.remark_S from WORK_ORDER_ITEMS wis
+			 left join UDA_OrderItem oi  on  wis.order_item_key = oi.object_key
+			 left join WORK_ORDER wo on wo.order_key = wis.order_key 
+			 where 1=1  and  plan_number_S = 'MO-2005140002'
+
+
+------------------通过工步以及产品型号查询对应的车间与工作中心
+
+---WorkOrderItem里面增加OP_name,op_desc 字段；

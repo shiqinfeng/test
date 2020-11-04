@@ -1,0 +1,24 @@
+delete from AT_OM_MixedPowderRecord;
+delete from AT_OM_Pallet
+delete from AT_OM_StoreRecordDetail
+delete from AT_OM_ProductionReport
+delete from AT_EM_EquipmentStatusDetail
+delete from AT_PR_PrintRecords
+delete from AT_QM_SubQuality
+delete from AT_QM_SubQualityProductManage
+delete from AT_OM_LoadMaterial
+delete  from  AT_OM_PlanManager
+delete  from  IM_ImportPlan
+delete  from IM_ImportSell
+delete  from  IM_ImportStock
+delete  from  Work_order
+
+delete  from UDA_order
+delete  from  WORK_ORDER_ITEMS
+delete  from  UDA_orderItem
+delete  from  AT_OM_orderroute
+delete from  AT_OM_OrderRoute
+delete   from  AT_OM_OrderRouteStep
+delete  from   AT_OM_OrderStepHis
+delete  from  AT_OM_PlanManagerHis
+delete  from   AT_OM_OrderChangeHIS
