@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<FactoryTalk Area="RNA://$Global/JMC_OPC" ServerLocaleID="1033">
+	<Group Name="Group1" UpdateRate="250" ActiveState="TRUE" LocalID="1033">
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Flag[0]" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_Flag[0]" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_Job_No" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_FB_VIN" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_RFID" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_FB_Data_Status" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_FB_ID" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_FB_BSN" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_FB_Order" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_FB_EPCCode" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_Part_No" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_Part_Num" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_MIX_No" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.In_Route_ID" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Location" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Order_Category" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Req_Type" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Req_ID" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Curr_VIN" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Pre_VIN" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Order_Category" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Pre_Order" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Pre_BSN" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Curr_BSN" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Pre_Order" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Curr_Order" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Part_Num" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_EPC_Code" ActiveState="TRUE" RequestedDataType="0"/>
+		<Item ID="[MB_01]W6_MB_W010_BRC.Out_Time" ActiveState="TRUE" RequestedDataType="0"/>
+	</Group>
+</FactoryTalk>
