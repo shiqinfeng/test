@@ -1,0 +1,1202 @@
+/**
+ * Description: Order common functions 
+ * Author: Zhiping Shi
+ * Date: 2016/12/14
+ * Revision: 1.0
+ * 
+ **/
+importSubroutine("MES_Common_Base")
+importSubroutine("MES_Common_Log")
+importSubroutine("MES_Common_DataDictEx") 
+importSubroutine("MES_Common_Privilege")
+importSubroutine("MES_Common_Transaction")
+createGlobalFunctions("ra_errorHandling")
+import("com.datasweep.compatibility.client.Response")
+import("com.datasweep.compatibility.client.Error")
+import("com.rockwell.mes.commons.base.ifc.exceptions.MESException")
+PROPERTY_NAME_ORDER_RELEASE_TRX_ID = "ORDER_RELEASE_TRX_ID"
+INITIAL_VALUE = 20170000000000L
+OM_QUERY_MAX_ROW = 2000
+ORDER_TYPE_VEHICLE = "Vehicle"
+ORDER_TYPE_BATTERY = "Battery"
+
+/**
+ * get BIW shop
+ * SZP 
+ * 2016-012-21
+ * */
+import("com.rockwell.autosuite.mes.utilities.common.ShopMasterManager")
+function getBIWShop()
+{
+    shopMasterManager = ShopMasterManager::getInstance()
+    biwShop = shopMasterManager.getBIWShop()
+}
+
+/**
+ * get Paint shop
+ * SZP 
+ * 2016-012-21
+ * */
+
+function getPaintShop()
+{
+    shopMasterManager = ShopMasterManager::getInstance()
+    biwShop = shopMasterManager.getPaintShop()
+}
+
+/**
+ * get TF shop
+ * SZP 
+ * 2016-12-21
+ * */
+
+function getTFShop()
+{
+    shopMasterManager = ShopMasterManager::getInstance()
+    biwShop = shopMasterManager.getTCFShop()
+}
+
+/**
+ * get RouteStepName
+ * Hangcheng Yu 
+ * 2017-04-07
+ * */
+function getRouteStepNameByStation(station)
+{
+    proLine = class com.rockwell.common.utilities.ObjectUtility::getProductionLine(station)
+    result = null
+    if(!isEmptyStr(proLine))
+    {
+        shop = class com.rockwell.common.utilities.ObjectUtility::getArea(proLine)
+        if(!isEmptyStr(shop))
+        {
+            shopKey = shop.getKey()
+            routeFilter = createRouteFilter()
+            routeFilter.forUdaEqualTo("shop",shopKey)
+            routeVector = routeFilter.exec()  
+            if(routeVector.size() > 0)
+            {
+                route = routeVector.get(0)
+                step = class com.rockwell.autosuite.mes.utilities.om.OrderHelper::getRouteStep(route,station)
+                if(!isEmptyStr(step))
+                {
+                    routeStepNameStr = step.getName()  
+                    routeStepNameNum = class java.lang.Long::valueOf(routeStepNameStr) 
+                    result = routeStepNameNum
+                    return result   
+                }
+            }
+        }
+    }
+    return result    
+}
+
+/**
+ * get CSN
+ * Chason Zhang 
+ * 2018-06-11
+ * */
+function generateOrSaveCSNNo(unit)
+{
+    functionName = "generateOrSaveCSNNo(unit)"
+    logInfo(MODULE_OM, "Start " + functionName + " function.", createTime(), functionName, functionName)
+    response = Response()
+    if(unit == null)
+    {
+        response.addError(Error(MESException("The unit is not allowed to be empty!"),environment.getServer()))
+        return response
+    }
+    
+    unitKey = unit.getKey()
+    keyWord = "unitKey[" + unitKey +"];"
+    
+    uniqueTrxId = getUniqueUserTransactionId()
+    prepareAndBeginUserTransaction(uniqueTrxId)
+    
+    responseGenerateCSN = getOrderService().generateCSNPnuts(unit)
+    response.addResponse(responseGenerateCSN) 
+    if(responseGenerateCSN.isOk())
+    {
+        logInfo(MODULE_OM, "Call the getOrderService().generateCSNPnuts() function Success. " + keyWord, createTime(), functionName, functionName)
+        csnObj = responseGenerateCSN.getResult()
+        if(csnObj == null)
+        {
+            rollbackUserTransaction(uniqueTrxId)
+            logError(MODULE_OM, keyWord + ", generate csnObj is null!", createTime(), functionName, functionName)
+            response.addError(Error(MESException(keyWord + ", generate csnObj is null!"),environment.getServer()))
+        }
+        else
+        {
+            //get order property object
+            unit.setUDA(csnObj.toString(),"csn")
+            responseUnit = unit.save(null,null,null)
+            if(responseUnit.isOk())
+            {
+                logInfo(MODULE_OM, keyWord + " save Unit is Success!", createTime(), functionName, functionName)
+                responseUserTransaction = commitUserTransaction(uniqueTrxId)
+                if(responseUserTransaction.isError())
+                {
+                    logError(MODULE_OM, keyWord + "commit UserTransaction fail!"+responseUserTransaction.getFirstErrorMessage(), createTime(), functionName, functionName)
+                    response.addError(Error(MESException(keyWord + "commit UserTransaction fail!"+responseUserTransaction.getFirstErrorMessage()),environment.getServer()))
+                }
+            }
+            else
+            {
+                rollbackUserTransaction(uniqueTrxId)
+                logError(MODULE_OM, keyWord + " save unit is fail!"+responseOrderProperty.getFirstErrorMessage(), createTime(), functionName, functionName)
+                response.addError(Error(MESException(keyWord + " save unit is fail!"+responseOrderProperty.getFirstErrorMessage()),environment.getServer()))
+            }
+        }
+    }
+    else
+    {
+        rollbackUserTransaction(uniqueTrxId)
+        logInfo(MODULE_OM, "Call the getOrderService().generateCSNPnuts() function fail."+responseGenerateCSN.getFirstErrorMessage(), createTime(), functionName, functionName)
+        response.addError(Error(MESException("Call the getOrderService().generateCSNPnuts() function fail."+responseGenerateCSN.getFirstErrorMessage()),environment.getServer()))
+    }
+    logInfo(MODULE_OM, "Finish " + functionName + " function.", createTime(), functionName, functionName)
+    return response
+}
+
+function releaseOrderList(listOrder, biwShop, activeMQActivity)
+{
+    functionName = "releaseOrderList(listOrder, biwShop, activeMQActivity)"
+    setOrderHandlingFlag(ORDER_TYPE_VEHICLE,true)
+    function handleException(exception)
+    {
+        //roll back transaction 
+        logError(MODULE_OM, exception.getMessage(), createTime(), functionName, functionName)
+        setOrderHandlingFlag(ORDER_TYPE_VEHICLE,false)
+        throw("releaseOrderList fail. Error: " + exception.getMessage())
+    }
+    catch(Exception, handleException)
+    
+    releaseBatchNum = getGlobalConfiguration(APPLICATION_RELEASE_BATCH_NUM,1l)
+    if(listOrder != null && listOrder.size() > 0)      
+    {   
+        listReleaseOrder = vector()
+        currentNum = 0
+        listOrderSize = listOrder.size()
+        for(i=0;i<listOrder.size();i++)
+        {
+            listReleaseOrder.add(listOrder.get(i))
+            currentNum = currentNum + 1
+            if((currentNum >= releaseBatchNum)||(i==(listOrderSize-1)))
+            {
+                releaseOrders(listReleaseOrder,biwShop,getDBTime(),activeMQActivity)
+                listReleaseOrder.clear()
+                currentNum = 0
+            }
+        }
+    }
+    setOrderHandlingFlag(ORDER_TYPE_VEHICLE,false)
+}
+
+function releaseOrders(listOrder,biwshop,tmeRelease,activeMQActivity)
+{
+    functionName = "releaseOrders(listOrder,biwshop,tmeRelease,activeMQActivity)"
+    trxId = getUniqueUserTransactionId()
+    setProperty(PROPERTY_NAME_ORDER_RELEASE_TRX_ID, trxId)
+    function handleException(exception)
+    {
+        //roll back transaction 
+        rollbackUserTransaction(trxId)
+        logError(MODULE_OM, exception.getMessage(), createTime(), functionName, functionName)
+        throw("releaseOrders fail. Error: " + exception.getMessage())
+    }
+    catch(Exception, handleException)
+
+    logInfo(MODULE_OM, "Start to release orders: ", createTime(), functionName, functionName) 
+    prepareAndBeginUserTransaction(trxId)
+    vectorOrderKey = vector()
+    for(order : listOrder)      
+    {      
+        response = orderRelease(order,biwshop,tmeRelease,trxId)
+        if(response.isError())
+        {
+            logError(MODULE_OM, "orderRelease fail. Error: " + response.getFirstErrorMessage(), createTime(), functionName, functionName)
+            throw("orderRelease fail. Error: " + response.getFirstErrorMessage())
+        }
+        vectorOrderKey.add(order.getKey())
+    }
+    
+    response = commitUserTransaction(trxId)      
+    if(response.isOk())      
+    {           
+        message = class com.rockwell.as.messaging.AsMessageFactory::createRequest(class com.rockwell.as.messaging.AsMessageType::DISPATCH_ORDERS_REQUEST)      
+        message.setOrderKeys(vectorOrderKey)      
+        message.setRequestId(trxId)      
+        activeMQActivity.getActivity().sendMessage(message)
+        logInfo(MODULE_OM, "Release orders successfully!", createTime(), functionName, functionName)       
+    }      
+    else      
+    {      
+        throw ("Fail to commit Transaction of Release Order. Error: " + response.getFirstErrorMessage())      
+    }
+    logInfo(MODULE_OM, "Finish to release orders: ", createTime(), functionName, functionName)
+}
+
+function orderRelease(order,biwshop,tmeRelease,trxId)
+{
+    functionName = "orderRelease(order,biwshop,tmeRelease,trxId)"
+    keyWord = "orderNumber[" + order.getOrderNumber() + "]"
+    //get order property object
+    orderService = getOrderService()
+    //generate BSN
+    responseGenerateBsn = orderService.generateOrSaveBSNPnuts(order)
+    if(responseGenerateBsn.isOk())
+    {
+        logInfo(MODULE_OM, "Order[" +order.getOrderNumber() + "] generate bsn successfully!", createTime(), functionName, functionName)
+    }
+    else
+    {
+        logError(MODULE_OM, "Order[" + order.getOrderNumber() + "] generate bsn unsuccessfully!", createTime(), functionName, functionName)
+        return responseGenerateBsn
+    }
+    
+    //generate rfid
+    responseGenerateRfid = orderService.generateOrSaveRFIDPnuts(order,10l)//生成焊装RFID.使用10
+    if(responseGenerateRfid.isOk())
+    {
+        logInfo(MODULE_OM, "Order[" + order.getOrderNumber() + "] generate rfid successfully!", createTime(), functionName, functionName)
+    }
+    else
+    {
+        logError(MODULE_OM, "Order[" + order.getOrderNumber() + "] generate rfid unsuccessfully!", createTime(), functionName, functionName)
+        return responseGenerateRfid
+    }
+    // generate QLS VehiclePlan
+    getIntegrationService().generateQLSVehiclePlanPnuts(order)
+    
+    //get OrderItems of particular Order and loop them
+    vectorOrderItems = order.getOrderItems()
+    for(orderItem : vectorOrderItems)
+    {
+        shop = orderItem.getUDA(class com.rockwell.autosuite.mes.constants.common.OrderItemUDAName::SHOP)
+        if(shop != null && shop.getKey() == biwshop.getKey())
+        {
+            //call releaseShopOrder method of orderService
+            response = orderService.releaseShopOrder(orderItem)
+            
+            //if release method of orderService run successfully, save order, else return error response
+            if(response.isOk())
+            {
+                logInfo(MODULE_OM, "release orderItem successfully,OrderNumber:[ " +order.getOrderNumber()+"]", createTime() , functionName, functionName) 
+            }
+            else
+            {
+                logError(MODULE_OMMODULE_OM, "release orderItem unsuccessfully,OrderNumber:[ " +order.getOrderNumber()+"],Error:"+ response.getFirstErrorMessage(), createTime() , functionName, functionName)
+                return response
+            }
+        }
+    }
+    response = updateOrderSequence(order, biwshop)
+    if(response.isError())      
+    {   
+        logError(MODULE_OMMODULE_OM, "update Order Sequence unsuccessfully,OrderNumber:[ " +order.getOrderNumber()+"],Error:"+ response.getFirstErrorMessage(), createTime() , functionName, functionName)
+        return response      
+    }
+    return handleReleaseStatus(order, tmeRelease, trxId)
+}
+
+/**      
+ * update order sequence      
+ * Pan Lei 2015-11-16      
+ * */      
+function updateOrderSequence(order, shop)      
+{      
+    response = getOrderShopSequence(shop)      
+    if(response.isError())      
+    {      
+        return response      
+    }      
+    orderShopSequence = response.getResult().getValue()
+    if(orderShopSequence < INITIAL_VALUE)      
+    {      
+        orderShopSequence = INITIAL_VALUE + orderShopSequence      
+    } 
+    response = getOrderService().updateShopSequencePnuts(order, shop, orderShopSequence)
+    if(response.isError())      
+    {      
+        return response      
+    }
+    return response
+}      
+      
+/**      
+ * get order shop sequence by shop      
+ * Pan Lei 2015-11-16      
+ * */      
+function getOrderShopSequence(shop)      
+{      
+    sequenceName = "ORDER_SHOP_SEQUENCE_" + shop.getName()      
+    orderShopSequence = getUserSequenceByName(sequenceName)      
+    if(orderShopSequence == null)      
+    {      
+        orderShopSequence = createUserSequence(sequenceName)      
+        orderShopSequence.setInitialValue(0)      
+        orderShopSequence.setMaxValue(Integer::MAX_VALUE)      
+        orderShopSequence.setIncrementValue(1)      
+        orderShopSequence.save()      
+    }      
+    nextValueResponse = orderShopSequence.getNextValue()      
+    return nextValueResponse      
+}   
+
+/**
+ * Handle release status. If an order release multiple, the transaction id must to update.
+ * 
+ */
+function handleReleaseStatus(order, tmeRelease, trxId)
+{
+    functionName = "handleReleaseStatus(vectorOrder, tmeRelease, trxId)"
+    logInfo(MODULE_OM, "Start " + functionName + " function.", createTime(), functionName, functionName)
+    filter = class com.rockwell.autosuite.mes.model.om.releasestatus.MESASOMOrderReleaseStatusFilter()
+    filter.forOrderEqualTo(order)
+    filter.forTransactionidEqualTo(trxId)
+    vectorReleasedOrder = filter.getFilteredObjects()
+    if(vectorReleasedOrder.size() == 0)
+    {
+        orsObj = class com.rockwell.autosuite.mes.model.om.releasestatus.MESASOMOrderReleaseStatus()
+        orsObj.setOrder(order)
+        orsObj.setTransactionid(trxId)
+        orsObj.setReleasetime(tmeRelease)
+        orsObj.setStatus(class com.rockwell.autosuite.mes.constants.om.OrderReleaseDispatchStatus::RELEASED)
+        orsObj.setDispatchsuccess(false)
+        response = orsObj.save(null, null, null)
+        if(response.isError())
+        {
+            logError(MODULE_OM, "Save MESASOMOrderReleaseStatus object fail: " + response.getFirstErrorMessage(), createTime(), functionName, functionName)
+            return response
+        }
+    }
+    else
+    {
+        orsObj = vectorReleasedOrder.get(0)
+        orsObj.setReleasetime(tmeRelease)
+        response = orsObj.save(null, null, null)
+        if(response.isError())
+        {
+            logError(MODULE_OM, "Update MESASOMOrderReleaseStatus object fail: " + response.getFirstErrorMessage(), createTime(), functionName, functionName)
+            return response
+        }
+    }
+    logInfo(MODULE_OM, "Finish " + functionName + " function.", createTime(), functionName, functionName)
+    return class com.datasweep.compatibility.client.Response()
+}
+
+function generateOrReplaceRfidBinding(order,epc,workCenter)
+{
+    functionName = "generateOrReplaceRfidBinding(order,epc,workCenter)"
+    response = Response()
+    function handleGenerateOrReplaceRfidBindingException(exception){
+        response.addError(Error(MESException(exception.getMessage()),environment.getServer()))
+        logError(MODULE_OM, exception.getMessage(), createTime(), SOS_INTEGRATION_SUBROUTINES, functionName)    
+        logException(MODULE_OM, exception)
+        return response
+    }
+    catch(Exception, handleGenerateOrReplaceRfidBindingException)
+    logInfo(MODULE_OM, "Start " + functionName + " function.", createTime(), functionName, functionName)
+    
+    if(order == null)
+    {
+        logError(MODULE_OM, "The order is not allowed to be empty!", createTime(), functionName, functionName) 
+        response.addError(Error(MESException("The order is not allowed to be empty!"),environment.getServer()))
+        return response
+    }
+    if(epc == null)
+    {
+        logError(MODULE_OM, "The epc is not allowed to be empty!", createTime(), functionName, functionName) 
+        response.addError(Error(MESException("The epc is not allowed to be empty!"),environment.getServer()))
+        return response
+    }
+    if(workCenter == null)
+    {
+        logError(MODULE_OM, "The workCenter is not allowed to be empty!", createTime(), functionName, functionName) 
+        response.addError(Error(MESException("The workCenter is not allowed to be empty!"),environment.getServer()))
+        return response
+    }
+    orderNumber = order.getOrderNumber()
+    keyword = "orderNumber[" + orderNumber +"],epc[" + epc + "],workCenter[" + workCenter + "]"
+    response = getOrderService().generateOrReplaceRfidBindingPnuts(order,epc,workCenter)
+    if(response.isError())
+    {
+        logError(MODULE_OM, "Rfid Binding is failed:"+response.getFirstErrorMessage() + ", keyword<" + keyword + ">", createTime(), eventsheet.getName(), functionName)
+        return response
+    }
+    
+    responseOrderProperty = getSystemService().getOrGenerateOrderProppertyPunts(order)
+    if(responseOrderProperty.isError())
+    {
+        logError(MODULE_OM, "Rfid Binding is failed:"+responseOrderProperty.getFirstErrorMessage() + ", keyword<" + keyword + ">", createTime(), eventsheet.getName(), functionName)
+        return responseOrderProperty
+    }
+    orderProperty = responseOrderProperty.getResult()
+    orderProperty.setEpc(epc)
+    
+    response = orderProperty.save(null,null,null) 
+    if(response.isError())
+    {
+        logError(MODULE_OM, "save Rfid Binding is failed:"+response.getFirstErrorMessage() + ", keyword<" + keyword + ">", createTime(), eventsheet.getName(), functionName)
+        return response
+    }
+    
+    return response
+}
+
+function sendGenerateJobNoMessage(order)
+{
+    jeiTaskType = class com.rockwell.autosuite.mes.constants.print.BusinessType::JOBNO
+    businessType = class com.rockwell.autosuite.mes.constants.print.BusinessType::JOBNO
+    businessName = class com.rockwell.autosuite.mes.constants.print.BusinessType::JOBNO
+    businessExt = class com.rockwell.autosuite.mes.constants.print.BusinessType::JOBNO
+    queueName = "AS.GE.JOBNO.JEE.Queue"
+    
+    mapExtData = class java.util.HashMap()
+    mapExtData.put("ORDER_NUMBER", order.getOrderNumber())
+    
+    response = class com.rockwell.autosuite.mes.utilities.sm.SystemHelperEx::sendTaskToMQ(queueName, class com.rockwell.as.messaging.AsDestinationType::QUEUE_DESTINATION ,jeiTaskType, businessType, businessName, businessExt, mapExtData)
+    return response
+}
+
+function sendGenerateSQDMessage(order, sqdType, stationName)
+{
+    jeiTaskType = class com.rockwell.autosuite.mes.constants.print.BusinessType::SQD
+    businessType = class com.rockwell.autosuite.mes.constants.print.BusinessType::SQD
+    businessName = class com.rockwell.autosuite.mes.constants.print.BusinessType::SQD
+    businessExt = stationName
+    queueName = "AS.GE.SQD.JEE.Queue"
+    
+    mapExtData = class java.util.HashMap()
+    mapExtData.put("ORDER_NUMBER", order.getOrderNumber())
+    mapExtData.put("SQD_TYPE", sqdType)
+    
+    response = class com.rockwell.autosuite.mes.utilities.sm.SystemHelperEx::sendTaskToMQ(queueName, class com.rockwell.as.messaging.AsDestinationType::QUEUE_DESTINATION ,jeiTaskType, businessType, businessName, businessExt, mapExtData)
+    return response
+}
+
+function sendGenerateBroadcastMessage(order, type)
+{
+    jeiTaskType = "BROADCAST"
+    businessType = type
+    businessName = type
+    businessExt = type
+    queueName = "AS.GE.BROADCAST.JEE.Queue"
+    
+    mapExtData = class java.util.HashMap()
+    mapExtData.put("ORDER_NUMBER", order.getOrderNumber())  
+    
+    response = class com.rockwell.autosuite.mes.utilities.sm.SystemHelperEx::sendTaskToMQ(queueName, class com.rockwell.as.messaging.AsDestinationType::QUEUE_DESTINATION , jeiTaskType, businessType, businessName, businessExt, mapExtData)
+    return response
+}
+
+function sendGeneratePrintTaskMessage(queueName, printType, businessType, businessName, printStationName, order)
+{
+    jeiTaskType = printType
+    businessExt = printStationName
+    
+    mapExtData = class java.util.HashMap()
+    mapExtData.put("ORDER_NUMBER",order.getOrderNumber())
+    
+    response = class com.rockwell.autosuite.mes.utilities.sm.SystemHelperEx::sendTaskToMQ(queueName, class com.rockwell.as.messaging.AsDestinationType::QUEUE_DESTINATION , jeiTaskType, businessType, businessName, businessExt, mapExtData)
+    return response
+}
+
+function sendGenerateSubOrderMessage(unit, zone)
+{
+    jeiTaskType = "SUB_ORDER"
+    businessType = "SUB_ORDER"
+    businessName = "SUB_ORDER"
+    businessExt = "SUB_ORDER"
+    queueName = "AS.GE.SUBORDER.JEE.Queue"
+    
+    mapExtData = class java.util.HashMap()
+    mapExtData.put("UNIT_KEY", unit.getKey())
+    mapExtData.put("ZONE", zone)  
+    
+    response = class com.rockwell.autosuite.mes.utilities.sm.SystemHelperEx::sendTaskToMQ(queueName, class com.rockwell.as.messaging.AsDestinationType::QUEUE_DESTINATION , jeiTaskType, businessType, businessName, businessExt, mapExtData)
+    return response
+}
+
+function sendPrintSteelLabelTaskMessage(bsn,rfid,zone,stationName)
+{
+    jeiTaskType = class com.rockwell.autosuite.mes.constants.om.jeitasks.PrintData::BARCODE
+    businessType = "STEELLABEL"
+    businessName = zone
+    businessExt = stationName
+    queueName = "AS.PM.BP.JEE.Queue"
+    
+    mapExtData = class java.util.HashMap()
+    mapExtData.put("BSN", bsn)
+    mapExtData.put("RFID", rfid)
+    
+    response = class com.rockwell.autosuite.mes.utilities.sm.SystemHelperEx::sendTaskToMQ(queueName, class com.rockwell.as.messaging.AsDestinationType::QUEUE_DESTINATION , jeiTaskType, businessType, businessName, businessExt, mapExtData)
+    return response
+}
+
+function isPrintSteelLabel(zone)
+{
+    function handleGetSubOrderZoneByCategoryException(exception)
+    {
+        functionName = getMessage("MES_INTEGRATION_MSG_ERROR", "FUNCTION") + " " + "getSubOrderZoneByCategory"
+        
+        logError(MODULE_IM, "MES_INTEGRATION_MSG_ERROR-[noticePLCFault]: get sub order zone by order category failed:" + exception.getMessage(), createTime(), SOS_INTEGRATION_SUBROUTINES, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleGetSubOrderZoneByCategoryException)
+    zoneList = getList("generateSubOrderWorkCenterList").getItems()
+    for(zoneTypes : zoneList)
+    {
+        zoneType = zoneTypes.split(":")
+        typeid = zoneType[0]
+        zoneTemp = zoneType[1]
+        
+        if(zoneTemp == zone)
+        {
+            if(zoneType.length>1)
+            {
+                if("T".equals(zoneType[2].trim()))
+                {
+                    return true
+                }
+            }
+        }
+    }
+    return false
+}
+
+/***********************************************
+ * partsStr:以,分隔的零件号，并集 用于根据零件号搜索订单
+ * 返回 部分 sql 语句
+ * ********/
+function getPartInSql(partsStr)
+{
+    str = ""
+    sqlStr = ""
+    partsArray = partsStr.split(",")
+    foreach part(partsArray)
+    {
+        str = str +"'" + part + "',"
+    }
+    str = str.substring(0,str.length()-1)
+    sql = "select part_key ,part_number from part where part_number in( " + str +" )"
+    list = getArrayDataFromActive(sql)
+    foreach item(list)
+    {
+        sqlStr = sqlStr + " and " + item[0] +" in (select ob.part_21 from at_as_om_order_bom ob  where ob.work_order_i = uo.object_key) "
+    }
+    return sqlStr
+}
+
+/***********************************************
+ * featureStr:以,分隔的特征值，并集 用于根据特征值搜索订单
+ * 返回 部分 sql 语句
+ * ********/
+function getFeatureInSql(featureStr)
+{
+    str = ""
+    sqlStr = ""
+    featuresArray = featureStr.split(",")
+    foreach feature(featuresArray)
+    {
+        str = str +"'" + feature + "',"
+    }
+    str = str.substring(0,str.length()-1)
+    sql = "select atr_key, value_s from at_as_masterattributevalue where value_s in( " + str +" )"
+    list = getArrayDataFromActive(sql)
+    foreach item(list)
+    {
+        sqlStr = sqlStr + " and " + item[0] +" in ( select aotv.attrib_value_key_i from AT_AS_ORDERATTRIBUTEValue aotv where aotv.parent_key = ( select oat.atr_key  from AT_AS_ORDERATTRIBUTE oat   where oat.order_54 = uo.object_key ) ) "
+    }
+    return sqlStr
+}
+/*****************************************
+ * valueStr 是以逗号分隔的 零件号 
+ * 方法是用户根据 零件号来搜索订单的，只支持并集
+ * 此方法是判断用户给定 的值是否存在于数据库里
+ * 因为订单bom 中是根据 part_21 引用来的
+ *****************************************/
+function notExistParts(valueStr)
+{
+    str = ""
+    notExistVec = vector()
+    map = class java.util.HashMap()
+    valueArray = valueStr.split(",")
+    foreach value(valueArray)
+    {
+        str = str +"'" + value + "',"
+        map.put(value,null)
+    }
+    str = str.substring(0,str.length()-1)
+    sql = "select part_key ,part_number from part where part_number in( " + str +" )"
+    list = getArrayDataFromActive(sql)
+    foreach item(list)
+    {
+        map.put(item[1],item[0])
+    }
+    foreach key(map.keySet())
+    {
+        if(map.get(key) == null)
+        {
+            notExistVec.add(key)
+        }
+    }
+    return notExistVec
+}
+
+/*****************************************
+ * valueStr 是以逗号分隔的  特征值
+ * 方法是用户根据 特征值 来搜索订单的
+ * 此方法是判断用户给定 的值是否存在于数据库里
+ * 因为订单orderattribue中是根据 key 引用来的
+ *****************************************/
+ function notExistFeatures(valueStr)
+{
+    str = ""
+    notExistVec = vector()
+    map = class java.util.HashMap()
+    valueArray = valueStr.split(",")
+    foreach value(valueArray)
+    {
+        str = str +"'" + value + "',"
+        map.put(value,null)
+    }
+    str = str.substring(0,str.length()-1)
+    sql = "select atr_key, value_s from at_as_masterattributevalue where value_s in( " + str +" )"
+    list = getArrayDataFromActive(sql)
+    foreach item(list)
+    {
+        map.put(item[1],item[0])
+    }
+    foreach key(map.keySet())
+    {
+        if(map.get(key) == null)
+        {
+            notExistVec.add(key)
+        }
+    }
+    return notExistVec
+}
+/****
+ * valueStr :用户在文本框中输入的partnumber字符串，以 , 分隔
+ * orderNumber :订单号
+ * 
+ * 如果 物料号存在于 订单 中返回 true，否则 返回 false 
+ * */
+function isPartInBOM(valueStr,orderNumber)
+{
+    str = ""
+    valueArray = valueStr.split(",")
+    foreach value(valueArray)
+    {
+        str = str +"'" + value + "',"
+    }
+    str = str.substring(0,str.length()-1)
+    sql = "select part_key from part where part_number in( " + str +" )"
+    sqlPartKeyInBOM = "select part_21 from at_as_om_order_bom where work_order_i = (select order_key from work_order where order_number ='"+ orderNumber + "' and rownum <=1 )";
+    intersectSql = sql + " intersect " +  sqlPartKeyInBOM
+    list = getArrayDataFromActive(intersectSql)
+    if(list.size() == valueArray.length)
+    {
+        return true
+    }
+    return false
+}
+
+/****
+ * valueStr :用户在文本框中输入的feature字符串，以 , 分隔
+ * orderNumber :订单号
+ * 
+ * 如果 特征值存在于 订单 中返回 true，否则 返回 false 
+ * */
+function isFeatureValueInOrderAttribute(valueStr,orderNumber)
+{
+    valueArray = valueStr.split(",")
+    
+    sqlFeatureValueInOrderAttribute = " select dd.value_s 
+                        from AT_AS_AttributeMaster aa 
+                        join AT_AS_MasterAttributeClass bb on aa.atr_key = bb.parent_key
+                        join AT_AS_MasterAttribute cc on cc.attrib_class_name_s = bb.name_s and cc.attrib_master_key_168 = aa.atr_key
+                        join AT_AS_MasterAttributeValue dd on cc.atr_key = dd.parent_key
+                        join AT_AS_OrderAttributeValue ee on ee.attrib_key_168 = cc.atr_key and ee.attrib_value_key_i = dd.atr_key
+                        join AT_AS_OrderAttribute ff on ff.atr_key = ee.parent_key
+                        where ff.order_54 = (select order_key from work_order where order_number ='"+ orderNumber + "' and rownum <=1 )"
+
+    list = getArrayDataFromActive(sqlFeatureValueInOrderAttribute)
+    orderAttrList = vector()
+    foreach obj(list)
+    {
+        orderAttrList.add(obj[0])
+    }
+    noExistFeatureValueList = vector()
+    foreach elem(valueArray)
+    {
+        if(!orderAttrList.contains(elem))
+        {
+            noExistFeatureValueList.add(elem)
+        }
+    }
+    if(noExistFeatureValueList.size()>0)
+    {
+        return false
+    }
+    return true
+}
+
+/****
+ * valueStr :用户在文本框中输入的 part 字符串，以 , 分隔
+ * orderKeySqlStr :sql语句中 订单key 如 order_key  object_key order_54 work_order_i
+ * 
+ * return  sqlstr 
+ * */
+function getPartInSql(valueStr,orderKeySqlStr)
+{
+    str = ""
+    valueArray = valueStr.split(",")
+    foreach value(valueArray)
+    {
+        str = str +"'" + value + "',"
+    }
+    str = str.substring(0,str.length()-1)
+    sql = "select part_key from part where part_number in( " + str +" )"
+    sqlPartKeyInBOM = "select part_21 from at_as_om_order_bom where work_order_i = "+ orderKeySqlStr ;
+    intersectSql = "( select count(1) from ( "+ sql + " intersect " +  sqlPartKeyInBOM + " ) ) "
+    returnStr = " and " + valueArray.length + " = " + intersectSql
+    return returnStr
+}
+
+
+/****
+ * valueStr :用户在文本框中输入的feature字符串，以 , 分隔
+ * orderKeySqlStr :sql语句中 订单key 如 order_key  object_key order_54 work_order_i
+ * 
+ * return  sqlstr 
+ * */
+function getFeatureInSql(valueStr,orderKeySqlStr)
+{
+    str = ""
+    valueArray = valueStr.split(",")
+    foreach value(valueArray)
+    {
+        str = str +"'" + value + "',"
+    }
+    str = str.substring(0,str.length()-1)
+    
+    sql = "select value_s from at_as_masterattributevalue where value_s in( " + str +" )"
+
+    sqlFeatureValueInOrderAttribute = " select dd.value_s 
+                        from AT_AS_AttributeMaster aa 
+                        join AT_AS_MasterAttributeClass bb on aa.atr_key = bb.parent_key
+                        join AT_AS_MasterAttribute cc on cc.attrib_class_name_s = bb.name_s and cc.attrib_master_key_168 = aa.atr_key
+                        join AT_AS_MasterAttributeValue dd on cc.atr_key = dd.parent_key
+                        join AT_AS_OrderAttributeValue ee on ee.attrib_key_168 = cc.atr_key and ee.attrib_value_key_i = dd.atr_key
+                        join AT_AS_OrderAttribute ff on ff.atr_key = ee.parent_key
+                        where ff.order_54 = " + orderKeySqlStr 
+                        
+    intersectSql = "( select count(1) from ( "+ sql + " intersect " +  sqlFeatureValueInOrderAttribute + " ) ) "
+    returnStr = " and " + valueArray.length + " = " + intersectSql
+
+    return returnStr
+}
+
+function initHashMapOrderBO(esLiveData)
+{
+    functionName = "initHashMapOrderBO(esLiveData)"
+    function handleException(exception)
+    {
+        logError(MODULE_IM, "exec functionName failure!exception<"+exception.getMessage()+">", createTime(), functionName, functionName)
+        logException(MODULE_IM, exception)
+    }
+    catch(Exception, handleException)
+    hashMapOrderBO = class java.util.HashMap()
+    liveDataGroupList = esLiveData.getLiveData().getServers()[0].getGroups().getGroups()
+    foreach liveDataGroup(liveDataGroupList)
+    {
+        groupName = liveDataGroup.getName()
+        if(groupName.indexOf("CommandOut") != -1)
+        {
+            time = createTime()
+            workOrderBO = class com.rockwell.autosuite.mes.bo.om.WorkOrderBO()
+            workOrderBO.setWipTime(time)
+            hashMapOrderBO.put(groupName,workOrderBO)
+        }
+    }
+    setProperty("HASH_MAP_ORDERBO", hashMapOrderBO)
+}
+
+function isDuplicateWip(groupName,value,type)
+{
+    functionName = "isDuplicateWip(groupName,value,type)"
+    function handleException(exception)
+    {
+        
+        logError(MODULE_IM, "exec functionName failure!exception<"+exception.getMessage()+">", createTime(), functionName, functionName)
+        logException(MODULE_IM, exception)
+        return false
+    }
+    catch(Exception, handleException)
+
+    hashMapOrderBO = getProperty("HASH_MAP_ORDERBO")
+    workOrderBO = hashMapOrderBO.get(groupName)
+    if("VIN".equals(type))
+    {
+        hmValue = workOrderBO.getVin()
+    }
+    else
+    {
+        hmValue = workOrderBO.getBsn()
+    }
+    hmTime = workOrderBO.getWipTime()
+    
+    tmpTime = hmTime.addSeconds(5l)
+    time = createTime()
+    if(tmpTime.compareTo(time)>0 && value.equals(hmValue))
+    {
+        return true
+    }
+
+    if("VIN".equals(type))
+    {
+        workOrderBO.setVin(value) 
+    }
+    else
+    {
+       workOrderBO.setBsn(value) 
+    }
+    workOrderBO.setWipTime(time)
+    return false
+}
+
+function isOrderHandling(orderType)
+{
+    orderHandlingFlag = getOrderHandlingFlag(orderType)
+    if(orderHandlingFlag.getFlag()==true)
+    {
+        return true
+    }
+    else
+    {
+        return false
+    }
+}
+//设置订单操作状态为 true or false
+function setOrderHandlingFlag(orderType,trueOrFalse)
+{
+    orderHandlingFlag = getOrderHandlingFlag(orderType)
+    orderHandlingFlag.setFlag(trueOrFalse)
+    orderHandlingFlag.save(null,null,null)
+}
+
+function getOrderHandlingFlag(orderType)
+{
+    orderHandlingFlag = null
+    orderHandlingFlagFilter = class com.rockwell.autosuite.mes.model.om.orderhandleflag.MESASOMOrderHandleFlagFilter()
+    orderHandlingFlagFilter.forOrdertypeEqualTo(orderType)
+    orderHandlingFlagList = orderHandlingFlagFilter.getFilteredObjects()
+    if(orderHandlingFlagList.size()>0)
+    {
+        orderHandlingFlag = orderHandlingFlagList.get(0)
+    }
+    else
+    {
+        orderHandlingFlag = class com.rockwell.autosuite.mes.model.om.orderhandleflag.MESASOMOrderHandleFlag()
+        orderHandlingFlag.setOrdertype(orderType)
+        orderHandlingFlag.setFlag(false)
+        orderHandlingFlag.save(null,null,null)
+    }
+    return orderHandlingFlag
+}
+
+function getOrderReleaseParamObj(orderType)
+{
+    orderReleaseParam = null
+    orderReleaseParamFilter = class com.rockwell.autosuite.mes.model.om.orderreleaseparam.MESASOMOrderReleaseParamFilter()
+    orderReleaseParamFilter.forOrdertypeEqualTo(orderType)
+    orderReleaseParamList = orderReleaseParamFilter.getFilteredObjects()
+    if(orderReleaseParamList.size()>0)
+    {
+        orderReleaseParam = orderReleaseParamList.get(0)
+    }
+    else
+    {
+        orderReleaseParam = class com.rockwell.autosuite.mes.model.om.orderreleaseparam.MESASOMOrderReleaseParam() 
+        orderReleaseParam.setOrdertype(orderType)
+        orderReleaseParam.setIsauto(false)
+        orderReleaseParam.setQty(10l)
+        orderReleaseParam.setSafeqty(10l)
+        orderReleaseParam.save(null,null,null)
+    }
+    return orderReleaseParam
+}
+
+function generateMIX(order)
+{
+    response = null
+    functionName = "generateMIX(order)"
+    trxId = getUniqueUserTransactionId()
+    function handleException(exception)
+    {
+        rollbackUserTransaction(trxId)
+        logError(MODULE_OM, "generate MIX failure !Error: " + exception.getFirstErrorMessage(), createTime(), functionName, functionName)
+        createResponseObject("MES_COMMON_MSG_ERROR", "USER_DEFINE_ERROR_MSG", [exception.getFirstErrorMessage()])
+    }
+    catch(Exception, handleException)
+    
+    prepareAndBeginUserTransaction(trxId)
+    response = getOrderService().generateOrSaveMIXPnuts(order)
+    if(response.isOk())
+    {
+        responseUserTransaction = commitUserTransaction(trxId)
+        if(responseUserTransaction.isError())
+        {
+            logError(MODULE_OM, keyWord + "commit UserTransaction fail!"+responseUserTransaction.getFirstErrorMessage(), createTime(), functionName, functionName)
+            response = responseUserTransaction
+        }
+    }
+    else
+    {
+        rollbackUserTransaction(trxId)
+    }
+    return response
+}
+function generateBuildDate(order)
+{
+    response = null
+    functionName = "generateMIX(order)"
+    trxId = getUniqueUserTransactionId()
+    function handleException(exception)
+    {
+        rollbackUserTransaction(trxId)
+        logError(MODULE_OM, "generate BuildDate failure !Error: " + exception.getFirstErrorMessage(), createTime(), functionName, functionName)
+        createResponseObject("MES_COMMON_MSG_ERROR", "USER_DEFINE_ERROR_MSG", [exception.getFirstErrorMessage()])
+    }
+    catch(Exception, handleException)
+    
+    prepareAndBeginUserTransaction(trxId)
+    response = getOrderService().generateOrSaveBuildDatePnuts(order)
+    if(response.isOk())
+    {
+        responseUserTransaction = commitUserTransaction(trxId)
+        if(responseUserTransaction.isError())
+        {
+            logError(MODULE_OM, keyWord + "commit UserTransaction fail!"+responseUserTransaction.getFirstErrorMessage(), createTime(), functionName, functionName)
+            response = responseUserTransaction
+        }
+    }
+    else
+    {
+        rollbackUserTransaction(trxId)
+    }
+    return response
+}
+
+function generateVIN(order)
+{
+    response = null
+    functionName = "generateMIX(order)"
+    trxId = getUniqueUserTransactionId()
+    function handleException(exception)
+    {
+        rollbackUserTransaction(trxId)
+        logError(MODULE_OM, "generate VIN failure !Error: " + exception.getFirstErrorMessage(), createTime(), functionName, functionName)
+        createResponseObject("MES_COMMON_MSG_ERROR", "USER_DEFINE_ERROR_MSG", [exception.getFirstErrorMessage()])
+    }
+    catch(Exception, handleException)
+    
+    prepareAndBeginUserTransaction(trxId)
+    response = getOrderService().generateOrSaveVINPnuts(order)
+    if(response.isOk())
+    {
+        response = getOrderService().updateAllUnitOfVINByOrderPnuts(order)
+        if(response.isOk())
+        {
+            responseUserTransaction = commitUserTransaction(trxId)
+            if(responseUserTransaction.isError())
+            {
+                logError(MODULE_OM, keyWord + "commit UserTransaction fail!"+responseUserTransaction.getFirstErrorMessage(), createTime(), functionName, functionName)
+                response = responseUserTransaction
+            }
+        }
+        else
+        {
+            rollbackUserTransaction(trxId)
+        }
+    }
+    else
+    {
+        rollbackUserTransaction(trxId)
+    }
+    return response    
+}
+function generateRFID(order, scenario)
+{
+    response = null
+    functionName = "generateMIX(order)"
+    trxId = getUniqueUserTransactionId()
+    function handleException(exception)
+    {
+        rollbackUserTransaction(trxId)
+        logError(MODULE_OM, "generate VIN failure !Error: " + exception.getFirstErrorMessage(), createTime(), functionName, functionName)
+        createResponseObject("MES_COMMON_MSG_ERROR", "USER_DEFINE_ERROR_MSG", [exception.getFirstErrorMessage()])
+    }
+    catch(Exception, handleException)
+    
+    prepareAndBeginUserTransaction(trxId)
+    response = getOrderService().generateOrSaveRFIDPnuts(order, scenario)
+    if(response.isOk())
+    {
+        response = getOrderService().updateAllUnitOfRFIDByOrderPnuts(order)
+        if(response.isOk())
+        {
+            responseUserTransaction = commitUserTransaction(trxId)
+            if(responseUserTransaction.isError())
+            {
+                logError(MODULE_OM, keyWord + "commit UserTransaction fail!"+responseUserTransaction.getFirstErrorMessage(), createTime(), functionName, functionName)
+                response = responseUserTransaction
+            }
+        }
+        else
+        {
+            rollbackUserTransaction(trxId)
+        }
+    }
+    else
+    {
+        rollbackUserTransaction(trxId)
+    }
+    return response    
+}
+
+function getSqdByStation(stationName)
+{
+    sqdObj = null
+    sqdFilter = class com.rockwell.autosuite.mes.model.om.sqd.MESASOMSQDFilter()
+    sqdFilter.forStationnameEqualTo(stationName)
+    sqdFilter.forStatusEqualTo("0")
+    sqdFilter.addOrderBy(class com.datasweep.plantops.common.constants.filtering.IATRowFilterAttributes::CREATIONTIME, class com.datasweep.plantops.common.constants.filtering.IFilterSortOrders::ASCENDING)
+    sqdFilter.setMaxRows(1)
+    vectorSqd = sqdFilter.getFilteredObjects()
+    if(vectorSqd.size()>0)
+    {
+        sqdObj = vectorSqd.get(0)
+    }
+    return sqdObj
+}
+
+
+/**      
+ * get sub order sequence by shop  and sub line type   
+ * Pan Lei 2015-11-16      
+ * */      
+function getSubOrderSequence(shop,sub_line_type)      
+{      
+    sequenceName = "SUB_ORDER_SEQUENCE_" + shop.getName() + "_" + sub_line_type
+    orderShopSequence = getUserSequenceByName(sequenceName)      
+    if(orderShopSequence == null)      
+    {      
+        orderShopSequence = createUserSequence(sequenceName)      
+        orderShopSequence.setInitialValue(0)      
+        orderShopSequence.setMaxValue(Integer::MAX_VALUE)      
+        orderShopSequence.setIncrementValue(1)      
+        orderShopSequence.save()      
+    }      
+    nextValueResponse = orderShopSequence.getNextValue()      
+    return nextValueResponse      
+}  
+/**      
+ * 车辆拉出 
+ * fzg 2020-11-13      
+ * */ 
+function takeOutForJMC(order,workCenter,zone,time){
+    responseTakeOut = getOrderService().takeOutPnuts(order, workCenter.getName(), zone, time)
+    if(responseTakeOut.isError())
+    {
+        return responseTakeOut
+    }
+    //更新拉入拉出标志表状态
+    bsn = class com.rockwell.autosuite.mes.utilities.om.OrderHelperEx::getBsn(order)
+    responseTakeOutStatus = getOrderService().updateTakeInOutStatusPnuts(bsn, class com.rockwell.autosuite.mes.constants.om.TakeInOutStatus::OUT)
+    if(responseTakeOutStatus.isError())
+    {  
+        return responseTakeOut.addResponse(responseTakeOutStatus)
+    }
+    //更新车辆队列表
+    vin = class com.rockwell.autosuite.mes.utilities.om.OrderHelperEx::getVin(order)
+    plcBIWVehicleQueueObj = getIntegrationService().getPLCBIWVehicleQueueObj(vin)
+    if(plcBIWVehicleQueueObj != null)
+	{
+		sendStatus = plcBIWVehicleQueueObj.getSendstatus()
+		ishold = plcBIWVehicleQueueObj.getIshold()
+		if(sendStatus.longValue() == class com.rockwell.autosuite.mes.constants.im.SendStatus::UN_SEND.longValue() && (ishold != true))
+		{
+			plcBIWVehicleQueueObj.setIshold(true)
+			plcBIWVehicleQueueObj.save(null, null, null)
+		}
+	}
+	return responseTakeOut
+}
+
+/**      
+ * 车辆拉入 
+ * fzg 2020-11-13      
+ * */ 
+function takeInForJMC(order,workCenter,zone,time){
+    responseTakeIn = getOrderService().takeInPnuts(order, workCenter.getName(), zone, time)
+    if(responseTakeIn.isError())
+    {
+        return responseTakeIn
+    }
+    bsn = class com.rockwell.autosuite.mes.utilities.om.OrderHelperEx::getBsn(order)
+    vin = class com.rockwell.autosuite.mes.utilities.om.OrderHelperEx::getVin(order)
+    if("BSL".equals(zone))
+	{
+		//判断内板是否拉出，如果拉出，才能拉入
+		responseTakeInOut = getOrderService().getTakeInOutObjPnuts(bsn,"BSIL")
+		if(responseTakeInOut.isError()){
+    		return responseTakeIn.addResponse(responseTakeInOut)
+		}
+		if(responseTakeInOut.getResult().getStatus().longValue() == class com.rockwell.autosuite.mes.constants.om.TakeInOutStatus::OUT.longValue()){
+    		getOrderService().takeInPnuts(order,workCenter.getName(),"BSIL",time)
+		}	
+	}
+	else if("BSR".equals(zone))
+	{
+		//判断内板是否拉出，如果拉出，才能拉入
+		responseTakeInOut = getOrderService().getTakeInOutObjPnuts(bsn,"BSIR")
+		if(responseTakeInOut.isError()){
+    		return responseTakeIn.addResponse(responseTakeInOut)
+		}
+		if(responseTakeInOut.getResult().getStatus().longValue() == class com.rockwell.autosuite.mes.constants.om.TakeInOutStatus::OUT.longValue()){
+    		getOrderService().takeInPnuts(order,workCenter.getName(),"BSIR",time)
+		}	
+	}
+    //更新拉入拉出标志表状态
+    
+    responseTakeOutStatus = getOrderService().updateTakeInOutStatusPnuts(bsn, class com.rockwell.autosuite.mes.constants.om.TakeInOutStatus::IN)
+    if(responseTakeIn.isError())
+    {  
+        return responseTakeIn.addResponse(responseTakeOutStatus)
+    }
+    
+    //更新车辆队列表
+    responseIsExistTakeOut = getOrderService().isExistTakeOutPnuts(bsn)
+    if(responseIsExistTakeOut.isError()){
+        return responseTakeIn.addResponse(responseIsExistTakeOut)
+    }
+    
+	if(responseIsExistTakeOut.getResult() == false)//没有部件被拉出
+	{
+		plcBIWVehicleQueueObj = getIntegrationService().getPLCBIWVehicleQueueObj(vin)
+		if(plcBIWVehicleQueueObj != null)
+		{
+			sendStatus = plcBIWVehicleQueueObj.getSendstatus();
+			ishold = plcBIWVehicleQueueObj.getIshold();
+			if(sendStatus.longValue() == class com.rockwell.autosuite.mes.constants.im.SendStatus::UN_SEND.longValue() && (ishold != false))
+			{
+				plcBIWVehicleQueueObj.setIshold(false);
+				plcBIWVehicleQueueObj.save(null, null, null);
+			}
+		}
+	}
+	return responseTakeIn
+}
