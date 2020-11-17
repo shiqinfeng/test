@@ -1,0 +1,62 @@
+==============================================================================================================================
+利用NPOI画图主要有以下几个步骤：
+==============================================================================================================================
+1. 创建一个Patriarch；
+2. 创建一个Anchor，以确定图形的位置；
+3. 调用Patriarch创建图形；
+4. 设置图形类型(直线，矩形，圆形等)及样式（颜色，粗细等）。
+
+关于HSSFClientAnchor(dx1,dy1,dx2,dy2,col1,row1,col2,row2)的参数，有必要在这里说明一下：
+dx1：起始单元格的x偏移量，如例子中的255表示直线起始位置距A1单元格左侧的距离；
+dy1：起始单元格的y偏移量，如例子中的125表示直线起始位置距A1单元格上侧的距离；
+dx2：终止单元格的x偏移量，如例子中的1023表示直线起始位置距C3单元格左侧的距离；
+dy2：终止单元格的y偏移量，如例子中的150表示直线起始位置距C3单元格上侧的距离；
+col1：起始单元格列序号，从0开始计算；
+row1：起始单元格行序号，从0开始计算，如例子中col1=0,row1=0就表示起始单元格为A1；
+col2：终止单元格列序号，从0开始计算；
+row2：终止单元格行序号，从0开始计算，如例子中col2=2,row2=2就表示起始单元格为C3；
+===============================================================================================================================
+java poi的excel的样式 ：
+===============================================================================================================================
+//创建单元格，并设置值表头 设置表头居中
+        XSSFFont font = wb.createFont();
+        font.setFontHeightInPoints((short) 6); // 表头字体大小
+        font.setColor(XSSFFont.COLOR_NORMAL); //字体颜色
+        font.setFontHeight((short) 200);
+        font.setFontName("宋体"); // 表头字体名称
+        font.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD); // 表头字体加粗
+
+        XSSFCellStyle cellStyle = wb.createCellStyle(); // 表头格式
+        cellStyle.setFont(font); // 表头字体
+        cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER); // 表头位置   创建一个居中格式
+        cellStyle.setBorderBottom(BORDER_THIN);// 下边框
+        cellStyle.setBorderLeft(BORDER_THIN);// 左边框
+        cellStyle.setBorderRight(BORDER_THIN);// 右边框
+        cellStyle.setBorderTop(BORDER_THIN);// 上边框
+        cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);// 垂直居中
+        cellStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);//水平布局：居中
+        cellStyle.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
+        cellStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        cellStyle.setWrapText(true);//设置自动换行
+        cellStyle.setLocked(true);
+CellRangeAddress region31 = new CellRangeAddress(1, 2, 43, 43);
+// 合并单元
+sheet1.addMergedRegion(region31);
+XSSFCell cell143 = row1.createCell(43);
+cell143.setCellStyle(cellStyle);
+cell143.setCellValue(new XSSFRichTextString("建筑高度"));
+XSSFCell cell243 = row2.createCell(43);
+cell243.setCellStyle(cellStyle);
+
+
+添加公式的方法
+
+public static void makeSumCellByGS(XSSFWorkbook wb,XSSFSheet sheet,XSSFCellStyle cellStyle,int rowNum,int colNum,String gs){
+   XSSFRow row = sheet.getRow(rowNum);
+   XSSFCell cell = row.createCell(colNum);
+   cell.setCellType(XSSFCell.CELL_TYPE_FORMULA);
+       //添加公式  
+   cell.setCellFormula(gs);
+   cell.setCellStyle(cellStyle);
+
+}

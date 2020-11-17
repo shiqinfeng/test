@@ -1,0 +1,60 @@
+
+//第一步：加载模板 （自己设计的excel模板导入到PD的 work instruction对象后，会保存在C:\.FTPC\BYTON_Build_Env\TEMP目录里，这里是根据模板名读取目录里的模板）
+ workInst = getWorkInstruction("work instruction对象中的模板名") 			   
+//第二步：将模板放入文件输入流
+ fin      = FileInputStream(workInst.retrieveFile())   
+//第三步：从文件流中获取模板 
+ fs       = POIFSFileSystem(fin) 		
+// 得到excel的工作簿 
+ wb       = HSSFWorkbook(fs)   
+// 得到excel的sheet页
+ sheet    = wb.getSheet("sheet页名称") 	
+ sheet.setForceFormulaRecalculation(true)  //启用sheet页中的函数，如果模板中没有用到函数可以忽略此行
+
+/****************************准备填充样式begin*********************************/	
+ //设置样式
+ style = wb.createCellStyle()							        //创建样式
+
+ style.setWrapText(true)                                        //自动换行 可根据需要去掉此行
+                 
+ style.setAlignment(HSSFCellStyle::ALIGN_CENTER)				//对齐方式：水平居中、靠左、靠右
+ style.setVerticalAlignment(HSSFCellStyle::VERTICAL_CENTER)     //对齐方式：垂直居中、上对齐、下对齐
+ style.setBorderBottom(HSSFCellStyle::BORDER_THIN)        	    //边框
+ style.setBorderLeft(HSSFCellStyle::BORDER_THIN)
+ style.setBorderRight(HSSFCellStyle::BORDER_THIN)
+ style.setBorderTop(HSSFCellStyle::BORDER_THIN)
+ 
+ //设置字体
+ cellFont = wb.createFont()                  			//create Font
+ cellFont.setFontName("宋体")						    //设置字体
+ cellFont.setFontHeightInPoints(short(12))				//字体大小
+ //将字体赋给样式
+ style.setFont(cellFont)       
+ /****************************准备填充样式end*********************************/	
+  
+ rowNum = 1   					 //指定要创建或者获取的行数，比如创建该sheet的第一行
+ row = sheet.createRow(rowNum)   //创建或者get指定行
+ cell = row.createCell(0)        //创建第一行的第一个单元格   
+ 
+ varCellRange = class org.apache.poi.hssf.util.CellRangeAddress(rowNumStart,rowNumEnd,columnStart,columnEnd)  //设置该单元格要合并掉的坐标（起始行数，结束行数，起始列数，结束列数）
+ sheet.addMergedRegion(varCellRange) //合并后的单元格赋给sheet页    不需要合并的可以忽略这两行代码
+ 
+ cell.setCellValue("填充内容")   //给单元格填充值
+ cell.setCellStyle(style)        //设置该单元格的样式
+ 
+// ......循环填充......填充完毕
+ 
+ fileName        = "填充后的新文件名称"                  	 //新文件命名 
+ filePath        = variateMap.get("存放新文件目录")			 //新文件存放路径
+ file            = File(filePath)								 //存放新文件目录
+ if(!file.isDirectory())										 //如果目录不存在就创建
+ {
+	file.mkdirs()
+ }
+
+ outFile         = filePath+"\\"+fileName+".xls"                 //合成新文件名称 ，注意后缀不能是.xlsx 目前PD不支持
+ dir             = File(outFile)								 //创建文件输出流			
+ fout            = FileOutputStream(outFile,true)                                         
+ wb.write(fout)                                                  //生成新文件
+ fout.close()												     //关闭文件输出流，节省内存资源
+ 

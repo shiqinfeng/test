@@ -1,0 +1,841 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="JMC_BIW_CARCARD.1" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="95d14cb3-146b-472d-b86b-44fd9f085c24">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="STATION" class="com.datasweep.compatibility.client.Station" isForPrompting="false">
+		<parameterDescription><![CDATA[Info about current station]]></parameterDescription>
+	</parameter>
+	<parameter name="GUID" class="java.lang.String" isForPrompting="false">
+		<parameterDescription><![CDATA[Unique report identifier]]></parameterDescription>
+	</parameter>
+	<parameter name="DATE" class="java.util.Date" isForPrompting="false">
+		<parameterDescription><![CDATA[Timestamp of printout]]></parameterDescription>
+	</parameter>
+	<parameter name="DATABASE" class="com.datasweep.compatibility.client.DBInfo" isForPrompting="false">
+		<parameterDescription><![CDATA[Info about used database]]></parameterDescription>
+	</parameter>
+	<parameter name="DESIGN" class="com.datasweep.compatibility.client.ReportDesign" isForPrompting="false">
+		<parameterDescription><![CDATA[Used report design]]></parameterDescription>
+	</parameter>
+	<parameter name="USER" class="com.datasweep.compatibility.client.User" isForPrompting="false">
+		<parameterDescription><![CDATA[User, who prints report]]></parameterDescription>
+	</parameter>
+	<parameter name="D019" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="body_serial_number" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D018" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D017" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D016" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D015" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D014" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D013" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D012" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D011" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D010" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="vin" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="barcode_label" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D029" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D028" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D027" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D026" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D025" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D024" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D023" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D022" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D021" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D020" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D039" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D038" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D037" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D036" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D035" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D034" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D033" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D032" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D031" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D030" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="vehicle_code" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D009" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D008" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D007" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D006" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D005" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D004" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D003" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D047" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D002" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D046" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D001" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D045" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D044" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D043" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D042" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D041" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="D040" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="qls_vin" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="svo" class="java.lang.String" isForPrompting="false"/>
+	<title>
+		<band height="80">
+			<rectangle>
+				<reportElement x="0" y="0" width="555" height="80" uuid="53dfc97d-1f70-4e7d-9043-e809a8e796de"/>
+			</rectangle>
+			<image>
+				<reportElement x="1" y="1" width="78" height="78" uuid="b77f028b-1d58-43ae-89ad-d56a465893e3"/>
+				<imageExpression><![CDATA["C:/Users/Administrator/Pictures/jmc_log.jpg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="100" y="5" width="180" height="30" isRemoveLineWhenBlank="true" uuid="e810877f-b7ee-44ac-a825-b26a2a05a8aa"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="宋体" size="18" isBold="false" isItalic="false"/>
+				</textElement>
+				<text><![CDATA[焊装上线装配指示单]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="275" y="40" width="50" height="30" uuid="175fbe40-a72e-45d6-a4d7-637ee4b656f5"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="16" isBold="false"/>
+				</textElement>
+				<text><![CDATA[VIN码:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="470" y="5" width="80" height="20" uuid="2e9020c8-85a8-4662-9211-1f089b84aaaf"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font size="14" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{D001}]]></textFieldExpression>
+			</textField>
+			<image hAlign="Center" isUsingCache="true">
+				<reportElement x="340" y="38" width="150" height="30" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true" uuid="aa641f64-db9f-409d-a7e6-2d1c349943b1"/>
+				<imageExpression><![CDATA[it.businesslogic.ireport.barcode.BcImage.getBarcodeImage(5,$P{vin},false,false,null,2,140)]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="365" y="67" width="100" height="12" uuid="cd123fea-07c9-4f2d-888c-e9a451481fea"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{vin}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="720">
+			<rectangle>
+				<reportElement x="0" y="0" width="555" height="720" uuid="432e241c-4600-489e-8758-3c6b7c1253a3"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="5" width="80" height="20" uuid="8767c7e8-1bb1-47ca-8ae9-da94813fc4ef"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[车身流水号:]]></text>
+			</staticText>
+			<image hAlign="Center">
+				<reportElement x="85" y="3" width="150" height="25" isRemoveLineWhenBlank="true" uuid="c013e0a8-7403-45ea-a36e-fdd9a0bbaabd"/>
+				<imageExpression><![CDATA[it.businesslogic.ireport.barcode.BcImage.getBarcodeImage(5,$P{body_serial_number},false,false,null,2,140)]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="275" y="5" width="80" height="20" uuid="29d7fa0c-ff71-4cfb-b620-d9ddfc081719"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[QLS VIN:]]></text>
+			</staticText>
+			<image hAlign="Center">
+				<reportElement x="380" y="3" width="150" height="25" isRemoveLineWhenBlank="true" uuid="c747bbae-4354-4524-bda5-5ef7416a39ec"/>
+				<imageExpression><![CDATA[it.businesslogic.ireport.barcode.BcImage.getBarcodeImage(5,$P{qls_vin},false,false,null,2,140)]]></imageExpression>
+			</image>
+			<line>
+				<reportElement x="0" y="40" width="555" height="1" uuid="e6e56c66-5d6e-455a-9bc8-f20f74a736ed"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="45" width="80" height="25" uuid="720250f8-8ce4-41af-a183-e49c8ca21fbe"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="18" isBold="true"/>
+				</textElement>
+				<text><![CDATA[VIN 8:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="45" width="170" height="30" uuid="d8cd1ba7-b6a0-4478-af4c-b3b7959e65b1"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{D002}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="275" y="45" width="80" height="20" uuid="a7b5beb6-75b4-4c4b-9425-8d9ef64372ee"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[标签条码:]]></text>
+			</staticText>
+			<image hAlign="Center">
+				<reportElement x="380" y="43" width="150" height="25" isRemoveLineWhenBlank="true" uuid="5ba8a806-415b-4d1e-bf16-41a06ca1056f"/>
+				<imageExpression><![CDATA[it.businesslogic.ireport.barcode.BcImage.getBarcodeImage(5,$P{qls_vin},false,false,null,2,140)]]></imageExpression>
+			</image>
+			<line>
+				<reportElement x="0" y="80" width="555" height="1" uuid="24a9d04c-5031-4c81-b76d-d81130fd95c9"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="85" width="80" height="20" uuid="b60ed951-0893-440c-8c3c-421db6a0b807"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[整车编码:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="275" y="85" width="80" height="20" uuid="e808a572-6362-46be-a67f-dcfc48a585ed"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[描述:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="380" y="85" width="175" height="20" uuid="b9dd5c18-f98f-44a8-aa4e-5e2a59a650c9"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D003}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="120" width="555" height="1" uuid="cf4cd093-86d7-44e0-9e0c-7e80dcd2033a"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="122" width="80" height="21" uuid="7f5c7307-e51e-480f-8336-28fb01da9bab"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[计划制造日期:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="122" width="90" height="21" uuid="b9d02742-bce6-444b-b792-9ceff22503e9"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D004}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="190" y="122" width="80" height="21" uuid="30d23637-2278-4e0f-876a-8edc01b1a5e5"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[车型:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="122" width="90" height="21" uuid="4c8421a6-b8ed-41ea-9e1b-4b2de1879610"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D005}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="145" width="555" height="1" uuid="d1e9fa24-d240-4b66-8ef2-e50fc0339867"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="147" width="80" height="21" uuid="e5fb0951-c64b-448e-b3da-209491679acb"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[流向:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="147" width="90" height="21" uuid="7c338e06-5353-40df-a486-0411c5b1e388"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D006}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="190" y="147" width="80" height="21" uuid="2ac0259a-023f-4c84-ab30-2fa7cbce9285"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[代理商名称:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="147" width="90" height="21" uuid="18de2d5c-208a-42fb-ab44-39c58a6ada0b"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D007}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="170" width="555" height="1" uuid="d4a5ae3e-2753-43d6-b8b0-2f7b165ff988"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="172" width="80" height="21" uuid="2abc4497-aa1f-4b0a-94dc-d9fd3e55e2cd"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[车辆公告代码:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="172" width="90" height="21" uuid="00d4e20e-1ba5-4f47-8439-595c00462573"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D008}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="190" y="172" width="80" height="21" uuid="b4fcdeff-f1c6-49e8-a6bc-c9e96415fa06"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[总质量:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="172" width="90" height="21" uuid="b0dc75d9-655f-4929-8159-1b9687ae54fc"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D009}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="380" y="172" width="80" height="21" uuid="b82aed78-c5c6-4b1b-93a2-5a31d6273993"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[箱货栏板高度:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="465" y="172" width="90" height="21" uuid="86f02fdc-4c42-478c-ae87-5bdd2caa4693"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D010}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="195" width="555" height="1" uuid="29b5787d-eded-4142-8412-074f603a37a0"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="197" width="80" height="21" uuid="3a3f1d0c-d5f3-430d-9bf3-53f2e7130499"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[额定载客:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="197" width="90" height="21" uuid="5739a07f-6b98-444f-8e23-89f7e083b4c3"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D011}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="190" y="197" width="80" height="21" uuid="156f0bac-cdd5-48b6-8f19-b2c8026409a1"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[备注:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="197" width="280" height="21" uuid="e14b2efd-44ab-4851-9bac-03cc0cb8fe70"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D012}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="220" width="555" height="1" uuid="409aefac-c91f-4eea-95cb-e8e06b8b5dd9"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="225" width="80" height="21" uuid="658d9c98-d3a6-451a-a298-7439bb8f8c3e"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[SVO状态描述:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="225" width="470" height="40" uuid="af865c60-9343-46f0-81bc-29b06d3873cc"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{svo}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="275" width="555" height="1" uuid="026956c3-5e25-4e55-b66b-be75429d510b"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="277" width="80" height="21" uuid="ec7ac7ec-c2b2-41c1-90c2-2ebf9309dbbd"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[制造单位:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="277" width="90" height="21" uuid="671b252c-82fe-422e-b6cc-024e1534b9c3"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D013}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="190" y="277" width="80" height="21" uuid="e969a509-164d-4203-bd26-28ee9c6948be"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[销售区域:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="277" width="90" height="21" uuid="859a1dc3-558a-43f2-937c-e37c7ed80476"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D014}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="300" width="555" height="1" uuid="e87cff62-fce3-44aa-a779-452a839e6889"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="302" width="80" height="21" uuid="d2e5db1f-be40-4d23-a6fb-f86b272dd81d"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[车型系列:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="302" width="90" height="21" uuid="963463ae-f589-4e76-bf9b-4a22a7c6b004"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D015}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="190" y="302" width="80" height="21" uuid="34c16f7f-420d-45bf-9900-c7c9247e05ec"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[车辆款式:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="302" width="90" height="21" uuid="50a89cc2-5734-4c99-97eb-b189331ebdd4"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D016}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="380" y="302" width="80" height="21" uuid="7b58c8ba-cdcc-4f23-9049-9c3bdee8fcf3"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[车辆类型:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="465" y="302" width="90" height="21" uuid="cb944469-f9ad-4d25-b579-91534bed076d"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D017}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="325" width="555" height="1" uuid="d975c6ff-49a7-4d0e-96db-bb8bfd8e5154"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="327" width="90" height="21" uuid="5ce26977-35f3-4206-ac3a-81ea07453c51"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D019}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="327" width="90" height="21" uuid="f549fb93-d7a1-4b57-a657-c23c51684a11"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D018}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="327" width="80" height="21" uuid="e6afe2d5-b44c-4a8d-89c4-817b21d490e9"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[轴距:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="327" width="80" height="21" uuid="4accb840-2036-4aa3-9267-f5c2c05316bd"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[驱动型式:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="327" width="80" height="21" uuid="49cc25fc-8afc-4209-b9e6-abddadadeb96"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[方向盘位置:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="465" y="327" width="90" height="21" uuid="109be1af-39d7-4416-907d-f31b8bdb396d"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D020}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="350" width="555" height="1" uuid="6bac00fc-2290-49e5-92a9-07d76eda0d80"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="352" width="90" height="21" uuid="4e454d87-1485-4bb1-8bfe-7c1d894eb77f"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D022}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="352" width="90" height="21" uuid="9265cff5-393b-4cfa-8317-e5e07f2218e3"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D021}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="352" width="80" height="21" uuid="ff2c7b9a-c520-4412-8abe-6f01a294d5d2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[发动机型号:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="352" width="80" height="21" uuid="7d896f4a-72d6-4061-92f9-c683e0824ef5"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[排放阶段:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="352" width="80" height="21" uuid="fbf5c62f-8da3-4b62-82f7-a57c841e543c"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[燃油类型:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="465" y="352" width="90" height="21" uuid="4802ff2f-52bc-4d58-b670-cf165449da10"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D023}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="375" width="555" height="1" uuid="30c02d42-18e9-43b7-a8cf-d0adb233f800"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="377" width="80" height="21" uuid="2f20a4a8-d982-43e3-a92f-ca28b2089f56"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[操纵型式:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="377" width="90" height="21" uuid="97862823-7d10-46fe-9a8c-d06964adf7cd"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D024}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="400" width="555" height="1" uuid="867c27fd-27fe-4b08-bc82-6db95d51670c"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="402" width="90" height="21" uuid="11d466e1-06a1-4c20-bc47-149c28773bfd"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D026}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="402" width="90" height="21" uuid="79adb13a-cb17-47a5-9297-de9605bfe10b"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D025}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="402" width="80" height="21" uuid="83faf315-b1c5-4992-b1ed-4c9ed14750f8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[座位数:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="402" width="80" height="21" uuid="7d238b3a-660d-4be9-ac35-aeef654d1e96"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[座椅布置:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="425" width="555" height="1" uuid="02762cde-2777-4bec-b6d6-ac980b7a3d0e"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="427" width="90" height="21" uuid="c7b73a39-9a09-4ecf-b061-b5aafd5e7dcd"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D028}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="427" width="90" height="21" uuid="c599af6d-ff3b-4c6e-8583-dcb6be74b9eb"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D027}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="427" width="80" height="21" uuid="d942a276-5068-4f32-b720-dfd7e5c581a8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[轮胎规格:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="427" width="80" height="21" uuid="baf173a8-7365-478e-96e4-401fdb0f7c99"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[轮胎类型:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="427" width="80" height="21" uuid="b9cbb396-c36e-45bf-8600-1fbde0aba198"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[轮毂配置:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="465" y="427" width="90" height="21" uuid="e5fe6325-8611-4a19-be83-cfa50a111f7b"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D029}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="450" width="555" height="1" uuid="17b567aa-56b5-4f61-85b7-a71b00aa0d99"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="452" width="90" height="21" uuid="f11c6768-a165-4b49-8c8f-6c803ca6fed9"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D030}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="452" width="80" height="21" uuid="20e50459-1e48-4dcc-a2e2-faa5072a379f"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[内饰颜色:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="475" width="555" height="1" uuid="131adcbd-5687-4955-8709-c5e381ff0c7c"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="477" width="90" height="21" uuid="3b053309-4040-4b45-a960-c4af4953ca84"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D032}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="477" width="90" height="21" uuid="79cc7689-cb50-44a2-9799-500bf1eb6f71"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D031}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="477" width="80" height="21" uuid="9f8d19fd-3309-43ed-b654-197463e4ece2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[主驾安全气囊:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="477" width="80" height="21" uuid="d8046c83-b638-4b8b-bf23-82e10cb50df7"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[前排侧气囊:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="477" width="80" height="21" uuid="97efd228-2278-45fe-93a7-fb39f1aebb08"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[副驾安全气囊:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="465" y="477" width="90" height="21" uuid="2000745d-7482-45a6-870e-8418a523c7e4"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D033}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="500" width="555" height="1" uuid="81d5e162-dabd-49d5-ac9e-fc82c1adff4b"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="502" width="90" height="21" uuid="88786fe4-2cb4-4c97-a1fd-bfc19102f102"/>
+				<textFieldExpression><![CDATA[$P{D035}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="502" width="90" height="21" uuid="d94afc69-099a-4cd4-8890-99bcb38d39e9"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D034}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="502" width="80" height="21" uuid="a137f3c7-549f-4737-92de-f254f2472294"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[前排侧气帘:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="502" width="80" height="21" uuid="643c11b2-8930-49b0-b6c7-8c7db8c82e24"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[ESP:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="525" width="555" height="1" uuid="517701f1-9e22-4fd7-85c9-af18878837d9"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="527" width="90" height="21" uuid="3a5b3505-e96a-4fda-9723-7d595fbf6f86"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D037}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="527" width="90" height="21" uuid="cfc8abaa-695e-4eca-9132-6b41a3f1031b"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D036}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="527" width="80" height="21" uuid="1f3b4e49-0ae7-4e90-8110-b639b44c5c6e"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[单摄像头倒车可视系统:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="527" width="80" height="21" uuid="19583e8b-d7a8-438b-82d3-69b3c20ef59a"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[电子驻车:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="527" width="80" height="21" uuid="d5709329-7e6a-4839-9594-7459aff7f5f9"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[360度环视系统:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="465" y="527" width="90" height="21" uuid="edf6f8f5-7e8e-429f-bb79-3ada26c35744"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D038}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="550" width="555" height="1" uuid="516ed450-eab4-488c-9410-37e16f38c7f1"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="552" width="90" height="21" uuid="6fb869f9-91a0-423b-a2fc-320cfb2a8cab"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D039}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="552" width="80" height="21" uuid="4bd47e06-2bb9-4096-97ca-12f42fe932f8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[全景天窗:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="575" width="555" height="1" uuid="ad727440-e08c-4898-8e8d-279a1b10dae5"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="577" width="90" height="21" uuid="2a29e416-a653-4c6c-8174-e6496e5d6bed"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D041}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="577" width="90" height="21" uuid="3fcf5c62-7b6a-40f1-be71-22560e5ffff6"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D040}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="577" width="80" height="21" uuid="62e2df4a-9047-4fb1-bd0e-1f1cc666122e"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[娱乐设备:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="577" width="80" height="21" uuid="1bddc577-5a79-4c46-9140-92b18df132ac"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[后升窗:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="577" width="80" height="21" uuid="654deb23-88b9-4aee-b147-715a8a911f28"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[前升窗:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="465" y="577" width="90" height="21" uuid="43deeed8-8312-494f-8127-837b4a8ed208"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D042}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="600" width="555" height="1" uuid="2b9a3251-fad7-496e-b660-8370dc06bed8"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="602" width="90" height="21" uuid="afdb2cb6-4024-4f16-848c-509aa3278090"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D043}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="602" width="80" height="21" uuid="81783905-961a-4dab-85d1-65b24047e9da"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[GPS:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="625" width="555" height="1" uuid="1587de72-eacd-447f-9361-6a6005fbef83"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="627" width="90" height="21" uuid="1f7c978d-4002-4418-9315-f7e91faa6d68"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D044}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="627" width="80" height="21" uuid="237fecfc-4214-42ab-93e3-e36259ffdb1e"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[外车身颜色:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="650" width="555" height="1" uuid="8d04277d-6ce1-41c4-b8ca-2d8276060ae5"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="275" y="652" width="90" height="21" uuid="3a9d1c40-bfe3-4410-9ebd-b5fe459e45cc"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D046}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="652" width="90" height="21" uuid="a054d719-0d8b-4ec9-8163-bbabc6be829e"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D045}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="652" width="80" height="21" uuid="3a448ea8-e2d8-4771-8b07-4930e3bcaae2"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[车联网:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="652" width="80" height="21" uuid="22e31eca-00b8-4520-bf83-83e38a7915d8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[双色车顶:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="190" y="652" width="80" height="21" uuid="ac0a3355-abfa-40e6-b5f0-60d66b46d6b0"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12"/>
+				</textElement>
+				<text><![CDATA[LED前大灯:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="465" y="652" width="90" height="21" uuid="1a86712a-08ba-4600-87dc-5ed1403d49aa"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{D047}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="675" width="555" height="1" uuid="cc367308-c2e5-4ab1-9b7c-796177ea0f00"/>
+			</line>
+			<image hAlign="Center">
+				<reportElement x="85" y="83" width="150" height="25" uuid="8f3657dd-ba6f-45e1-9f5d-d42aff6a790a"/>
+				<imageExpression><![CDATA[it.businesslogic.ireport.barcode.BcImage.getBarcodeImage(5,$P{vehicle_code},false,false,null,2,140)]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="110" y="27" width="100" height="12" uuid="849cd3a4-d41e-499f-8085-d627cf11e70c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{body_serial_number}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="405" y="27" width="100" height="12" uuid="9b547743-8f17-43cb-93c6-5201c5cf8310"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{qls_vin}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="405" y="67" width="100" height="12" uuid="0d83c823-c215-43c6-aae1-9e451b679593"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{qls_vin}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="107" width="100" height="12" uuid="0a796cd7-1346-468b-8383-d8a6de375c95"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{vehicle_code}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+</jasperReport>

@@ -1,0 +1,7 @@
+[::formatTime(affectedObject.getProductiontime(),"Y-M-D Z:T:S")]//"productiontime"
+
+
+[::""]//"seq"
+
+
+获取本地打印机			printerName = (PrintServiceLookup.lookupDefaultPrintService() != null? PrintServiceLookup.lookupDefaultPrintService().getName(): "");

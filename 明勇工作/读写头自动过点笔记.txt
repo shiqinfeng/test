@@ -1,0 +1,15 @@
+/*System.out.println("vin= "+vin);
+		System.out.println("unit1= "+ order.getAllUnits().get(0));
+		System.out.println("unit2= "+ order.getAllUnits().get(1));
+		System.out.println("unit3= "+ order.getAllUnits().get(2));
+		System.out.println("ProductionLine= "+transferRfidSginal.getPline());
+		System.out.println("Station= "+transferRfidSginal.getStation());
+		System.out.println("workCenter= "+PCContext.getFunctions().getStation(transferRfidSginal.getStation()).getWorkCenter());
+		System.out.println("trxTime1= "+transferRfidSginal.getTime());	*/
+		
+		/*try {
+			trxTime = TimeHelper.stringToTime(transferRfidSginal.getTime(), "yyyy-MM-dd hh:mm:ss");
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/

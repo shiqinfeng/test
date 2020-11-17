@@ -1,0 +1,17 @@
+select c.area_name_ch_s,A.GOAL_SCORE_I,
+sum(audit_score_i),
+sum(case when audit_score_i=140 then 1 else 0 end) as score140count, 
+sum(case when audit_score_i=140 then audit_score_i else 0 end) as score140, 
+sum(case when audit_score_i=80 then 1 else 0 end) as score80count,
+sum(case when audit_score_i=80 then audit_score_i else 0 end) as score80,
+sum(case when audit_score_i=60 then 1 else 0 end) as score60count,
+sum(case when audit_score_i=60 then audit_score_i else 0 end) as score60,
+sum(case when audit_score_i=20 then 1 else 0 end) as score20count,
+sum(case when audit_score_i=20 then audit_score_i else 0 end) as score20,
+sum(case when audit_score_i=10 then 1 else 0 end) as score10count,
+sum(case when audit_score_i=10 then audit_score_i else 0 end) as score10
+FROM
+at_as_qm_responsiblearea c
+LEFT JOIN at_as_au_qm_goalscore a ON a.audit_shop_key_i = c.area_code_s
+LEFT JOIN at_as_au_defectscore b ON b.audit_shop_key_i = c.area_code_s
+group by c.area_name_ch_s,A.GOAL_SCORE_I;

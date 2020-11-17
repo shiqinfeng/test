@@ -1,0 +1,18 @@
+﻿1.String userName = PCContext.getFunctions().getCurrentUser().getName();   //获取当前用户的信息
+2.通过OrderHelper.getOrderByVin(String vin)获取订单
+3.订单下发时生成holdcode， VCATS检测系统保存数据成功的时候进行电检，检测通过关闭holdcode,  所有holdcode关闭 才能打印合格证 
+4.holdCodeObj.setHoldflag(0L);	// 0L 表示打开holdCode     1L表示关闭 holdCode   
+5.拜腾项目返修区模块测试用VIN号：VIN12345678900002    VIN12345678900001
+6.拜腾Oracle数据库
+	帐号：FMC_DEV
+	密码：FMC_DEV@12306.COM
+	主机名：118.31.74.90
+	端口：1521
+	SID：orcl
+.equals("isIn")
+           RWAreaVehicle = getOrderService().getRWAreaVehiclePnuts(order)  //根据订单号获取一个返修车对象
+            rwAreaName= RWAreaVehicle.getResult().getRwareaname()           //获取该对象的名字
+
+messageTip = getMessage("MES_MAINFROM_MSG_TRX","NOT_ASSIGN_STATION")  
+
+历史打开文件数4563

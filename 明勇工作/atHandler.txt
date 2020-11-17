@@ -1,0 +1,110 @@
+﻿private void createOrUpdateOrderBOM(Order mesOrder, List<IMESASOMJMCOrderBom> jmcOrderBomList,
+		ValidationErrors errors)
+		throws Exception
+	{
+		String functionName = "createOrderBOM(Order mesOrder, List<IMESASOMJMCOrderBom> jmcOrderBomList,ValidationErrors errors)";
+		EventLog.Write(
+			"Start", this, functionName);
+		String logMsg = "";
+		long orderKey = mesOrder.getKey();
+		try
+		{
+			ATHandler atHandler = PCContext.getFunctions().createATHandler(
+				"AS_OM_Order_Bom");
+			ATRowFilter atOrderBOMFilter = PCContext.getFunctions().createATRowFilter(
+				"AS_OM_Order_Bom");
+			atOrderBOMFilter.forColumnNameEqualTo(
+				"work_order", orderKey);
+			@SuppressWarnings("unchecked")
+			Vector<ATRow> orderBOMItems = atHandler.getATRowsByFilter(
+				atOrderBOMFilter, true);
+			// if existed old bomItems,clear all bomItems
+			atHandler.removeATRows(
+				orderBOMItems);
+			if (jmcOrderBomList == null || jmcOrderBomList.size() == 0)
+			{
+				logMsg = "Given bomList is null of  Order: " + mesOrder.getOrderNumber();
+				errors.addError(
+					JmcOrderToWorkOrder.class.getName(), logMsg);
+				EventLog.writeError(
+					logMsg, this, functionName);
+				throw new Exception(
+					"There are no BillOfMaterialsItems for order: " + mesOrder.getOrderNumber());
+			}
+
+			for (int i = 0; i < jmcOrderBomList.size(); i++)
+			{
+				String bomPartNumber = jmcOrderBomList.get(
+					i).getPartno();
+				if (null == bomPartNumber || "".equals(
+					bomPartNumber))
+				{
+					logMsg = "Given bomPartNumber is null of  Order: " + mesOrder.getOrderNumber();
+					errors.addError(
+						JmcOrderToWorkOrder.class.getName(), logMsg);
+					EventLog.writeError(
+						logMsg, this, functionName);
+					throw new Exception(logMsg);
+				}
+				IMESASOMJMCOrderBom bomItem = jmcOrderBomList.get(
+					i);
+
+				Part bomPart = PCContext.getFunctions().getPart(
+					bomItem.getPartno());
+				if (null == bomPart)
+				{
+					logMsg = "Get Part obj null by given bomPartNumber:" + bomPartNumber
+						+ " when generate bomItem of Order: " + mesOrder.getOrderNumber();
+					errors.addError(
+						JmcOrderToWorkOrder.class.getName(), logMsg);
+					EventLog.writeError(
+						logMsg, this, functionName);
+					throw new Exception(logMsg);
+				}
+				ATRow localATRow = atHandler.createATRow();
+				localATRow.setValue(
+					"part", bomPart);
+				// localATRow.setValue("partbase",
+				// (String) part.getUDA(PartUDAName.PART_BASE));
+				// localATRow.setValue("cpcs_code", bomItem.getCpscCode());
+				// localATRow.setValue("pull_type",
+				// (String) part.getUDA(UDA_PART_EIG_PULL_TYPE));
+				localATRow.setValue(
+					"qty", bomItem.getQty());
+				localATRow.setValue(
+					"work_order", orderKey);
+
+				// ?TODO
+				localATRow.setValue(
+					"uom", null);
+				localATRow.setValue(
+					"commodity_code", null);
+				localATRow.setValue(
+					"commodity_value", null);
+				localATRow.setValue(
+					"area", null);
+				localATRow.setValue(
+					"location", bomItem.getWorkpos());
+			}
+			Response respOrderbom = atHandler.save();
+			atHandler.clearCache();
+			if (respOrderbom.isError())
+			{
+				logMsg = "Save orderBom failed of mesOrder: " + mesOrder.getOrderNumber()
+					+ " Reason:" + respOrderbom.getFirstErrorMessage();
+				errors.addError(
+					JmcOrderToWorkOrder.class.getName(), logMsg);
+				throw new Exception(logMsg);
+			}
+		}
+		catch (Exception e)
+		{
+			errors.addError(
+				JmcOrderToWorkOrder.class.getName(), e.getMessage());
+			EventLog.writeError(
+				e.getMessage(), this, functionName);
+			throw new Exception("Errors occured when execute function " + functionName);
+		}
+		EventLog.Write(
+			"End", this, functionName);
+	}

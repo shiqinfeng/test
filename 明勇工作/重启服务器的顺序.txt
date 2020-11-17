@@ -1,0 +1,2 @@
+先关闭TOMCATE   再关闭MQ   最后关闭JBOSS
+启动时先启动JBOSS  再启动MQ  最后启动TOMCATE

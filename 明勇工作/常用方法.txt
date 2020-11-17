@@ -1,0 +1,124 @@
+//打开新界面
+HQ_DIALOG = "MES_IM_SwmFactoryCompleteQuery_HQ"
+
+function frmHistoryQuery()
+{
+    form = getForm(HQ_DIALOG)
+    if(form != null)
+    {
+        form.setSize(1280,720)
+        showAsDialog(form)
+    }    
+}  
+//导出功能
+importSubroutine("MES_Common_File")
+setFormProperty("QUERY_SQL",sql)
+/***************************************************************导出功能 begin*************************************************************************/
+//all export
+function frmAllExport()
+{
+    if(checkUserOperationPrivilege(buttonAllExportss.getName(), getActiveDsForm().getName()) == false)
+    {
+        handleErrorMsg("MES_MAINFROM_MSG_TRX", "INS_USER_PER", null, null,null, HANDLER_OPTION_DEFAULT, null)
+        return
+    }
+    sql1 = getFormProperty("QUERY_SQL")
+    sql2 = getFormProperty("QUERY_SQL_SUB")
+    vectorSql = vector()
+    vectorSql.add(sql1)
+    vectorSql.add(sql2)
+    
+    vectorGrid =vector()
+    vectorGrid.add(gridQueryResult)
+    vectorGrid.add(gridQueryResultSub)
+    
+    if(vectorGrid != null && vectorGrid.size() >0)
+    {
+        if(vectorGrid != null && vectorGrid.size() >0)
+        {         
+            writeAllToExcel(vectorSql,vectorGrid) 
+        }    
+    }  
+}
+
+function writeAllToExcel(vectorSql,vectorGrid)
+{
+    
+    countSql1 = "SELECT COUNT(1) FROM ( "+vectorSql[0]+") "
+    countSql2 = "SELECT COUNT(1) FROM ( "+vectorSql[1]+") "
+    number1 = stringToInt(querySql(countSql1).elementAt(0)[0])
+    number2 = stringToInt(querySql(countSql2).elementAt(0)[0])
+    if(number1 >= 65536 || number2 >= 65536) {
+        handleErrorMsg("MES_MAINFROM_MSG_TRX", "EXPORT_ERROR", null, null, HANDLER_OPTION_DEFAULT, null)
+        return
+    }
+    
+    fileName = saveFileDialog()
+    if(!isEmptyStr(fileName))
+    {
+        if(!isSuffixName(fileName,".xls"))
+        {
+            fileName = fileName+".xls"
+        }
+        flag = HANDLER_RESULT_YES
+        dir = File(fileName)  
+        if(dir.exists())
+        {
+            flag = handleInfoMsg("MES_MAINFROM_MSG_TRX", "IS_COVER", null, null, HANDLER_OPTION_YES_NO, null) 
+        }
+        if(flag == HANDLER_RESULT_YES)
+        {   
+            
+            
+            wb=HSSFWorkbook()
+            n = 0
+        	for(i=0;i<2;i++)
+        	{
+                 writeSheetForSql(wb,vectorSql[i],vectorGrid[i],n)
+                 n++
+        	}
+            fout = FileOutputStream(fileName)
+        	wb.write(fout)
+        	fout.close()
+        	handleInfoMsg("MES_MAINFROM_MSG_TRX", "EXPORT_SUCCESSFULLY", null, null, HANDLER_OPTION_DEFAULT, null)
+    	}
+    }
+}
+function writeSheetForSql(wb,sql,gridAt,n){
+    
+    sheet = wb.createSheet()
+    sheetName = "sheet"+(n+1)
+    if(!isEmptyStr(gridAt.getToolTipText())){
+        sheetName=gridAt.getToolTipText()
+    }
+    wb.setSheetName(n,sheetName)
+    row = sheet.createRow(0)
+    strs = gridAt.getColumnHeadings()
+    k = 0
+    for(i=1;i<strs.length;i++){
+        
+            cell = row.createCell(short(k))
+            cell.setCellValue(strs[i])
+            k++
+        
+    }
+    
+    
+    list = querySql(sql)
+    for(i=0;i<list.size();i++){//直接查询数据库的列表
+        row = sheet.createRow(i+1)
+        k = 0
+        for(j=1;j<gridAt.getNumberOfColumns();j++){
+            
+                cell = row.createCell(short(k))
+                cellValue = list.elementAt(i)[j]
+                if(cellValue != null){
+                    cell.setCellValue(list.elementAt(i)[j])
+                }else{
+                    cell.setCellValue("")
+                }
+                k++
+        }
+    }
+}
+/***************************************************************导出功能 end*************************************************************************/

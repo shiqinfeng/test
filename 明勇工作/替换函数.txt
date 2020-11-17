@@ -1,0 +1,45 @@
+1.translate
+语法：TRANSLATE(char, from, to)
+用法：返回将出现在from中的每个字符替换为to中的相应字符以后的字符串。
+            若from比to字符串长，那么在from中比to中多出的字符将会被删除。
+            三个参数中有一个是空，返回值也将是空值。
+举例：SQL> select translate('abcdefga','abc','wo') 返回值 from dual;
+            返回值
+            -------
+            wodefgw
+分析：该语句要将'abcdefga'中的'abc'转换为'wo',
+            由于'abc'中'a'对应'wo'中的'w',
+            故将'abcdefga'中的'a'全部转换成'w';
+            而'abc'中'b'对应'wo'中的'o',
+            故将'abcdefga'中的'b'全部转换成'o';
+            'abc'中的'c'在'wo'中没有与之对应的字符,
+            故将'abcdefga'中的'c'全部删除;
+            简单说来，就是将from中的字符转换为to中与之位置对应的字符，
+            若to中找不到与之对应的字符，返回值中的该字符将会被删除。
+            在实际的业务中，可以用来删除一些异常数据，
+            比如表a中的一个字段t_no表示电话号码，
+            而电话号码本身应该是一个由数字组成的字符串，
+            为了删除那些含有非数字的异常数据，
+            就用到了translate函数：
+            SQL> delete from a，
+                      where length(translate(trim(a.t_no),
+                                            '0123456789' || a.t_no,
+                                            '0123456789')) <> length(trim(a.t_no));
+
+
+2.replace
+语法：REPLACE(char, search_string,replacement_string)
+用法：将char中的字符串search_string全部转换为字符串replacement_string。
+举例：SQL> select REPLACE('fgsgswsgs', 'fk' ,'j') 返回值 from dual;
+            返回值
+            ---------
+            fgsgswsgs
+            SQL> select REPLACE('fgsgswsgs', 'sg' ,'eeerrrttt') 返回值 from dual;
+            返回值
+            -----------------------
+            fgeeerrrtttsweeerrrttts
+分析：第一个例子中由于'fgsgswsgs'中没有与'fk'匹配的字符串，
+            故返回值仍然是'fgsgswsgs'；
+            第二个例子中将'fgsgswsgs'中的字符串'sg'全部转换为'eeerrrttt'。
+总结：综上所述，replace与translate都是替代函数，
+         只不过replace针对的是字符串，而translate针对的是单个字符。

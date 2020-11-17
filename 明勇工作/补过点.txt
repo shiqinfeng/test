@@ -1,0 +1,5 @@
+DsList dsList = PCContext.getFunctions().getList("MES_AutoAddWip");
+		List<String> itemList = dsList.getItems();
+		for (String str : itemList) {
+			System.out.println(str);
+		}

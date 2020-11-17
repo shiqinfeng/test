@@ -1,0 +1,164 @@
+ map.clear()    106行
+ 
+ function isInExcel(map,number)
+ {
+	flag = false
+    foreach numb(map)
+    {
+        if(number == numb)
+        {
+            flag = true
+        }                
+    }
+	return flag
+ }
+ 
+ /*
+ * 
+ * 
+ * 
+ * 
+ */
+
+
+ /**
+ * From From the list will be legally defect thumbnail imported into the grid system
+ * @param： 
+ * @return ： 
+ * */
+// function frmImportSubGridToAtRow()
+// {
+//     successFlag = 0
+//     rowNum = gridImportSub.getNumberOfRows()
+//     for(i = 0;i <= rowNum-1;i++)
+//     {
+//         msg = ""
+//         color = gridImportSub.getCellBackColor(i,0)
+//         if(color == ERROR_COLOR)
+//         {
+//             continue 
+//         }
+//         number = gridImportSub.getCellValue(i,1)
+//         category = gridImportSub.getCellValue(i,2)
+//         content = gridImportSub.getCellValue(i,3)
+//        
+//         
+//         objCfgFilter = class com.rockwell.autosuite.mes.model.om.bside.MESASOMBSideFilter()
+//         objCfgFilter.forNumberEqualTo(number)
+// 
+//         if(objCfgFilter.getCount() > 0)
+//         {  
+//             bside = objCfgFilter.getFilteredObjects().get(0)
+//             itemList = bside.getBSideItemList()
+//             objitem = class com.rockwell.autosuite.mes.model.om.bside.MESASOMBSideItem()
+//             objitem.setCategory(category)
+//             objitem.setContent(content)
+//             itemList.add(objitem)
+//         }
+//         else
+//         {
+//             msg = msg + getMessage("MES_FORM_IMPORT_MSG","XXGKH")+getMessage("MES_FORM_IMPORT_MSG","OBJECT_NOT_FOUND") + ";"
+//             continue
+//         }
+//         keyWord = "类别:特征、零件 = " + category + ",特征值 或 零件和供应商代码 = "+content
+//         response = bside.save(null,keyWord,null) 
+//         if(response.isOk())
+//         {
+//             successFlag++
+//             //logInfo(FORM_MODULE,keyWord + "save succefully", getDBTime(), "Form:" + getActiveDsForm().getName(), "Function:frmImportGridToAtRow()")
+//             if(response.isOk())
+//             {
+//                 logInfo(FORM_MODULE,keyWord + "save succefully", getDBTime(), "Form:" + getActiveDsForm().getName(), "Function:frmImportGridToAtRow()")
+//             }
+//         }
+//         else
+//         {
+//             setRowColor(gridImportSub, i,ERROR_COLOR)
+//             gridImportSub.setCellText(i,MSG_COLUMN,response.getFirstErrorMessage())
+//             logError(FORM_MODULE, keyWord + "save failed," + response.getFirstErrorMessage(), 
+//                 getDBTime(), "Form:" + getActiveDsForm().getName(), "Function:frmImportGridToAtRow()")
+//         }
+//     }
+//     objStr = getMessage("MES_FORM_IMPORT_MSG","CPSP")
+//     handleInfoMsg("MES_MAINFROM_MSG_TRX", "SUCCESS_IMPORT_NUMBER_OBJ", [successFlag , objStr], null, null, HANDLER_OPTION_DEFAULT, null)
+//     
+// //     handleInfoMsg("MES_MAINFROM_MSG_TRX", "SUCCESS_IMPORT_NUMBER", [successFlag], null, null, HANDLER_OPTION_DEFAULT, null)
+//     buttonImport.setEnabled(false)
+// }
+
+
+number = gridImport.getCellValue(i,1).trim()
+        xxgkh = gridImport.getCellValue(i,2).trim()
+        
+        bside = class com.rockwell.autosuite.mes.model.om.bside.MESASOMBSide()
+        
+        bside.setNumber(number)
+        bside.setXxgkh(xxgkh)
+          
+        keyWord1 = "信息公开号 = " + xxgkh
+        
+        rowNum2 = gridImportSub.getNumberOfRows()
+        for(i = 0;i <= rowNum-1;i++)
+        {
+            msg = ""
+            color = gridImportSub.getCellBackColor(i,0)
+            if(color == ERROR_COLOR)
+            {
+                continue 
+            }   
+            number2 = gridImportSub.getCellValue(i,1)
+            category = gridImportSub.getCellValue(i,2)
+            content = gridImportSub.getCellValue(i,3)
+           isInmap=false
+           foreach no(map)
+            {
+                if(number2 == no)
+                {
+                    isInmap = true
+                }
+            }
+            objCfgFilter = class com.rockwell.autosuite.mes.model.om.bside.MESASOMBSideFilter()
+            objCfgFilter.forNumberEqualTo(number2)
+    
+            if(objCfgFilter.getCount() > 0)
+            {  
+                bside = objCfgFilter.getFilteredObjects().get(0)
+                itemList = bside.getBSideItemList()
+                objitem = class com.rockwell.autosuite.mes.model.om.bside.MESASOMBSideItem()
+                objitem.setCategory(category)
+                objitem.setContent(content)
+                itemList.add(objitem)
+            }else if(isInmap)
+            {
+                bside = class com.rockwell.autosuite.mes.model.om.bside.MESASOMBSide()
+                bsideitem = class com.rockwell.autosuite.mes.model.om.bside.MESASOMBSideItem()
+                itemList = bside.getBSideItemList()
+                bsideitem.setCategory(category)
+                bsideitem.setContent(content)
+                itemList.add(bsideitem)
+           
+            }
+            else
+            {
+                msg = msg + getMessage("MES_FORM_IMPORT_MSG","XXGKH")+getMessage("MES_FORM_IMPORT_MSG","OBJECT_NOT_FOUND") + ";"
+                continue
+            }
+            keyWord2 = "类别:特征、零件 = " + category + ",特征值 或 零件和供应商代码 = "+content
+            successFlag2++
+            response = bside.save(null,keyWord+keyWord2,null) 
+            if(response.isOk())
+            {
+                successFlag++
+                //logInfo(FORM_MODULE,keyWord + "save succefully", getDBTime(), "Form:" + getActiveDsForm().getName(), "Function:frmImportGridToAtRow()")
+                if(response.isOk())
+                {
+                    logInfo(FORM_MODULE,keyWord + "save succefully", getDBTime(), "Form:" + getActiveDsForm().getName(), "Function:frmImportGridToAtRow()")
+                }
+            }
+            else
+            {
+                setRowColor(gridImportSub, i,ERROR_COLOR)
+                gridImportSub.setCellText(i,MSG_COLUMN,response.getFirstErrorMessage())
+                logError(FORM_MODULE, keyWord + "save failed," + response.getFirstErrorMessage(), 
+                    getDBTime(), "Form:" + getActiveDsForm().getName(), "Function:frmImportGridToAtRow()")
+            }
