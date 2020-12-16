@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Eig>
+	<Head>
+		<DocType>ECU Part Code</DocType>
+		<DocId>M07-004</DocId>
+		<DocNum>000000000307748</DocNum>
+		<DocVersion>1.0</DocVersion>
+		<CreationTime>2018-06-29T14:40:57</CreationTime>
+		<SourceSystem>VCATS</SourceSystem>
+		<RetryCount>0</RetryCount>
+		<DataCount>1</DataCount>
+		<Test>false</Test>
+	</Head>
+	<Items>
+		<Item>
+		<ECUPartsData>
+			<VIN>L6T7752Z1JZ001546</VIN>
+			<PartsData>VEH=VIN|DATA=L6T7752Z1JZ001546; ECU=ABS|F187=1AC1C2D9FA|F195=DFFGGH|F193=DFFGGH;ECU=BCM|F187=1AC1C2D9FA|F195=DFFGGH|F193=DFFGGH;</PartsData>
+</ECUPartsData>
+		</Item>
+	</Items>
+</Eig>
