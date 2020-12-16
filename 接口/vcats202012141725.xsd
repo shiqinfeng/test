@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="Eig" type="EigType"/>
+	<xs:simpleType name="messageType">
+		<xs:annotation>
+			<xs:documentation>Defines the source of the message</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Broadcast Data"/>
+			<xs:enumeration value="ECU Key Part SN"/>			
+			<xs:enumeration value="Broadcast Request"/>
+			<xs:enumeration value="ECU Part Code"/>
+			<xs:enumeration value="Process Data"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="sourceType">
+		<xs:annotation>
+			<xs:documentation>Defines the source of the message</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="MES"/>
+			<xs:enumeration value="VCATS"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ResultType">
+		<xs:annotation>
+			<xs:documentation>Defines the  result of the message</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Pass"/>
+			<xs:enumeration value="Fail"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="RequestType">
+		<xs:choice>
+			<xs:element name="VIN" type="xs:string"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="HeadType">
+		<xs:sequence>
+			<xs:element name="DocType" type="messageType"/>
+			<xs:element name="DocId" type="DocIdType"/>
+			<xs:element name="DocNum" type="xs:decimal"/>
+			<xs:element name="DocVersion" type="xs:decimal"/>
+			<xs:element name="CreationTime" type="xs:dateTime"/>
+			<xs:element name="SourceSystem" type="sourceType"/>
+			<xs:element name="RetryCount" type="xs:integer"/>
+			<xs:element name="DataCount" type="xs:integer"/>
+			<xs:element name="Test" type="xs:boolean"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BroadcastDataType">
+		<xs:sequence>
+			<xs:element name="VIN" type="xs:string"/>
+			<xs:element name="MODEYEAR" type="xs:string"/>
+			<xs:element name="SAP" type="xs:string"/>
+			<xs:element name="EOC" type="xs:string"/>	
+			<xs:element name="ECU" type="xs:string"/>		
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="VehicleType">
+		<xs:sequence>
+			<xs:element name="VIN" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ProcessDataType">
+		<xs:sequence>
+			<xs:element name="Process" type="xs:string"/>
+			<xs:element name="Timestamp" type="xs:dateTime"/>
+			<xs:element name="VIN" type="xs:string"/>
+			<xs:element name="Result" type="ResultType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="KeyPartType">
+		<xs:sequence>
+			<xs:element name="VIN" type="xs:string"/>
+			<xs:element name="DATAS" type="DATASType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DATASType">
+		<xs:sequence>
+			<xs:element name="DATA" type="DATAType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DATAType">
+		<xs:sequence>
+			<xs:element name="Barcode" type="xs:string"/>
+			<xs:element name="CommodityCode" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="MeasurementItemType">
+		<xs:sequence>
+			<xs:element name="Barcode" type="xs:string"/>
+			<xs:element name="CommodityCode" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PartDataType">
+		<xs:sequence>
+			<xs:element name="VIN" type="xs:string"/>
+			<xs:element name="PartsData" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ItemType">
+		<xs:sequence>
+			<xs:element name="BroadcastData" type="BroadcastDataType" minOccurs="0" maxOccurs="50"/>
+			<xs:element name="Vehicle" type="VehicleType" minOccurs="0"/>
+			<xs:element name="Request" type="RequestType" minOccurs="0" maxOccurs="50"/>
+			<xs:element name="ECUPartsData"  type="PartDataType" minOccurs="0" maxOccurs="50"/>
+			<xs:element name="ProcessData" type="ProcessDataType" minOccurs="0"/>
+			<xs:element name="KeyPart" type="KeyPartType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ItemsType">
+		<xs:sequence>
+			<xs:element name="Item" type="ItemType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+  <xs:simpleType name="DocIdType"> <!-- The last 3 digits reflect the message type currently valid values are 1-8 -->
+      <xs:restriction base="xs:string">
+        <xs:pattern value=".*00[1-5]"/> <!-- The 1 to 5 values reflect the messageType enumeration. -->
+      </xs:restriction>
+  </xs:simpleType>
+	<xs:complexType name="EigType">
+		<xs:sequence>
+			<xs:element name="Head" type="HeadType"/>
+			<xs:element name="Items" type="ItemsType"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
