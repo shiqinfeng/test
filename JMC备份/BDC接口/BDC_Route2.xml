@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dlive-data-group-object-list>
+	<groups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="java:com.rockwell.as.mes.model.plc.DliveDataGroupObject">
+		<server-name>RNA://$Global/JMC_OPC</server-name>
+		<shop>W6</shop>
+		<production-line>W6_WBS</production-line>
+		<LDTemplate>AS_BDC_Route_Template</LDTemplate>
+		<function>BDC Test</function>
+		<LDTagSetDefinition>AS_BDC_Route2_CommandOut</LDTagSetDefinition>
+		<plc-shotcut>[BDC_01]</plc-shotcut>
+		<work-center>W6BDC009A</work-center>
+		<data-change-function>dataChangeForBDCRouteRequest</data-change-function>
+		<group-name>AS_BDC_Route2_W6BDC009A:CommandOut</group-name>
+	</groups>
+	<groups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="java:com.rockwell.as.mes.model.plc.DliveDataGroupObject">
+		<server-name>RNA://$Global/JMC_OPC</server-name>
+		<shop>W6</shop>
+		<production-line>W6_WBS</production-line>
+		<LDTemplate>AS_BDC_Route_Template</LDTemplate>
+		<function>BDC Test</function>
+		<LDTagSetDefinition>AS_BDC_Route2_RequestIdOut</LDTagSetDefinition>
+		<plc-shotcut>[BDC_01]</plc-shotcut>
+		<work-center>W6BDC009A</work-center>
+		<group-name>AS_BDC_Route2_W6BDC009A:RequestIdOut</group-name>
+	</groups>
+	<groups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="java:com.rockwell.as.mes.model.plc.DliveDataGroupObject">
+		<server-name>RNA://$Global/JMC_OPC</server-name>
+		<shop>W6</shop>
+		<production-line>W6_WBS</production-line>
+		<LDTemplate>AS_BDC_Route_Template</LDTemplate>
+		<function>BDC Test</function>
+		<LDTagSetDefinition>AS_BDC_Route2_DataOut</LDTagSetDefinition>
+		<plc-shotcut>[BDC_01]</plc-shotcut>
+		<work-center>W6BDC009A</work-center>
+		<group-name>AS_BDC_Route2_W6BDC009A:DataOut</group-name>
+	</groups>
+	<groups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="java:com.rockwell.as.mes.model.plc.DliveDataGroupObject">
+		<server-name>RNA://$Global/JMC_OPC</server-name>
+		<shop>W6</shop>
+		<production-line>W6_WBS</production-line>
+		<LDTemplate>AS_BDC_Route_Template</LDTemplate>
+		<function>BDC Test</function>
+		<LDTagSetDefinition>AS_BDC_Route2_CommandIn</LDTagSetDefinition>
+		<plc-shotcut>[BDC_01]</plc-shotcut>
+		<work-center>W6BDC009A</work-center>
+		<group-name>AS_BDC_Route2_W6BDC009A:CommandIn</group-name>
+	</groups>	
+	<groups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="java:com.rockwell.as.mes.model.plc.DliveDataGroupObject">
+		<server-name>RNA://$Global/JMC_OPC</server-name>
+		<shop>W6</shop>
+		<production-line>W6_WBS</production-line>
+		<LDTemplate>AS_BDC_Route_Template</LDTemplate>
+		<function>BDC Test</function>
+		<LDTagSetDefinition>AS_BDC_Route2_RequestIdIn</LDTagSetDefinition>
+		<plc-shotcut>[BDC_01]</plc-shotcut>
+		<work-center>W6BDC009A</work-center>
+		<group-name>AS_BDC_Route2_W6BDC009A:RequestIdIn</group-name>
+	</groups>	
+	<groups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="java:com.rockwell.as.mes.model.plc.DliveDataGroupObject">
+		<server-name>RNA://$Global/JMC_OPC</server-name>
+		<shop>W6</shop>
+		<production-line>W6_WBS</production-line>
+		<LDTemplate>AS_BDC_Route_Template</LDTemplate>
+		<function>BDC Test</function>
+		<LDTagSetDefinition>AS_BDC_Route2_DataIn</LDTagSetDefinition>
+		<plc-shotcut>[BDC_01]</plc-shotcut>
+		<work-center>W6BDC009A</work-center>
+		<group-name>AS_BDC_Route2_W6BDC009A:DataIn</group-name>
+	</groups>
+	<groups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="java:com.rockwell.as.mes.model.plc.DliveDataGroupObject">
+		<server-name>RNA://$Global/JMC_OPC</server-name>
+		<shop>W6</shop>
+		<production-line>W6_WBS</production-line>
+		<LDTemplate>AS_BDC_Route_Template</LDTemplate>
+		<function>BDC Test</function>
+		<LDTagSetDefinition>AS_BDC_Route2_FaultIn</LDTagSetDefinition>
+		<plc-shotcut>[BDC_01]</plc-shotcut>
+		<work-center>W6BDC009A</work-center>
+		<group-name>AS_BDC_Route2_W6BDC009A:FaultIn</group-name>
+	</groups>
+	
+	
+</dlive-data-group-object-list>
