@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<data>
+    <DrumList>
+        <Drum>
+            <ZLineNO>zLineNO1</ZLineNO>
+            <ZVIN>zVIN1</ZVIN>
+            <ZOverallResult>zOverallResult1</ZOverallResult>
+            <ZHornLevel>zHornLevel1</ZHornLevel>
+            <ZHornLevelOK>zHornLevelOK1</ZHornLevelOK>
+            <ZSpeedometer>zSpeedometer1</ZSpeedometer>
+            <ZSpeedometerMeatureValue>zSpeedometerMeatureValue1</ZSpeedometerMeatureValue>
+            <ZSpeedometerError>zSpeedometerError1</ZSpeedometerError>
+            <ZSpeedometerOK>zSpeedometerOK1</ZSpeedometerOK>
+            <ZABSVALVEOK>zABSVALVEOK1</ZABSVALVEOK>
+            <ZABSWSSOK>zABSWSSOK1</ZABSWSSOK>
+            <ZCCSOK>zCCSOK1</ZCCSOK>
+            <ZNEOK>zNEOK1</ZNEOK>
+        </Drum>
+        <Drum>
+            <ZPlant>zPlant2</ZPlant>
+            <ZLineNO>zLineNO2</ZLineNO>
+            <ZVIN>zVIN2</ZVIN>
+            <ZOverallResult>zOverallResult1</ZOverallResult>
+            <ZHornLevel>zHornLevel1</ZHornLevel>
+            <ZHornLevelOK>zHornLevelOK1</ZHornLevelOK>
+            <ZSpeedometer>zSpeedometer1</ZSpeedometer>
+            <ZSpeedometerMeatureValue>zSpeedometerMeatureValue1</ZSpeedometerMeatureValue>
+            <ZSpeedometerError>zSpeedometerError1</ZSpeedometerError>
+            <ZSpeedometerOK>zSpeedometerOK2</ZSpeedometerOK>
+            <ZABSVALVEOK>zABSVALVEOK2</ZABSVALVEOK>
+            <ZABSWSSOK>zABSWSSOK2</ZABSWSSOK>
+            <ZCCSOK>zCCSOK2</ZCCSOK>
+            <ZNEOK>zNEOK2</ZNEOK>
+        </Drum>
+    </DrumList>
+</data>

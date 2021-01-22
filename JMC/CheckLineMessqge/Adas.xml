@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<data>
+    <AdasList>
+        <Adas>
+            <ZPlant>zPlant1</ZPlant>
+            <ZLineNO>zLineNO1</ZLineNO>
+            <ZVIN>zVIN1</ZVIN>
+            <ZOverallResult>zOverallResult1</ZOverallResult>
+            <ACC>acc1</ACC>
+            <LKA>lka1</LKA>
+            <BSD>bsd1</BSD>
+            <ACCVerAngle>accVerAngle1</ACCVerAngle>
+            <ACCHorAngle>accHorAngle1</ACCHorAngle>
+        </Adas>
+        <Adas>
+            <ZPlant>zPlant2</ZPlant>
+            <ZLineNO>zLineNO2</ZLineNO>
+            <ZVIN>zVIN2</ZVIN>
+            <ZOverallResult>zOverallResult2</ZOverallResult>
+            <ACC>acc2</ACC>
+            <LKA>lka2</LKA>
+            <BSD>bsd2</BSD>
+            <ACCVerAngle>accVerAngle2</ACCVerAngle>
+            <ACCHorAngle>accHorAngle2</ACCHorAngle>
+        </Adas>
+    </AdasList>
+</data>

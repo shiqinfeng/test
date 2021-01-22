@@ -1,0 +1,33 @@
+select * from  at_as_om_bdc_outqueue;
+
+
+--删除OutQuer 表中的数据 
+delete  from at_as_om_bdc_outqueue;
+
+select * from  at_as_om_bdc_stock where  1=1  and is_inqueue_y = 0;
+
+--更新stock表中的状态学信息 。
+update  at_As_OM_bdc_stock  set is_inqueue_y = 0  where  is_inqueue_y=1;
+
+
+
+
+------查寻 outQue数据
+ select '',
+    bs.area_s,
+    wo.order_number,
+    op.bsn_s,
+    bs.vin_s,
+    uo.part_number_S,
+    bs.paint_color_s,
+    decode(bs.is_electro_order_y,1,'Y','N'),
+    bs.group_no_I,
+    bs.mes_seq_I,
+    bs.bdc_seq_I,
+    usf_get_choice_desc('BDC_SENDSTATUS',send_status_I,'"+getCurrentLanguageCode()+"','"+getCurrentCountryCode()+"'),
+    to_char(bs.send_time_T,'yyyy-mm-dd hh24:mi:ss')
+    from at_AS_OM_BDC_OutQueue  bs
+    join work_order wo on bs.order_54 = wo.order_key
+    join at_as_om_orderproperty op on bs.order_54 = op.order_54
+    join uda_order uo  on uo.object_key = wo.order_key
+    left join at_AS_OM_OrderFeatureTransp oft on oft.order_number_s = wo.order_number  where 1=1  order  by  bs.creation_time

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<data>
+    <CheckLineEquipRunStatusList>
+        <CheckLineEquipRunStatus>
+            <ZPlant>zPlant1</ZPlant>
+            <ZLineNO>zLineNO1</ZLineNO>
+            <ZEquipNO>zEquipNO1</ZEquipNO>
+            <ZMode>zMode</ZMode>
+        </CheckLineEquipRunStatus>
+        <CheckLineEquipRunStatus>
+            <ZPlant>zPlant2</ZPlant>
+            <ZLineNO>zLineNO2</ZLineNO>
+            <ZEquipNO>zEquipNO2</ZEquipNO>
+            <ZMode>zMode</ZMode>
+        </CheckLineEquipRunStatus>
+    </CheckLineEquipRunStatusList>
+</data>

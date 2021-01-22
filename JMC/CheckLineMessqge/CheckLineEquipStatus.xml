@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<data>
+    <CheckLineEquipStatusList>
+        <CheckLineEquipStatus>
+            <ZPlant>zPlant1</ZPlant>
+            <ZEquipNO>zEquipNO1</ZEquipNO>
+            <ZLineNO>zLineNO1</ZLineNO>
+            <ZStatus>zStatus1</ZStatus>
+            <ZStatusTime>zStatusTime1</ZStatusTime>
+        </CheckLineEquipStatus>
+        <CheckLineEquipStatus>
+            <ZPlant>zPlant2</ZPlant>
+            <ZEquipNO>zEquipNO2</ZEquipNO>
+            <ZLineNO>zLineNO2</ZLineNO>
+            <ZStatus>zStatus2</ZStatus>
+            <ZStatusTime>zStatusTime2</ZStatusTime>
+        </CheckLineEquipStatus>
+    </CheckLineEquipStatusList>
+</data>

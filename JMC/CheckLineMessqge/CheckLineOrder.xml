@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<data>
+    <CheckLineOrderList>
+        <CheckLineOrder>
+            <PLANT>plant1</PLANT>
+            <LINE>line1</LINE>
+            <ORDER_NUM>orderNum1</ORDER_NUM>
+            <VIN>vin1</VIN>
+            <TSN>tsn1</TSN>
+            <MODEL>model1</MODEL>
+            <STATION>station1</STATION>
+            <PASS_TIME>passTime1</PASS_TIME>
+        </CheckLineOrder>
+        <CheckLineOrder>
+            <PLANT>plant2</PLANT>
+            <LINE>line2</LINE>
+            <ORDER_NUM>orderNum2</ORDER_NUM>
+            <VIN>vin2</VIN>
+            <TSN>tsn2</TSN>
+            <MODEL>model2</MODEL>
+            <STATION>station2</STATION>
+            <PASS_TIME>passTime2</PASS_TIME>
+        </CheckLineOrder>
+    </CheckLineOrderList>
+</data>

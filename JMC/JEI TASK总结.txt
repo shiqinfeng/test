@@ -1,0 +1,102 @@
+（JEI task）
+
+JEI启动界面：对应form中的【AS_FoundationStartUp】
+分三个步骤
+1.Mange Order Plans（定义车型对应的物料号、BOM、车间、工艺路线、数量、BOM类型、UOM）
+  part 自定义物料名称
+  BOM 对应的BOM
+  shop 对应的车间
+  route 对应的工艺路线
+  Quantity 对应的数量
+  UOM 对应的单位
+  bom type 对应的bom类型
+
+2.Manage Job Execution Task Types（自己定义要执行的任务）
+  任务类型：为名称的首字母简写
+  名称：自己定义
+  属性表单：选择对应的表单
+
+3.Manage Job Execution Instructions（路由站点任务配置：对具体的站点配需要执行的任务）
+
+   添加任务的时候，side：Any、Left、Right代表什么含义？
+
+启动界面：MES_ApplicationStart_FMC
+
+JEI TASK 触发Q
+核心在Subroutines中的JEI_TASK_Executor
+
+方法1：doJeiTasksForOrderBuffer（执行缓存订单的JEI TASK任务）
+   通过    vectorJeiTasks = getJeiTasksFromOrderBuffer(bufferOrder, unit, lineId, stationNumber, lineSide)
+   方法获取JeiTask任务的集合
+方法2：doJeiTasks
+     通过 for循环来遍历执行对应JeiTask任务的集合中的每一个JEI TASK任务
+     JEI TASK任务分类：
+                      1.Production booking 生产报工
+                      2.generate broadcast data 生成广播数据
+                      3.SQD 生产作业屏显示数据
+                      4.generate Job No 生成 Job No号
+                      5.Print Data 打印数据
+                      6.Generate BIW SUB Order 生成焊装车间分线子订单
+                      7.Generate Order Property 生产订单属性
+                      8.Generate RFID 生成RFID
+                      9.Clear SKID CODE 清除滑撬CODE
+     通过调用 MES_OM_Common中的 snedGenerateBroadcastMessage方法 调用
+      SystemHelperEx类中sendTaskToMQ()方法
+     将任务信息发送到ACTIVE MQ
+     work_order_items表中存了route信息
+     
+UNIT里面存的as_jei_key
+-------------------------------------------------------------------------
+JEI TASK执行步骤
+1.PLC发出过点请求，MES接收过点请求
+2.拿焊装车间举例，会执行AS_ShopIntegration_BIW中的dataChangeForWipTracking方法
+  在biwWipTracking()方法中会执行
+  doJeiTasksForOrderBuffer(orderBuffer, unit, shop,lineId, stationNumber, LINE_SIDE_ID)方法
+3.doJeiTasksForOrderBuffer()方法为Subroutines中的JEI_Tasks_Executor中的doJeiTasksForOrderBuffer()方法。
+4.在doJeiTasksForOrderBuffer()方法中获取JeiTask任务的集合并且调用doJeiTasks()方法
+5.doJeiTasks()方法循环遍历EI TASK任务分类，并调用snedGenerate*Message()方法给MQ发送消息
+  注：*号为各个业务的名称，如：snedGenerateSQDMessage，snedGenerateBroadcastMessage
+      5.1 snedGenerate*Message()方法在 MES_OM_Common中
+      5.2 通过调用SystemHelperEx类中sendTaskToMQ()方法将任务信息发送到ACTIVE MQ
+6.通过SOS服务，如AS_OM_Generate_JobNo服务中JMSMessageEvent控件进行消息的接收，然后通过  taskWorkerManager队列管理器添加队列数据
+7.通过MES_SM_QueueManageConf（Form）来找到对应业务类别的Action,如GenerateJobNoTaskAction，GenertateSQDTaskAction等。（该页面需要进行配置），对应数据都存到AS_OM_JobQueue表中
+8.执行对应业务类别的Action中的doAction()方法执行具体的业务逻辑
+  8.1 getOrderService().generateSQDPnuts(order, stationName);
+  8.2 调用OrderService中的generateSQDPnuts()方法
+  8.3 调用generateSQDPnuts()方法中的generateSQD()方法
+
+-----------------------------------------------------------------------------------------
+
+JEI TASKS任务讲解分几部分内容进行
+1.什么是JEI TASKS，JEI TASK是干什么用的？
+  JEI TASK为过点任务，具体指车辆经过某个车间，某条产线的某个站点时，需要执行的工作任务。
+  如在焊装车间UB10点位，执行BSN生成，RFID生成，在其他的点位需要进行自动打印
+2.JEI TASK配置
+  2.1启动配置界面
+     2.1.1可通过form中的【AS_FoundationStartUp】页面启动进行配置
+     2.1.2也可以通过form中的【MES_ApplicationStart_FMC】启动
+          主数据配置→产品主数据→生产事件配置
+          进入后进行配置
+  2.2 配置内容
+      找到对应车间对应的站点配置相应的业务功能
+       
+3.JEI TASK执行步骤
+  3.1 PLC发出过点请求，MES接收过点请求
+  3.2 拿焊装车间举例，会执行AS_ShopIntegration_BIW中的dataChangeForWipTracking方法
+      在biwWipTracking()方法中会执行
+      doJeiTasksForOrderBuffer(orderBuffer, unit, shop,lineId, stationNumber, LINE_SIDE_ID)方法
+  3.3 doJeiTasksForOrderBuffer()方法为Subroutines中的JEI_Tasks_Executor中的doJeiTasksForOrderBuffer()      方法。
+  3.4 在doJeiTasksForOrderBuffer()方法中获取JeiTask任务的集合并且调用doJeiTasks()方法
+  3.5 doJeiTasks()方法循环遍历JEI TASK任务分类，并调用snedGenerate*Message()方法给MQ发送消息
+  	注：*号为各个业务的名称，如：snedGenerateSQDMessage，snedGenerateBroadcastMessage
+      	    5.1 snedGenerate*Message()方法在 MES_OM_Common中
+      	    5.2 通过调用SystemHelperEx类中sendTaskToMQ()方法将任务信息发送到ACTIVE MQ
+  3.6 通过SOS服务，如AS_OM_Generate_JobNo服务中JMSMessageEvent控件进行消息的接收，然后通过        taskWorkerManager队列管理器添加队列数据
+  3.7 通过MES_SM_QueueManageConf（Form）来找到对应业务类别的Action,如GenerateJobNoTaskAction，      GenertateSQDTaskAction等。（该页面需要进行配置），对应数据都存到AS_OM_JobQueue表中
+  3.8 执行对应业务类别的Action中的doAction()方法执行具体的业务逻辑
+  	3.8.1 getOrderService().generateSQDPnuts(order, stationName);
+  	3.8.2 调用OrderService中的generateSQDPnuts()方法
+  	3.8.3 调用generateSQDPnuts()方法中的generateSQD()方法
+
+4.JEI TASK队列管理（因为JEI TASK是异步执行方式）
+  通过通过MES_SM_QueueManageConf（Form）来找到对应业务类别的Action

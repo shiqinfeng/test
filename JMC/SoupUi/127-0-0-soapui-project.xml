@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ifc="http://ifc.bdc.ws.mes.autosuite.rockwell.com">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ifc:receiveEnterBdc>
+         <ifc:in0>
+
+{"vin":"ABCDEFGIE00000001","area":"WBS","in_time":"20201013160601","type":"E"}
+         
+         </ifc:in0>
+         <ifc:in1>123456</ifc:in1>
+      </ifc:receiveEnterBdc>
+   </soapenv:Body>
+</soapenv:Envelope>
