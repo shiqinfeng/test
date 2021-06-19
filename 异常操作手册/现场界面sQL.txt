@@ -1,0 +1,36 @@
+select  a.order_no_s ,to_char(a.creation_time,'yyyy-mm-dd hh24:mi:ss') from
+(select * from  at_as_om_jmc_orderbom  where  1=1 and creation_time< to_date('2021-05-20 00:00:00','yyyy-mm-dd hh24:mi:ss'))a order by a.creation_time desc;
+
+select to_char(creation_time,'yyyy-mm-dd hh24:mi:ss')  from  at_as_om_jmc_orderbom  where 1=1 and  order_no_S = '000200575845' order by creation_time desc;;
+
+select Count(*)  from  at_as_om_jmc_orderbom  where 1=1 and  order_no_S = '000200575944' order by creation_time desc;
+
+
+select  * from  at_as_im_cl_overallappraisal  where 1=1 and  zvin_s ='LJXCU3CB8MTF00349';--NOK
+select * from  at_as_im_obddetection  where 1=1 and  vin_s ='LJXCU3CB8MTF00349'; ---1
+select * from  at_as_im_qls_defectinfo where 1=1  and  vin_s = 'LJXCU3CB8MTF00349';---
+
+update  at_as_im_qls_defectinfo set treatment_state_s = '999.0' where 1=1 and vin_s = 'LJXCU3CB8MTF00349';
+update at_as_im_obddetection set result_s =1 where 1=1 and   vin_s ='LJXCU3CB8MTF00349';
+update at_as_im_cl_overallappraisal  set zoverallresult_s = 'OK' where 1=1 and  zvin_s ='LJXCU3CB8MTF00349';
+
+select *from  at_as_im_exactlybinding where 1=1  and  vin_S = 'LJXCU2BB2MHF00037';
+
+select count(1) from at_as_im_qls_defectinfo where vin_s ='LJXCU2BB2MHF00037' and TREATMENT_STATE_S <>'999.0';
+
+
+select defect_general_name_s,defect_level_s,input_station_s,insp_item_S ,responsible_area_s,case  when treatment_state_S = 999.0
+then '已关闭' else '未关闭' end ,vin_S from  at_as_im_qls_defectinfo where 1=1  and  vin_s like '%NTF01347%';
+
+update  at_as_im_qls_defectinfo set treatment_state_s = '999.0' where 1=1 and vin_s = 'LJXCU2BB2NTF01347';
+
+
+
+select  * from  at_as_im_cl_overallappraisal  where 1=1 order by creation_time desc
+
+
+
+
+
+
+
